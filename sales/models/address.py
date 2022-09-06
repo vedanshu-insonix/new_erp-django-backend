@@ -5,6 +5,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 from system.models.common import *
 
 class Address(BaseContent):
+    type = models.CharField(max_length=255)
+    default = models.BooleanField(default=False)
+    person = models.CharField(max_length=255, null=True, blank=True)
+    company = models.CharField(max_length=255, null=True, blank=True)
     address1 = models.CharField(max_length=255, null=True, blank=True)
     address2 = models.CharField(max_length=255, null=True, blank=True)
     address3 = models.CharField(max_length=255, null=True, blank=True)
@@ -36,5 +40,6 @@ class Source(BaseContent):
     def __str__(self):
         return self.name
     
+
     
     

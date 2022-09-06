@@ -16,7 +16,34 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
+from django.urls import include, path
+from rest_framework import routers
+from system.views import views
+from sales.views import views as sales_view
+from rest_framework_simplejwt import views as jwt_views
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
+
+
+schema_view = swagger_get_schema_view(
+    openapi.Info(
+        title="ERP System API",
+        default_version='1.0.0',
+        description="API documentation of App",
+    ),
+    public=True,
+)
+
+router = routers.DefaultRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'groups', views.GroupViewSet)
+router.register(r'customers', sales_view.CustomerViewSet)
+router.register(r'addresses', sales_view.AddressViewSet)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("system/", include('system.urls'))
+    path('api/v1/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
+    path('api/', include(router.urls)),
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 ]

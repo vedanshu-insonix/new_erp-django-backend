@@ -64,7 +64,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'phonenumber_field'   
+    'phonenumber_field',
+    'drf_yasg' 
 ]
 
 MIDDLEWARE = [
@@ -111,7 +112,7 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'erp',
+        'NAME': 'erp1',
         'USER': 'postgres',
         'PASSWORD': 'admin',
         'HOST': 'localhost',

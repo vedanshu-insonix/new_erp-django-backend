@@ -34,3 +34,28 @@ StatusChoice=(
     ("1","Active"),
     ("2","Inactive"),
 )
+
+ChannelTypeChoice=(
+    ("1","Home"),
+    ("2","Work"),
+    ("3", "Personal")
+)
+
+DateFormatChoices=(
+    
+    ("1", "MM/DD/YY"),
+    ("2", "DD/MM/YY"),
+    ("3", "YY/MM/DD"),
+    ("4", "MM-DD-YYYY"),
+    ("5", "DD-MM-YYYY"),
+    ("6", "YYYY-MM-DD"),
+)
+
+TimeFormatChoice =(
+    
+    ("1","HH:MM:SS"),
+    ("2","HH:MM:SS XM"),
+    ("3","HH:MM"),
+    ("4","HH:MM XM")
+    
+)
