@@ -60,3 +60,4 @@ class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
         else:
             raise ValidationErr('You are not registered user.')
         
+

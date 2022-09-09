@@ -1,3 +1,4 @@
+from msilib import sequence
 from re import L
 from statistics import mode
 from django.db import models
@@ -13,63 +14,52 @@ class BaseContent(models.Model):
     """
     create_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
-    # created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True)
 
     class Meta:
         abstract = True
 
-
-class ShipVia(BaseContent):
-    name =  models.CharField(max_length=255, null=True, unique=True)
+class Button(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    function = models.CharField(max_length=255, null=True, blank=True)
+    
     def __str__(self):
         return self.name
     
-
 class Currency(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
     code = models.CharField(max_length=3, null=True, unique=True)
     symbol = models.CharField(max_length=1, null=True, unique=True)
     current_rate = models.DecimalField(max_digits= 30, decimal_places=2,null= True, blank=True)
-    def __str__(self):
-        return self.name
-  
-class PaymentTerm(BaseContent):
-    name = models.CharField(max_length=255, null=True, unique=True)
-    term = models.IntegerField()
+    updated = models.DateTimeField(null=True, unique=True)
     
     def __str__(self):
         return self.name
-    
-class PaymentMethod(BaseContent):
-    name = models.CharField(max_length=255, null=True, unique=True)
-    
-    def __str__(self):
-        return self.name
-    
+     
 class Tag(BaseContent):
-    title = models.CharField(max_length=255, null=True, unique=True)
-    content = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, unique=True)
+    color = models.CharField(max_length=255, null=True, blank=True)
+    type = models.CharField(max_length=255, null=True, blank=True)
+    used = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return self.title
     
 class Language(BaseContent): 
     name = models.CharField(max_length=255, null=True, unique=True)
-    code = models.CharField(max_length=255, null=True, unique=True)
-    direction = models.CharField(max_length=255, null=True, unique=True)
     date_format = models.CharField(max_length=255, choices=DateFormatChoices, null=True, blank=True)
     time_format = models.CharField(max_length=255, choices=TimeFormatChoice, null=True, blank=True)
-    currency_symbol_position = models.IntegerField(null=True, unique=True)
-    thousands_separator = models.IntegerField(null=True, unique=True)
+    symbol_position = models.IntegerField(null=True, unique=True)
+    thousands_separator = models.CharField(max_length=255, null=True, unique=True)
+    fraction_separator = models.CharField(max_length=255, null=True, unique=True)
     decimal_places = models.IntegerField(null=True, unique=True)
-    decimal_separator = models.IntegerField(null=True, unique=True)
     
     def __str__(self):
         return self.name
     
 class Country(BaseContent):
     name = models.CharField(max_length=255, null=True,unique=True)
-    code = models.CharField(max_length=255, null=True, unique=True)
+    abbreviation = models.CharField(max_length=255, null=True, unique=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
@@ -78,14 +68,107 @@ class Country(BaseContent):
 class State(BaseContent):
     country = models.ForeignKey('Country', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, null=True)
+    abbreviation = models.CharField(max_length=255, null=True)
     
     def __str__(self):
         return self.name
 
 class Stage(BaseContent):
-    name = models.CharField(max_length=255, null=True, unique=True)
-    description = models.CharField(max_length=255, null=True, blank=True)
+    application = models.CharField(max_length=255, null=True, unique=True)
+    type = models.CharField(max_length=255, null=True, blank=True)
+    stage = models.CharField(max_length=255, null=True, blank=True)
+    warning_interval = models.DateTimeField(null=True, blank=True)
+    urgent_interval = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.stage
+    
+class Configuration(models.Model):
+    application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
+    category = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    type = models.CharField(max_length=255, null=True, blank=True)
+    current_integer = models.IntegerField(null=True, blank=True)
+    default_integer = models.IntegerField(null=True, blank=True)
+    current_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
+    default_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
+    current_char = models.CharField(max_length=255, null=True, blank=True)
+    default_char = models.CharField(max_length=255, null=True, blank=True)
+    current_color = models.CharField(max_length=255, null=True, blank=True)
+    default_color = models.CharField(max_length=255, null=True, blank=True)
+    current_boolean = models.BooleanField(default=False)
+    default_boolean = models.BooleanField(default=False)
+    current_interval = models.DateTimeField(null=True, blank=True)
+    default_interval = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.application
+    
+
+class Territories(models.Model):
+    use = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    code = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     
     def __str__(self):
         return self.name
+    
+    
+class Choice(models.Model):
+    application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
+    field = models.ForeignKey('Field', on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    sequence = models.IntegerField(null=True, blank=True)
+    default = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.field
+    
+class Field(models.Model):
+    application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    panel = models.IntegerField(null=True, blank=True)
+    position = models.IntegerField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
+
+
+class List(models.Model):
+    name = models.CharField(max_length=255, null=True , blank=True)
+    
+    def __str__(self):
+        return self.name
+
+class Menu(models.Model):
+    application = models.CharField(max_length=255, null=True, blank=True)
+    menu_item = models.CharField(max_length=255, null=True, blank=True)
+    form_name = models.CharField(max_length=255, null=True, blank=True)
+    sequence = models.IntegerField(null=True, blank=True)
+    
+    def __str__(self):
+        self.menu_item
+
+class Form(models.Model):
+    menu = models.ForeignKey('Menu', on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    
+    def __str__(self):
+        return self.title
+
+
+class Help(models.Model):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    content = models.TextField(null=True, blank=True)
+    stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
+    stage_started = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=255, null=True, blank=True)
+    published = models.BooleanField(default = True)
+    
+    def __str__(self):
+        return self.title
+    
     

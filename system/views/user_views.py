@@ -7,18 +7,9 @@ from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from sales.models.customers import Customer
-from ..serializers.serializers import UserSerializer, GroupSerializer, UserLoginSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer
+from ..serializers.user_serializers import UserSerializer, GroupSerializer, UserLoginSerializer, ChangePasswordSerializer, SendPasswordResetEmailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-
-
-# Generate Token Manually
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+from ..views.common_views import get_tokens_for_user
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -48,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(response)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    # ChangePassword
+    # Change Password
     @action(detail=False, methods=['post'], name='changePassword')
     def changePassword(self, request):
         serializers = ChangePasswordSerializer(data = request.data)
@@ -74,7 +65,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 response = {'status': 'error','code': status.HTTP_404_NOT_FOUND,'message': msg}
                 return Response(response)     
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+    # Reset Password
     @action(detail=False, methods=['post'], name='resetPassword')
     def resetPassword(self, request):
          serializers = SendPasswordResetEmailSerializer(data = request.data)
@@ -90,7 +82,3 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-        
-
-
-

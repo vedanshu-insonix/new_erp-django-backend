@@ -18,7 +18,7 @@ from django.urls import path,include
 
 from django.urls import include, path
 from rest_framework import routers
-from system.views import views
+from system.views import user_views, common_views
 from sales.views import views as sales_view
 from rest_framework_simplejwt import views as jwt_views
 from drf_yasg import openapi
@@ -35,10 +35,19 @@ schema_view = swagger_get_schema_view(
 )
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+router.register(r'users', user_views.UserViewSet)
+router.register(r'groups', user_views.GroupViewSet)
 router.register(r'customers', sales_view.CustomerViewSet)
 router.register(r'addresses', sales_view.AddressViewSet)
+router.register(r'vendors', sales_view.VendorViewSet)
+router.register(r'currencies', common_views.CurrencyViewSet)
+router.register(r'tags', common_views.TagViewSet)
+router.register(r'languages', common_views.LanguageViewSet)
+router.register(r'countries', common_views.CountryViewSet)
+router.register(r'states', common_views.StateViewSet)
+router.register(r'stages', common_views.StageViewSet)
+router.register(r'configurations', common_views.ConfigurationViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

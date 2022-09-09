@@ -31,8 +31,10 @@ ColumnTypeChoice=(
 )
 
 StatusChoice=(
-    ("1","Active"),
-    ("2","Inactive"),
+    ("1","Closed"),
+    ("2","Normal"),
+    ("3","Warning"),
+    ("3","Urgent"),
 )
 
 ChannelTypeChoice=(
