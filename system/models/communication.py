@@ -3,8 +3,7 @@ from .common import BaseContent
 from sales.models.address import Address
 from ..utils import ChannelTypeChoice
 
-class CommunicationChannel(BaseContent):
-    address_id  = models.ForeignKey('Address', on_delete=models.CASCADE, null=True, blank=True)
+class Communication(BaseContent):
     primary = models.BooleanField(default=False)
     channel = models.ForeignKey('Channel', on_delete=models.SET_NULL, null=True, blank=True)
     type = models.CharField(max_length=255, choices=ChannelTypeChoice, null=True, blank=True)
@@ -21,4 +20,7 @@ class Channel(BaseContent):
     
     def __str__(self):
         return self.name
-    
+
+class CommunicationAddress(BaseContent):
+    communication = models.ForeignKey('Communication', on_delete=models.CASCADE, null=True)
+    address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, unique=True)

@@ -1,3 +1,8 @@
+from django.core.mail import EmailMessage
+from django.core.mail.backends.smtp import EmailBackend
+from django.conf import settings
+from django.core.mail import send_mail
+
 EntityChoice = (
     ("1", "Person"),
     ("2", "Company"),
@@ -61,3 +66,21 @@ TimeFormatChoice =(
     ("4","HH:MM XM")
     
 )
+
+
+""" Send email function """
+def send_email(subject, message, mail_to, mail_from=None, attachement=None):
+    try:
+        backend = EmailBackend(host=settings.EMAIL_HOST, port=settings.EMAIL_PORT, username=settings.EMAIL_HOST_USER, 
+                            password=settings.EMAIL_HOST_PASSWORD, use_tls=settings.EMAIL_USE_TLS)
+        
+        if mail_from is None: mail_from = settings.EMAIL_HOST_USER
+        sent = EmailMessage(subject, message, mail_from, [mail_to], connection=backend)
+        if attachement: sent.attach_file(attachement)
+        try : 
+            status = sent.send()
+            return status
+        except Exception as err:
+            raise ValueError(err)
+    except Exception as err:
+        raise ValueError(err)

@@ -1,6 +1,3 @@
-from msilib import sequence
-from re import L
-from statistics import mode
 from django.db import models
 from system.utils import DateFormatChoices, TimeFormatChoice
 from django.contrib.auth.models import User
@@ -12,20 +9,20 @@ class BaseContent(models.Model):
         Captures BaseContent as created On and modified On and active field.
         common field accessed for the following classes.
     """
-    create_time = models.DateTimeField(auto_now_add=True)
+    created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True)
-
+    created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name="%(class)s_created_by")
     class Meta:
         abstract = True
 
-class Button(models.Model):
+class Button(BaseContent):
     name = models.CharField(max_length=255, null=True, blank=True, unique=True)
     function = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.name
     
+   
 class Currency(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
     code = models.CharField(max_length=3, null=True, unique=True)
@@ -35,6 +32,10 @@ class Currency(BaseContent):
     
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Currency"
+        verbose_name_plural = "Countries"
      
 class Tag(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
@@ -43,7 +44,7 @@ class Tag(BaseContent):
     used = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return self.title
+        return self.name
     
 class Language(BaseContent): 
     name = models.CharField(max_length=255, null=True, unique=True)
@@ -65,6 +66,10 @@ class Country(BaseContent):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Country"
+        verbose_name_plural = "Countries"
+
 class State(BaseContent):
     country = models.ForeignKey('Country', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, null=True)
@@ -83,7 +88,7 @@ class Stage(BaseContent):
     def __str__(self):
         return self.stage
     
-class Configuration(models.Model):
+class Configuration(BaseContent):
     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
     category = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -105,7 +110,7 @@ class Configuration(models.Model):
         return self.application
     
 
-class Territories(models.Model):
+class Territories(BaseContent):
     use = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     code = models.CharField(max_length=255, null=True, blank=True)
@@ -114,8 +119,11 @@ class Territories(models.Model):
     def __str__(self):
         return self.name
     
+    class Meta:
+        verbose_name = "Territories"
+        verbose_name_plural = "Territories"
     
-class Choice(models.Model):
+class Choice(BaseContent):
     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
     field = models.ForeignKey('Field', on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -125,9 +133,10 @@ class Choice(models.Model):
     def __str__(self):
         return self.field
     
-class Field(models.Model):
+class Field(BaseContent):
     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    field = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     panel = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
@@ -135,31 +144,41 @@ class Field(models.Model):
     def __str__(self):
         return self.name
 
-
-class List(models.Model):
-    name = models.CharField(max_length=255, null=True , blank=True)
-    
-    def __str__(self):
-        return self.name
-
-class Menu(models.Model):
-    application = models.CharField(max_length=255, null=True, blank=True)
-    menu_item = models.CharField(max_length=255, null=True, blank=True)
-    form_name = models.CharField(max_length=255, null=True, blank=True)
+class Menu(BaseContent):
+    menu_category = models.CharField(max_length = 255, null=True, blank =True)
+    list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
-        self.menu_item
+        return str(self.id)
 
-class Form(models.Model):
+class Form(BaseContent):
     menu = models.ForeignKey('Menu', on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return self.title
+        return str(self.id)
 
+class FormList(BaseContent):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
+    primary = models.BooleanField(default = False)
+    sequence = models.IntegerField(null=True, blank=True)
 
-class Help(models.Model):
+class FormData(BaseContent):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    data = models.CharField(max_length=255, null=True, blank=True)
+    panel = models.IntegerField(null=True, blank=True)
+    position = models.IntegerField(null=True, blank=True)
+
+class List(BaseContent):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True , blank=True)
+    
+    def __str__(self):
+        return str(self.id)
+
+class Help(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=True)
     content = models.TextField(null=True, blank=True)
@@ -171,4 +190,15 @@ class Help(models.Model):
     def __str__(self):
         return self.title
     
+class Category(BaseContent):
+    type = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+class Tile(BaseContent):
+    list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
+    list_view = models.CharField(max_length = 255, null=True, blank=True)
+    search_criteria = models.CharField(max_length = 255, null=True, blank=True)
     

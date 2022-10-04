@@ -9,18 +9,20 @@ class Address(BaseContent):
     type = models.CharField(max_length=255, null=True, blank=True) #choice
     location = models.CharField(max_length=255, null=True, blank=True) #choice
     default = models.BooleanField(default=False)
-    person = models.CharField(max_length=255, null=True, blank=True)
-    company = models.CharField(max_length=255, null=True, blank=True)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    company_name = models.CharField(max_length=255, null=True, blank=True)
     address1 = models.CharField(max_length=255, null=True, blank=True)
     address2 = models.CharField(max_length=255, null=True, blank=True)
     address3 = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True) 
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     postal_code = models.CharField(max_length=6, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.CharField(max_length=255, null=True, blank=True) #choice
     comment = models.TextField(blank=True, null=True)
     warning = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=2, blank=True, null=True)
     email = models.EmailField(('email'),max_length=255,null=True,blank=True)
     telephone = PhoneNumberField(null=True, blank=True)
@@ -35,11 +37,16 @@ class Address(BaseContent):
     used = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return self.type
+        return str(self.id)
+    
+    class Meta:
+        verbose_name = "Address"
+        verbose_name_plural = "Addresses"
+    
     
 class AddressTag(BaseContent):
     address = models.ForeignKey('Address', on_delete=models.CASCADE, null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
-        return self.tag
+        return str(self.tag)

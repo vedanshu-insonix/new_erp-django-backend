@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from itertools import chain
 from django.db import models
 from sales.models.address import Address
@@ -22,4 +23,10 @@ class UserOthers(BaseContent):
         return self.user
 
 
-
+class UserRoles(BaseContent):
+    user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserRoles')
+    role = models.ForeignKey('Role', on_delete= models.CASCADE, null=True)
+    conditions = models.CharField(max_length = 255, null= True, blank = True)
+    commission = models.DecimalField(max_digits=30,decimal_places=2,default=0.0)
+    
+    

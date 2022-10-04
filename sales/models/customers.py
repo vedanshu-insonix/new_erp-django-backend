@@ -8,13 +8,12 @@ class Customer(BaseContent):
     parent_id = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.CharField(max_length=255, choices=EntityChoice)
     name = models.CharField(max_length=100,null=True,blank=True)
-    # address = models.ForeignKey('Address', on_delete=models.SET_NULL, null=True, blank=True)
     shipping_terms = models.CharField(max_length=255, null=True, blank=True) #choice
     ship_via = models.CharField(max_length=255, null=True, blank=True) #choice
     source = models.CharField(max_length=255, null=True, blank=True) #choice
     payment_terms = models.CharField(max_length=255, null=True, blank=True) #choice
     payment_method = models.CharField(max_length=255, null=True, blank=True) #choice
-    sales_currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True, related_name='customer_currency')
+    sales_currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True, related_name="customer_currency")
     free_freight_min = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
     issue_statements = models.BooleanField(default=False)
     require_pos = models.BooleanField(default=False)
@@ -33,27 +32,10 @@ class Customer(BaseContent):
     status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)
     used = models.DateTimeField(null=True, blank=True)
     
-    def __str__(self):
-        return self.entity
+    # def __str__(self):
+    #     return self.entity
     
-    
-class CustomerTag(BaseContent):
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, null=True)
-    
-    def __str__(self):
-        return self.tag
-
-
 class CustomerAddress(BaseContent):
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True)
-    address = models.ForeignKey('Address', on_delete=models.CASCADE, null=True)
-    primary = models.BooleanField(default=False)
-    type = models.CharField(max_length=255, choices=AddressTypeChoice, null=True)
-    icon = models.CharField(max_length=2, null=True, blank=True)
+    address = models.OneToOneField('Address', on_delete=models.CASCADE, null=True, unique=True)
     
-    def __str__(self):
-        return self.address
-    
-
-
