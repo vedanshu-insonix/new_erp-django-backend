@@ -191,7 +191,9 @@ class MenuViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     # filterset_fields = ("__all__")
     filterset_fields = {
-        'menu_category': ['exact', 'contains'],'list': ['exact', 'contains'],'sequence': ['exact', 'contains']
+        'menu_category': ['exact', 'contains'],
+        'list': ['exact'],
+        'sequence': ['exact']
     }
     ordering_fields = ("__all__")
    

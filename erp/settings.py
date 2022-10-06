@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-ORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_HEADERS = ['*']
 
@@ -119,7 +119,7 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 # }
 
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'erp1',
         'USER': 'postgres',

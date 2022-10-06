@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models.customers import Customer, CustomerAddress
+from ..models.address import Address
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
 
@@ -8,7 +9,22 @@ class RelatedCustomerSerializer(serializers.ModelSerializer):
         model = Customer
         exclude = ("created_time","modified_time","created_by")
 
+class RelatedAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        exclude = ("created_time","modified_time","created_by")
+
 class CustomerSerializer(serializers.ModelSerializer):
+    addresses = serializers.SerializerMethodField()
+    def get_addresses(self, obj):
+        queryset = CustomerAddress.objects.filter(customer = obj.id)
+        address_ids = []
+        for ele in queryset:
+            address_ids.append(ele.address.id)
+        address_queryset = Address.objects.filter(id__in = address_ids)  
+        serializer = RelatedAddressSerializer(address_queryset, many = True)         
+        return serializer.data
+    
     class Meta:
         model = Customer 
         fields = ('__all__')
@@ -34,13 +50,6 @@ class CustomerSerializer(serializers.ModelSerializer):
         if 'id' in parent_data:
             response['parent_id'] = RelatedCustomerSerializer(instance.parent_id).data
         return response
-
-    # def create(self, validated_data):
-    #     # profile_data = validated_data.pop('profile')
-    #     # user = User.objects.create(**validated_data)
-    #     # Profile.objects.create(user=user, **profile_data)
-    #     print(validated_data)
-    #     return validated_data
   
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
