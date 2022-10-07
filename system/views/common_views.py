@@ -24,7 +24,7 @@ class ButtonViewSet(viewsets.ModelViewSet):
     """
     queryset = Button.objects.all()
     serializer_class = ButtonSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -34,7 +34,7 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     """
     queryset = Currency.objects.all()
     serializer_class = CurrencySerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
            
@@ -44,7 +44,7 @@ class TagViewSet(viewsets.ModelViewSet):
     """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -54,7 +54,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
     """
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -64,7 +64,7 @@ class CountryViewSet(viewsets.ModelViewSet):
     """
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
         
@@ -74,7 +74,7 @@ class StateViewSet(viewsets.ModelViewSet):
     """
     queryset = State.objects.all()
     serializer_class = StateSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -84,7 +84,7 @@ class StageViewSet(viewsets.ModelViewSet):
     """
     queryset = Stage.objects.all()
     serializer_class = StageSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
        
@@ -94,7 +94,7 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
     """
     queryset = Configuration.objects.all()
     serializer_class = ConfigurationSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
         
@@ -105,7 +105,7 @@ class TerritoriesViewSet(viewsets.ModelViewSet):
     """
     queryset = Territories.objects.all()
     serializer_class = TerritoriesSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
         
@@ -115,7 +115,7 @@ class ChoiceViewSet(viewsets.ModelViewSet):
     """
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -125,7 +125,7 @@ class AppViewSet(viewsets.ModelViewSet):
     """
     queryset = App.objects.all()
     serializer_class = AppSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -135,7 +135,7 @@ class FormViewSet(viewsets.ModelViewSet):
     """
     queryset = Form.objects.all()
     serializer_class = FormSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -145,7 +145,7 @@ class FieldViewSet(viewsets.ModelViewSet):
     """
     queryset = Field.objects.all()
     serializer_class = FieldSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {
             'application__name': ['exact', 'contains'],
             'form__title':['exact', 'contains'],
@@ -165,7 +165,7 @@ class ListViewSet(viewsets.ModelViewSet):
     """
     queryset = List.objects.all()
     serializer_class = ListSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
@@ -198,7 +198,7 @@ class MenuViewSet(viewsets.ModelViewSet):
     """
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("__all__")
     filterset_fields = {
         'menu_category': ['exact', 'contains'],
@@ -213,14 +213,20 @@ class HelpViewSet(viewsets.ModelViewSet):
     """
     queryset = Help.objects.all()
     serializer_class = HelpSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 
 class FormListViewSet(viewsets.ModelViewSet):
     queryset = FormList.objects.all()
     serializer_class = FormListSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
 
 class FormDataViewSet(viewsets.ModelViewSet):
     queryset = FormData.objects.all()
     serializer_class = FormDataSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")

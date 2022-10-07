@@ -13,6 +13,7 @@ from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from django.http import Http404
+from rest_framework import filters
 
  
 class AddressViewSet(viewsets.ModelViewSet):
@@ -21,7 +22,7 @@ class AddressViewSet(viewsets.ModelViewSet):
     """
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     

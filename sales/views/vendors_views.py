@@ -5,7 +5,7 @@ from rest_framework import status
 from ..models.vendors import Vendor, VendorAddress, VendorProducts
 from ..serializers.vendors_serializers import VendorAddressSerializer, VendorProductsSerializer, VendorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework import filters
 
 class VendorViewSet(viewsets.ModelViewSet):
     """
@@ -13,7 +13,7 @@ class VendorViewSet(viewsets.ModelViewSet):
     """
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     

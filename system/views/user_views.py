@@ -11,6 +11,7 @@ from ..models.users import *
 from ..serializers.user_serializers import *
 from ..views.common_views import get_tokens_for_user
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -19,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 

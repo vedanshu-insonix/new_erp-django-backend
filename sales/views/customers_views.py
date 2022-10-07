@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core import serializers as jsonserializer
 from django.db.models import Q
+from rest_framework import filters
 
 class CustomerViewSet(viewsets.ModelViewSet):
     """
@@ -18,7 +18,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     """
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("__all__")
     filterset_fields = {
             'name': ['exact', 'contains'],'entity': ['exact', 'contains'],'shipping_terms': ['exact', 'contains'],
