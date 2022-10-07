@@ -3,6 +3,7 @@ from ..models.customers import Customer, CustomerAddress
 from ..models.address import Address
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
+from django.db.models import Q
 
 class RelatedCustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,13 +16,25 @@ class RelatedAddressSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
 
 class CustomerSerializer(serializers.ModelSerializer):
-    addresses = serializers.SerializerMethodField()
-    def get_addresses(self, obj):
+    address = serializers.SerializerMethodField()
+    other_address = serializers.SerializerMethodField()
+    
+    def get_address(self,obj):
         queryset = CustomerAddress.objects.filter(customer = obj.id)
         address_ids = []
         for ele in queryset:
             address_ids.append(ele.address.id)
-        address_queryset = Address.objects.filter(id__in = address_ids)  
+        address_queryset = Address.objects.filter(Q(id__in = address_ids), Q(type = "customer") | Q(type = "Customer"))
+        serializer = RelatedAddressSerializer(address_queryset, many = True)         
+        return serializer.data
+    
+    def get_other_address(self, obj):
+        queryset = CustomerAddress.objects.filter(customer = obj.id)
+        address_ids = []
+        for ele in queryset:
+            address_ids.append(ele.address.id)
+        address_queryset = Address.objects.filter(id__in = address_ids).exclude(Q(type = "customer") | Q(type = "Customer"),
+                                                                                default = True)  
         serializer = RelatedAddressSerializer(address_queryset, many = True)         
         return serializer.data
     

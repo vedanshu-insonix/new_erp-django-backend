@@ -146,7 +146,17 @@ class FieldViewSet(viewsets.ModelViewSet):
     queryset = Field.objects.all()
     serializer_class = FieldSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ("__all__")
+    filterset_fields = {
+            'application__name': ['exact', 'contains'],
+            'form__title':['exact', 'contains'],
+            'application': ['exact'],
+            'form': ['exact'],
+            'field':['exact', 'contains'],
+            'name':  ['exact', 'contains'],
+            'type':  ['exact', 'contains'],
+            'panel':  ['exact'],
+            'position': ['exact']
+            }
     ordering_fields = ("__all__")
 
 class ListViewSet(viewsets.ModelViewSet):

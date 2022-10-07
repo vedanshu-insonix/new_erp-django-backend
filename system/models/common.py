@@ -138,6 +138,7 @@ class Field(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     field = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
+    type = models.CharField(max_length=50, null=True, blank=True)
     panel = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
     
