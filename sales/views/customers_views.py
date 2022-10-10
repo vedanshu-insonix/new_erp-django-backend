@@ -39,6 +39,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             #************* separating default address ************ 
             if 'address' in GetData:
                 address = GetData.pop("address")
+                address['default'] = True
                 HaveDefAdd = True
 
             #************ separating Other address **************
@@ -46,7 +47,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 OtherAddress = GetData.pop("other_address")
                 HaveAddr = True
             
-            #************ Create Customer ***************
+            #************ Create Customer ***********************
             serializers = CustomerSerializer(data = GetData, context={'request': request})
             if serializers.is_valid(raise_exception=True):
                 serializers.save()
@@ -101,7 +102,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 HaveDefAdd = True
 
             #************ separating Other address **************
-            if 'other_addresses' in GetData:
+            if 'other_address' in GetData:
                 OtherAddress = GetData.pop("other_address")
                 HaveAddr = True
 
@@ -110,7 +111,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             serializers = CustomerSerializer(CustomerInstance, data=GetData,  context={'request': request})
             if serializers.is_valid(raise_exception=True):
                 serializers.save()
-                
+                print(HaveAddr)
             #*************************** Creating/Updating default address ****************************
                 if HaveDefAdd == True:
                     GetCustomerAddress = CustomerAddress.objects.filter(Q(customer = CustomerInstance),
@@ -135,7 +136,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
             
             #*************************** Creating/Updating Other Addresses ***************************** 
                 if HaveAddr == True:
+                    
                     for address in OtherAddress:
+                        
                         if 'id' in OtherAddress:
                             addressInstance = Address.objects.get(id= address.pop("id"))
                             updateAddress = AddressSerializer(addressInstance,data=address, context={'request': request})
@@ -143,6 +146,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                                     updateAddress.save()
                         else:  
                             address_serializers = AddressSerializer(data=address, context={'request': request})
+                            
                             if address_serializers.is_valid(raise_exception=True):
                                     address_serializers.save()
                             # Create Relation between Customer and Address
@@ -164,7 +168,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 HaveDefAdd = True
 
             #************ separating Other address **************
-            if 'other_addresses' in GetData:
+            if 'other_address' in GetData:
                 OtherAddress = GetData.pop("other_address")
                 HaveAddr = True
 
@@ -223,3 +227,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
         address_queryset = Address.objects.filter(id__in = address_ids)  
         serializer = AddressSerializer(address_queryset, many = True)         
         return Response(serializer.data)
+    
+    
+
+
+

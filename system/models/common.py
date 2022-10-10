@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from system.utils import DateFormatChoices, TimeFormatChoice
 from django.contrib.auth.models import User
@@ -138,7 +139,8 @@ class Field(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     field = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
-    type = models.CharField(max_length=50, null=True, blank=True)
+    TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),('radio','Radio'))
+    type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
     panel = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
     
@@ -174,8 +176,8 @@ class FormData(BaseContent):
 
 class List(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=255, null=True , blank=True)
-    
+    list = models.CharField(max_length=255, null=True , blank=True)
+    sequence = models.IntegerField(null=True , blank=True)
     def __str__(self):
         return str(self.id)
 

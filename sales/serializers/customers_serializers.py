@@ -26,7 +26,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             address_ids.append(ele.address.id)
         address_queryset = Address.objects.filter(Q(id__in = address_ids), Q(type = "customer") | Q(type = "Customer"))
         serializer = RelatedAddressSerializer(address_queryset, many = True)         
-        return serializer.data
+        return serializer.data[0] if serializer.data else None
     
     def get_other_address(self, obj):
         queryset = CustomerAddress.objects.filter(customer = obj.id)

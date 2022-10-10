@@ -27,76 +27,57 @@ class AddressViewSet(viewsets.ModelViewSet):
     ordering_fields = ("__all__")
     
     def create(self, request, *args, **kwargs):
-        data = request.data
+        GetData = request.data
         try: 
             
-            state_instance = State.objects.get(id = data['state']) if 'state' in data else None
-            country_instance = Country.objects.get(id = data['country']) if 'country' in data else None
-            language_instance = Language.objects.get(id = data['language']) if 'language' in data else None
-            stage_instance = Stage.objects.get(id = data['stage']) if 'stage' in data else None         
-            create_address = Address.objects.create(type = data['type'] if 'type' in data else None,
-                                                        location = data['location'] if 'location' in data else None,
-                                                        first_name = data['first_name'] if 'person' in data else None,
-                                                        last_name = data['last_name'] if 'person' in data else None,
-                                                        company_name = data['company_name'] if 'company_name' in data else None, 
-                                                        address1 = data['address1'] if 'address1' in data else None, 
-                                                        address2 = data['address2'] if 'address2' in data else None, 
-                                                        address3 = data['address3'] if 'address3' in data else None, 
-                                                        city = data['city'] if 'city' in data else None,
-                                                        state =  state_instance,
-                                                        country = country_instance,
-                                                        postal_code = data['postal_code'] if 'postal_code' in data else None, 
-                                                        description = data['description'] if 'description' in data else None, 
-                                                        comment = data['comment'] if 'comment' in data else None, 
-                                                        warning = data['warning'] if 'warning' in data else None, 
-                                                        icon = data['icon'] if 'icon' in data else None,
-                                                        email = data['email'] if 'email' in data else None, 
-                                                        telephone = data['telephone'] if 'telephone' in data else None, 
-                                                        telephone_type = data['telephone_type'] if 'telephone_type' in data else None,
-                                                        other_communication = data['other_communication'] if 'other_communication' in data else None,
-                                                        other_communication_type = data['other_communication_type'] if 'other_communication_type' in data else None,
-                                                        website = data['website'] if 'website' in data else None,
-                                                        stage = stage_instance,
-                                                        stage_started = data['stage_started'] if 'stage_started' in data else None,
-                                                        status = data['stage_started'] if 'stage_started' in data else None,
-                                                        used = data['used'] if 'used' in data else None,
-                                                        language = language_instance,
-                                                        created_by = request.user
-                                                        )
+            #************* Separating Customer *****************
+            if 'customer' in GetData:
+                customer = GetData.pop("customer")
+                HaveCustomer = True
             
-            # Create Record in CustomerAddress
-            customer_instance = Customer.objects.get(id = data['customer']) if 'customer' in data else None
-            if customer_instance != None:
-                address_instance = Address.objects.get(id = create_address.id)
-                CustomerAddress.objects.create(address = address_instance, customer = customer_instance)
+            #************* Separating Vendor ********************
+            if 'vendor' in GetData:
+                vendor = GetData.pop("vendor")
+                HaveVendor = True
             
-            # Create Record in VendorAddress
-            vendor_instance = Vendor.objects.get(id = data['vendor']) if 'vendor' in data else None
-            if vendor_instance != None:
-                address_instance = Address.objects.get(id = create_address.id)
-                VendorAddress.objects.create(address = address_instance, vendor = vendor_instance)
+            #************* Separating Company ********************
+            if 'company' in GetData:
+                company = GetData.pop("company")
+                HaveCompany = True
             
-            # Create Record in CompanyAddress
-            company_instance = Company.objects.get(id = data['company']) if 'company' in data else None
-            if company_instance != None:
-                address_instance = Address.objects.get(id = create_address.id)
-                CompanyAddress.objects.create(address = address_instance, company = company_instance)
+            #************* Separa ting Communication **************
+            if 'communication' in GetData:
+                communication = GetData.pop("communication")
+                HaveCommunication = True
             
-            # Create Record in CommunicationAddress
-            communication_instance = Communication.objects.get(id = data['communication']) if 'communication' in data else None
-            if communication_instance != None:
-                address_instance = Address.objects.get(id = create_address.id)
-                CommunicationAddress.objects.create(address = address_instance, communication = communication_instance)
+            #************ Create Address **************************
+            serializers = AddressSerializer(data = GetData, context={'request': request})
+            if serializers.is_valid(raise_exception=True):
+                serializers.save()
+                AddressInstance = Address.objects.get(id = serializers.data.get("id"))
+                
+                if HaveCustomer == True:
+                    CustomerInstance = Customer.objects.get(id = customer)
+                    if CustomerInstance:
+                        CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
+                
+                if HaveVendor == True:
+                    VendorInstance = Vendor.objects.get(id = vendor)
+                    if VendorInstance:
+                        VendorAddress.objects.create(address = AddressInstance, vendor = VendorInstance)
+
+                if HaveCompany == True:
+                    CompanyInstance = Company.objects.get(id = company)
+                    if CompanyInstance:
+                        CompanyAddress.objects.create(address = AddressInstance, company = CompanyInstance)
+
+                if HaveCommunication == True:
+                    CommunicationInstance = Communication.objects.get(id = communication) 
+                    if CommunicationInstance:
+                        CommunicationAddress.objects.create(address = AddressInstance, communication = CommunicationInstance)
             
-            # # Create Record in AddressTag
-            # tags = Tag.objects.get(id = data['tags']) if 'tags' in data else None
-            # if tags != None:
-            #     for tag in tags:
-            #         address_instance = Address.objects.get(id = create_address.id)
-            #         tag_instance = Tag.objects.get(id = tag)
-            #         AddressTag.objects.create(address = address_instance, tag = tag_instance)           
-            serializers = AddressSerializer(create_address)
-            return Response(serializers.data)
+            returnData = AddressSerializer(AddressInstance)
+            return Response(returnData)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)

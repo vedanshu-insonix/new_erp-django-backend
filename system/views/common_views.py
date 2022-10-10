@@ -8,6 +8,9 @@ from ..models.columns import App, Columns
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.decorators import action
+import os
+import openpyxl
+
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -139,6 +142,50 @@ class FormViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('data')
+            user_id = str(request.user.id)
+            defective_data = []
+            count = 0
+            if file:
+                wb = openpyxl.load_workbook(file)
+                sheet = wb.active
+                for row in sheet.iter_rows():
+                    row_data = []
+                    for cell in row:
+                        row_data.append(cell.value)
+                    if row_data[0].lower() == 'title':
+                        pass
+                    else:
+                        try:
+                            menurec = Menu.objects.get(menu_category=row_data[1].lower())
+                        except Exception as e:
+                            print('ERROR: ', str(e))
+                            defective_data.append(row_data[1])
+                            pass
+                        else:
+                            if menurec:
+                                try:
+                                    formrec = Form.objects.get(title=row_data[0].lower())
+                                    if formrec:
+                                        pass
+                                except Exception as e:
+                                    Form.objects.create(title=row_data[0].lower(),menu_id=menurec.id,created_by_id=user_id)
+                                    count += 1
+                            
+            return Response({'status':'success', 'code':status.HTTP_200_OK,
+                             'failed':f'menu matching query for {defective_data} does not exist',
+                            'inserted':f'{count} records are inserted'
+                            
+                            })
+        except Exception as e:
+            return Response({
+                            'error_msg':str(e),
+                            'status':status.HTTP_400_BAD_REQUEST
+                            })
+    
 class FieldViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Field to be modified.
@@ -176,6 +223,72 @@ class ListViewSet(viewsets.ModelViewSet):
         serializer = ColumnsSerializer(queryset, many = True)         
         return Response(serializer.data)
     
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            user_id = str(request.user.id)
+            filename, filextension = os.path.splitext(str(file))
+            if filextension == '.csv':
+                # df_new = pd.read_csv(file)
+                # data = pd.ExcelWriter(filename+'.xlsx')
+                # df_new.to_excel(data, index=False)
+                # data.save()
+                pass
+            else:
+                if filextension == '.xlsx':
+                    data = request.FILES.get('data')
+                
+            if file:
+                wb = openpyxl.load_workbook(file)
+                sheet = wb.active
+                defective_data = []
+                row_count = 0
+                succeed_count = 0
+                for row in sheet.iter_rows():
+                    row_data = []
+                    row_count = row_count + 1
+                    for cell in row:
+                        row_data.append(cell.value)
+                    if row_data[0].lower() == 'form' or row_data[0].lower() == 'list' or row_data[0].lower() == 'sequence':
+                        pass
+                    else:
+                        form_data = row_data[0]
+                        list_data = row_data[1]
+                        sequence_data = row_data[2]
+                        data_dict = {}
+                        try:
+                            form_instance = Form.objects.get(title = form_data)
+                            data_dict['form'] = form_instance.id
+                        except Exception as e:
+                            defective_data.append([form_data])
+                            continue
+                          
+                        if list_data:
+                            data_dict['list'] = list_data
+                        
+                        if sequence_data:
+                            data_dict['sequence'] = sequence_data
+                        
+                        list_serializers = ListSerializer(data=data_dict, context={'request': request})
+                        if list_serializers.is_valid():
+                            list_serializers.save()
+                            print(list_serializers.data)
+                        
+                        succeed_count = succeed_count + 1
+            if defective_data:
+                return Response({'status':'success', 'code':status.HTTP_200_OK,
+                             'inserted': str(succeed_count)+" row(s) inserted successfully",
+                             'failed':f'form matching query for {defective_data} does not exist'})
+            else: 
+                return Response({'status':'success', 'code':status.HTTP_200_OK,
+                             'inserted': str(succeed_count)+" row(s) inserted successfully"
+                             })
+        except Exception as e:
+            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
+            return Response(response)
+       
+        
 class ColumnsViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Columns to be modified.
