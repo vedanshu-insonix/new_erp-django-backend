@@ -3,6 +3,7 @@ from ..models.translations import *
 from ..serializers.user_serializers import RelatedUserSerilaizer
 from ..serializers.common_serializers import RelatedLanguageSerializer
 
+
 class TranslationSerializer(serializers.ModelSerializer):
     column = serializers.SerializerMethodField()
     formdata = serializers.SerializerMethodField()

@@ -5,12 +5,16 @@ from ..utils import ChannelTypeChoice
 
 class Communication(BaseContent):
     primary = models.BooleanField(default=False)
-    channel = models.ForeignKey('Channel', on_delete=models.SET_NULL, null=True, blank=True)
-    type = models.CharField(max_length=255, choices=ChannelTypeChoice, null=True, blank=True)
-    value = models.CharField(max_length=255, null=True, blank=True)
-    routing = models.CharField(max_length=255, null=True, blank=True)
+    communication_channel = models.CharField(max_length=255, null=True, blank=True)
+    communication_type = models.CharField(max_length=255, choices=ChannelTypeChoice, null=True, blank=True)
+    external_routing = models.CharField(max_length=255, null=True, blank=True)
+    internal_routing = models.CharField(max_length=255, null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
-    
+    stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
+    stage_started = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=255, null=True, blank=True)
+    used = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.channel
     

@@ -1,9 +1,9 @@
-from lib2to3.pytree import Base
 from django.db import models
 from system.models.common import BaseContent
 from system.utils import LocationChoice, StatusChoice
 from phonenumber_field.modelfields import PhoneNumberField
 from system.models.common import *
+
 
 class Address(BaseContent):
     type = models.CharField(max_length=255, null=True, blank=True) #choice

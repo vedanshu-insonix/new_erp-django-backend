@@ -28,6 +28,10 @@ class AddressViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         GetData = request.data
+        HaveCustomer = False
+        HaveVendor = False
+        HaveCompany = False
+        HaveCommunication = False
         try: 
             
             #************* Separating Customer *****************

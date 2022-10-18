@@ -11,9 +11,6 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from system.utils import send_email
 
-
-
-
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
     class Meta:

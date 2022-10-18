@@ -9,8 +9,7 @@ class App(BaseContent):
         return str(self.id)
     
     
-class Columns(BaseContent):
-    app = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
+class Column(BaseContent):
     list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True)
     column = models.CharField(max_length=255, null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
@@ -20,5 +19,5 @@ class Columns(BaseContent):
     
     
     def __str__(self):
-        return self.label
+        return self.column
     

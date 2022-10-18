@@ -1,16 +1,14 @@
-from contextlib import nullcontext
-from itertools import chain
 from django.db import models
 from sales.models.address import Address
-from system.models.common import BaseContent
+from ..models.common import BaseContent, Language
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
   
 class UserAddress(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserAddress')
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
+    address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
     def __str__(self):
-        return self.user
+        return str(self.id)
 
 class UserOthers(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserOther')
@@ -29,4 +27,18 @@ class UserRoles(BaseContent):
     conditions = models.CharField(max_length = 255, null= True, blank = True)
     commission = models.DecimalField(max_digits=30,decimal_places=2,default=0.0)
     
-    
+""" get user langauge"""
+def get_current_user_language(user):
+    try:
+        get_address = UserAddress.objects.filter(user = user.id, address__type = "user").first()
+        address_details = Address.objects.filter(id = get_address.address.id).first()
+        if address_details:
+            language = address_details.language
+        else:
+            language = "US English"
+            
+        return language
+    except Exception as e:
+        raise ValueError(e)
+
+

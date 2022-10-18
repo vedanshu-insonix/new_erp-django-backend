@@ -84,3 +84,4 @@ def send_email(subject, message, mail_to, mail_from=None, attachement=None):
             raise ValueError(err)
     except Exception as err:
         raise ValueError(err)
+
