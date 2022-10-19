@@ -66,22 +66,22 @@ class AddressSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        
-        state = RelatedStateSerializer(instance.state).data
+        request = self.context['request']
+        state = RelatedStateSerializer(instance.state, context={'request': request}).data
         if 'id' in state:
-            response['state'] = RelatedStateSerializer(instance.state).data
+            response['state'] = RelatedStateSerializer(instance.state, context={'request': request}).data
             
-        country = RelatedCountrySerializer(instance.country).data
+        country = RelatedCountrySerializer(instance.country, context={'request': request}).data
         if 'id' in country:
-            response['country'] = RelatedCountrySerializer(instance.country).data
+            response['country'] = RelatedCountrySerializer(instance.country, context={'request': request}).data
             
-        language = RelatedLanguageSerializer(instance.language).data
+        language = RelatedLanguageSerializer(instance.language, context={'request': request}).data
         if 'id' in language:
-            response['language'] = RelatedLanguageSerializer(instance.language).data
+            response['language'] = RelatedLanguageSerializer(instance.language, context={'request': request}).data
 
-        stage = RelatedStageSerializer(instance.stage).data
+        stage = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in stage:
-            response['stage'] = RelatedStageSerializer(instance.stage).data
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
         
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
