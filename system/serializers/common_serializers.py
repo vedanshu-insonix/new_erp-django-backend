@@ -4,7 +4,7 @@ from secrets import choice
 from urllib import request
 from ..models.common import *
 from ..models.translations import *
-from ..models.columns import App, Column
+from ..models.columns import Column
 from rest_framework import serializers
 from rest_framework.response import Response
 from .user_serializers import RelatedUserSerilaizer
@@ -230,28 +230,6 @@ class StageSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
  
-# ************************ App Serializer ******************************************
-
-class RelatedAppSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = App
-        exclude = ("created_time","modified_time","created_by")
-
-class AppSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = App
-        fields = ("__all__")
-        read_only_fields = ("created_time", "modified_time")
-        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-    
-    # To return forign key values in detail
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        created_by = RelatedUserSerilaizer(instance.created_by).data
-        if 'id' in created_by:
-            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response
-
 # ************************ Configuration Serializer ******************************************    
 class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -266,11 +244,7 @@ class ConfigurationSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        
-        application = RelatedAppSerializer(instance.application).data
-        if 'id' in application:
-            response['application'] = RelatedAppSerializer(instance.application).data
-            
+                    
         return response
     
 
@@ -296,34 +270,34 @@ class TerritoriesSerializer(serializers.ModelSerializer):
         return response
 
 # ********************** Fields Serilaizer ***********************************************
-class RelatedFieldSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Field
-        fields = ("__all__") 
-        exclude = ("created_time","modified_time","created_by")
+# class RelatedFieldSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Field
+#         fields = ("__all__") 
+#         exclude = ("created_time","modified_time","created_by")
         
-class FieldSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Field
-        fields = ("__all__") 
-        read_only_fields = ("created_time", "modified_time")
-        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+# class FieldSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Field
+#         fields = ("__all__") 
+#         read_only_fields = ("created_time", "modified_time")
+#         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        app_data = RelatedAppSerializer(instance.application).data
-        if 'id' in app_data:
-            response['application'] = RelatedAppSerializer(instance.application).data
+#     def to_representation(self, instance):
+#         response = super().to_representation(instance)
+#         app_data = RelatedAppSerializer(instance.application).data
+#         if 'id' in app_data:
+#             response['application'] = RelatedAppSerializer(instance.application).data
             
-        form_data = RelatedFormSerializer(instance.form).data
-        if 'id' in form_data:
-            response['form'] = RelatedFormSerializer(instance.form).data
+#         form_data = RelatedFormSerializer(instance.form).data
+#         if 'id' in form_data:
+#             response['form'] = RelatedFormSerializer(instance.form).data
         
-        created_by = RelatedUserSerilaizer(instance.created_by).data
-        if 'id' in created_by:
-            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+#         created_by = RelatedUserSerilaizer(instance.created_by).data
+#         if 'id' in created_by:
+#             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
-        return response
+#         return response
 
 # ************************ Choice Serializer ******************************************
 class RelatedChoiceSerializer(serializers.ModelSerializer):

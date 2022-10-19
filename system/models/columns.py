@@ -1,13 +1,6 @@
 from django.db import models
 from .common import BaseContent
 from system.utils import ColumnTypeChoice, StatusChoice
-
-
-class App(BaseContent):
-    name = models.CharField(max_length=255, null=True)    
-    def __str__(self):
-        return str(self.id)
-    
     
 class Column(BaseContent):
     list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True)

@@ -5,12 +5,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..serializers.common_serializers import *
-from ..models.columns import App, Column
+from ..models.columns import Column
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.decorators import action
 import os
 import openpyxl
+from ..utils import *
 
 
 # Generate Token Manually
@@ -289,16 +290,6 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                             'status':status.HTTP_400_BAD_REQUEST
                             })
     
-class AppViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows App to be modified.
-    """
-    queryset = App.objects.all()
-    serializer_class = AppSerializer
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ("__all__")
-    ordering_fields = ("__all__")
-    
 class FormViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Form to be modified.
@@ -358,25 +349,25 @@ class FormViewSet(viewsets.ModelViewSet):
                             'status':status.HTTP_400_BAD_REQUEST
                             })
     
-class FieldViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows Field to be modified.
-    """
-    queryset = Field.objects.all()
-    serializer_class = FieldSerializer
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = {
-            'application__name': ['exact', 'contains'],
-            # 'form__title':['exact', 'contains'],
-            'application': ['exact'],
-            'form': ['exact'],
-            'field':['exact', 'contains'],
-            'name':  ['exact', 'contains'],
-            'type':  ['exact', 'contains'],
-            'panel':  ['exact'],
-            'position': ['exact']
-            }
-    ordering_fields = ("__all__")
+# class FieldViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows Field to be modified.
+#     """
+#     queryset = Field.objects.all()
+#     serializer_class = FieldSerializer
+#     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+#     filterset_fields = {
+#             'application__name': ['exact', 'contains'],
+#             # 'form__title':['exact', 'contains'],
+#             'application': ['exact'],
+#             'form': ['exact'],
+#             'field':['exact', 'contains'],
+#             'name':  ['exact', 'contains'],
+#             'type':  ['exact', 'contains'],
+#             'panel':  ['exact'],
+#             'position': ['exact']
+#             }
+#     ordering_fields = ("__all__")
 
 class ListViewSet(viewsets.ModelViewSet):
     """
@@ -477,10 +468,9 @@ class ColumnsViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
         try:
-            file = request.FILES.get('data')
+            file = request.FILES.get('file')
             user_id = str(request.user.id)
-            apps = []
-            lists = []
+            defective_data = []
             count = 0
             if file:
                 wb = openpyxl.load_workbook(file)
@@ -493,38 +483,31 @@ class ColumnsViewSet(viewsets.ModelViewSet):
                         pass
                     else:
                         try:
-                            apprec = App.objects.get(name=row_data[1].lower())
-                            print(apprec)
+                            listrec = List.objects.get(list=row_data[1].lower())
                         except Exception as e:
-                            apps.append(row_data[1])
+                            defective_data.append(row_data[1])
                             pass
                         else:
-                            if apprec:
-                                try:
-                                    listrec = List.objects.get(name=row_data[2].lower())
-                                except Exception as e:
-                                    lists.append(row_data[2])
+                            if listrec:
+                                columnrec = Column.objects.filter(column=row_data[0],list_id=listrec.id)
+                                if columnrec:
                                     pass
                                 else:
-                                    if listrec:
-                                        columnrec = Column.objects.filter(column=row_data[0],app_id=apprec.id,list_id=listrec.id)
-                                        if columnrec:
-                                            pass
-                                        else:
-                                            Column.objects.create(column=row_data[0],app_id=apprec.id,list_id=listrec.id,default=row_data[3],
-                                                                position=row_data[4],required=row_data[5],optional=row_data[6],created_by_id=user_id)
-                                            count += 1
-                            
-            return Response({'invalid_app':f'{apps} are invalid app names',
-                            'invalid_list':f'{lists} are invalid list names',
-                            'inserted_rec':f'{count} records are inserted',
-                            'status':status.HTTP_200_OK
-                            })
+                                    type=row_data[3]
+                                    if type=='required':
+                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],required=True,created_by_id=user_id)
+                                        count += 1
+                                    elif type=='optional':
+                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],optional=True,created_by_id=user_id)
+                                        count += 1
+                                    elif type=='default':
+                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],default=True,created_by_id=user_id)
+                                        count += 1
+                                    else:
+                                        pass
+            return Response(success(self,count,set(defective_data)))
         except Exception as e:
-            return Response({
-                            'error_msg':str(e),
-                            'status':status.HTTP_400_BAD_REQUEST
-                            })
+            return Response(error(self,str(e)))
          
 class MenuViewSet(viewsets.ModelViewSet):
     """
@@ -575,7 +558,7 @@ class MenuViewSet(viewsets.ModelViewSet):
                         else:
                             label = row_data[2]
                             language = get_current_user_language(request.user)
-                            check=Translation.objects.get(label=label, language_id=language.id)
+                            check=Translation.objects.filter(label=label, language_id=language.id).first()
                         if check:
                             label_rec = check
                             pass

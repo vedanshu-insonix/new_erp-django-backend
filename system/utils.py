@@ -2,6 +2,7 @@ from django.core.mail import EmailMessage
 from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 from django.core.mail import send_mail
+from rest_framework import status
 
 EntityChoice = (
     ("1", "Person"),
@@ -85,3 +86,26 @@ def send_email(subject, message, mail_to, mail_from=None, attachement=None):
     except Exception as err:
         raise ValueError(err)
 
+## Uniform api response
+def success(self, count,defective_data):
+    if defective_data:
+        response = {
+                    'inserted': str(count)+" row(s) inserted successfully",
+                    "status" : "success",
+                    "rejected_records" : defective_data,
+                    "code"   : status.HTTP_200_OK
+                    }
+    else:
+        response = {
+                        'inserted': str(count)+" row(s) inserted successfully",
+                        "status" : "success",
+                        "code"   : status.HTTP_200_OK
+                    }
+    return response
+def error(self, msg):
+    response = {
+                    "message": msg,
+                    "status" : "error",
+                    "code"   : status.HTTP_400_BAD_REQUEST
+                }
+    return response

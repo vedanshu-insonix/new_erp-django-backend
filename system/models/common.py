@@ -101,7 +101,6 @@ class StageAction(BaseContent):
         return self.action
    
 class Configuration(BaseContent):
-    application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
     category = models.CharField(max_length=255, null=True, blank=True)
     configuration = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
@@ -109,8 +108,8 @@ class Configuration(BaseContent):
     default_integer = models.IntegerField(null=True, blank=True)
     current_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
     default_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
-    current_char = models.CharField(max_length=255, null=True, blank=True)
-    default_char = models.CharField(max_length=255, null=True, blank=True)
+    current_alphanumeric = models.CharField(max_length=255, null=True, blank=True)
+    default_alphanumeric = models.CharField(max_length=255, null=True, blank=True)
     current_color = models.CharField(max_length=255, null=True, blank=True)
     default_color = models.CharField(max_length=255, null=True, blank=True)
     current_boolean = models.BooleanField(default=False)
@@ -145,19 +144,19 @@ class Choice(BaseContent):
     def __str__(self):
         return self.choice
     
-class Field(BaseContent):
-    application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
-    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
-    field = models.CharField(max_length=255, null=True, blank=True)
-    name = models.CharField(max_length=255, null=True, blank=True)
-    TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),('radio','Radio'))
-    type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
-    data_source = models.CharField(max_length=50, null=True, blank=True)
-    panel = models.IntegerField(null=True, blank=True)
-    position = models.IntegerField(null=True, blank=True)
+# class Field(BaseContent):
+#     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
+#     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+#     field = models.CharField(max_length=255, null=True, blank=True)
+#     name = models.CharField(max_length=255, null=True, blank=True)
+#     TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),('radio','Radio'))
+#     type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
+#     data_source = models.CharField(max_length=50, null=True, blank=True)
+#     panel = models.IntegerField(null=True, blank=True)
+#     position = models.IntegerField(null=True, blank=True)
     
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 class Menu(BaseContent):
     menu_category = models.CharField(max_length = 255, null=True, blank =True)
