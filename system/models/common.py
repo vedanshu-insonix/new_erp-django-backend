@@ -103,7 +103,7 @@ class StageAction(BaseContent):
 class Configuration(BaseContent):
     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
     category = models.CharField(max_length=255, null=True, blank=True)
-    name = models.CharField(max_length=255, null=True, blank=True)
+    configuration = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
     current_integer = models.IntegerField(null=True, blank=True)
     default_integer = models.IntegerField(null=True, blank=True)

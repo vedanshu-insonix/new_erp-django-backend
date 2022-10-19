@@ -327,17 +327,8 @@ class FieldSerializer(serializers.ModelSerializer):
 
 # ************************ Choice Serializer ******************************************
 class RelatedChoiceSerializer(serializers.ModelSerializer):
-    # translations = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
-    # def get_translations(self, obj):
-    #     queryset = TranslationChoice.objects.filter(choice = obj.id)
-    #     translation_ids = []
-    #     for ele in queryset:
-    #         translation_ids.append(ele.translation.id)
-    #     translation_queryset = Translation.objects.filter(id__in = translation_ids)
-    #     serializers = RelatedTranslationSerializer(translation_queryset, many=True)
-    #     return serializers.data
-    
+       
     def get_label(self, obj):
         data = obj.choice
         user = self.context['request'].user
@@ -357,9 +348,23 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         fields = ("id","choice","label")
         
 class ChoiceSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+    def get_label(self, obj):
+        data = obj.choice
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
+    
     class Meta:
         model = Choice
-        fields = ("__all__") 
+        fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         
@@ -369,14 +374,15 @@ class ChoiceSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+
+        request = self.context['request']
+        form = RelatedFormSerializer(instance.form, context={'request': request}).data
+        if 'id' in form:
+            response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
             
-        application = RelatedAppSerializer(instance.application).data
-        if 'id' in application:
-            response['application'] = RelatedAppSerializer(instance.application).data
-            
-        field = RelatedFieldSerializer(instance.field).data
-        if 'id' in field:
-            response['field'] = RelatedFieldSerializer(instance.field).data
+        # field = RelatedFieldSerializer(instance.field).data
+        # if 'id' in field:
+        #     response['field'] = RelatedFieldSerializer(instance.field).data
         return response
 
 # ************************ List Serializer ****************************************** 
@@ -410,9 +416,10 @@ class RelatedListSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        form = RelatedFormSerializer(instance.form).data
+        request = self.context['request']
+        form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
-            data = RelatedFormSerializer(instance.form).data
+            data = RelatedFormSerializer(instance.form, context={'request': request}).data
             response['form'] = data['form'] if data else None
             
         return response
@@ -472,6 +479,19 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by","list")
 
 class ColumnsSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+    def get_label(self, obj):
+        data = obj.column
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationColumn.objects.filter(column = obj.id, translation__language = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     class Meta:
         model = Column
         fields = ("__all__")
@@ -481,11 +501,12 @@ class ColumnsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        print(request)
         list_data = RelatedListSerializer(instance.list, context={'request': request}).data        
         if 'id' in list_data:
-            response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
-        return response 
+            data = RelatedListSerializer(instance.list, context={'request': request}).data
+            list = data.pop('columns')
+            response['list'] = data
+        return response
 
 # ************************ Menu Serializer ******************************************
 class RelatedMenuSerializer(serializers.ModelSerializer):

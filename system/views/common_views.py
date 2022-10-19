@@ -92,10 +92,10 @@ class StageViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
-    def list(self, request, *args, **kwargs):
+    def list(self, request, args, *kwargs):
         queryset = Stage.objects.filter().all()
         serializers = StageSerializer(queryset, many = True, context = {"request": request})
-        return super().list(request, *args, **kwargs)
+        return super().list(request, args, *kwargs)
     
 
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
@@ -128,8 +128,24 @@ class StageViewSet(viewsets.ModelViewSet):
                             if stage_rec:
                                 defective_data.append(row_data[0])
                             else:
-                                Stage.objects.create(application=row_data[0], form=form_rec, sequence=row_data[2],stage=row_data[3], created_by_id=user_id)
+                                stage_rec = Stage.objects.create(application=row_data[0], form=form_rec, sequence=row_data[2],stage=row_data[3], created_by_id=user_id)
                                 count = count+1
+                        if row_data[4]:
+                            text_split = row_data[4].split(',')
+                            for i in range (len(text_split)):
+                                check = StageAction.objects.filter(stage_id=stage_rec.id,action=text_split[i])
+                                if check:
+                                    pass
+                                else:
+                                    StageAction.objects.create(stage_id=stage_rec.id,action=text_split[i],required=True)
+                        if row_data[5]:
+                            text_split = row_data[5].split(',')
+                            for i in range (len(text_split)):
+                                check = StageAction.objects.filter(stage_id=stage_rec.id,action=text_split[i])
+                                if check:
+                                    pass
+                                else:
+                                    StageAction.objects.create(stage_id=stage_rec.id,action=text_split[i],optional=True)
             if defective_data:
                 return Response({'status':'success', 'code':status.HTTP_200_OK,
                              'inserted': str(count)+" row(s) inserted successfully",
