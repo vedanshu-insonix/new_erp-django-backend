@@ -9,6 +9,7 @@ from rest_framework import status
 from sales.models.customers import Customer
 from ..models.users import *
 from ..serializers.user_serializers import *
+from ..serializers.common_serializers import RelatedConfigurationSerializer
 from ..views.common_views import get_tokens_for_user
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
@@ -36,7 +37,9 @@ class UserViewSet(viewsets.ModelViewSet):
             if check_password(password, user.password):
                 token = get_tokens_for_user(user)
                 msg = 'Login Successful!'
-                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token}
+                queryset = Configuration.objects.filter(category = "appearance")
+                configuration = RelatedConfigurationSerializer(queryset, many = True)
+                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token, "configuration":configuration.data}
                 return Response(response)
             else:
                 msg = 'Username or Password is not valid'

@@ -13,7 +13,32 @@ class TranslationSerializer(serializers.ModelSerializer):
     button = serializers.SerializerMethodField()
     stage = serializers.SerializerMethodField()
     tag = serializers.SerializerMethodField()
-    tile = serializers.SerializerMethodField()
+    # tile = serializers.SerializerMethodField()
+    
+    def get_column(self, obj):
+        
+        return None
+    
+    def get_formdata(self, obj):
+        return None
+    
+    def get_menu(self, obj):
+        return None
+    
+    def get_choice(self, obj):
+        return None
+
+    def get_help(self, obj):
+        return None
+
+    def get_button(self, obj):
+        return None
+    
+    def get_stage(self, obj):
+        return None
+
+    def get_tag(self, obj):
+        return None
     
     class Meta:
         model = Translation

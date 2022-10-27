@@ -87,21 +87,14 @@ def send_email(subject, message, mail_to, mail_from=None, attachement=None):
         raise ValueError(err)
 
 ## Uniform api response
-def success(self, count,defective_data):
-    if defective_data:
-        response = {
+def success(self, count):
+    response = {
                     'inserted': str(count)+" row(s) inserted successfully",
                     "status" : "success",
-                    "rejected_records" : defective_data,
                     "code"   : status.HTTP_200_OK
-                    }
-    else:
-        response = {
-                        'inserted': str(count)+" row(s) inserted successfully",
-                        "status" : "success",
-                        "code"   : status.HTTP_200_OK
-                    }
+                }
     return response
+
 def error(self, msg):
     response = {
                     "message": msg,
@@ -109,3 +102,24 @@ def error(self, msg):
                     "code"   : status.HTTP_400_BAD_REQUEST
                 }
     return response
+
+def success_def(self,count,defective_data):
+    response = {
+                    'inserted': str(count)+" row(s) inserted successfully",
+                    "status" : "success",
+                    "rejected_records" : defective_data,
+                    "code"   : status.HTTP_200_OK
+                }
+    return response
+
+#*************** Encode API Name **************
+def encode_api_name(value):
+    lowercase = value.lower()
+    value = lowercase.replace(" ", "_")
+    return value
+
+#*************** Decode API name ***************
+def decode_api_name(value):
+    captalize = value.title()
+    value = captalize.replace("_", " ")
+    return value

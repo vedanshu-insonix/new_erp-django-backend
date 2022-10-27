@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from .user_serializers import RelatedUserSerilaizer
 from ..models.translations import TranslationFromData
 from ..models.users import get_current_user_language
+from system import utils
 
 
 # ************************ Button Serializer ******************************************
@@ -152,13 +153,14 @@ class RelatedStageActionSerializer(serializers.ModelSerializer):
         data = obj.action
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationStageAction.objects.filter(stage_action = obj.id, translation__language = language).first()
+        queryset = TranslationStageAction.objects.filter(stage_action = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = StageAction
@@ -180,13 +182,14 @@ class RelatedStageSerializer(serializers.ModelSerializer):
         data = obj.stage
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationStage.objects.filter(stage = obj.id, translation__language = language).first()
+        queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Stage
@@ -207,13 +210,14 @@ class StageSerializer(serializers.ModelSerializer):
         data = obj.stage
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationStage.objects.filter(stage = obj.id, translation__language = language).first()
+        queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
         
     class Meta:
@@ -231,6 +235,11 @@ class StageSerializer(serializers.ModelSerializer):
         return response
  
 # ************************ Configuration Serializer ******************************************    
+class RelatedConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Configuration
+        exclude = ("created_time","modified_time","created_by")
+        
 class ConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Configuration
@@ -307,13 +316,14 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         data = obj.choice
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language = language).first()
+        queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     
     
@@ -327,13 +337,14 @@ class ChoiceSerializer(serializers.ModelSerializer):
         data = obj.choice
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language = language).first()
+        queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     
     class Meta:
@@ -346,6 +357,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
+        choice = instance.choice
+        if choice:
+            response['choice'] = utils.decode_api_name(choice)
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
@@ -354,11 +368,13 @@ class ChoiceSerializer(serializers.ModelSerializer):
         if 'id' in form:
             response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
             
-        # field = RelatedFieldSerializer(instance.field).data
-        # if 'id' in field:
-        #     response['field'] = RelatedFieldSerializer(instance.field).data
         return response
 
+    def validate(self, data):
+        choice = data.get('choice')
+        data['choice'] = utils.encode_api_name(choice)
+        return data
+    
 # ************************ List Serializer ****************************************** 
 class RelatedListSerializer(serializers.ModelSerializer):
     columns = serializers.SerializerMethodField()
@@ -367,19 +383,20 @@ class RelatedListSerializer(serializers.ModelSerializer):
         data = obj.list
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationList.objects.filter(list = obj.id, translation__language = language).first()
+        queryset = TranslationList.objects.filter(list = obj.id, translation__language_name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     
     def get_columns(self, obj):
         request = self.context['request']
         list_id = obj.id
-        list_queryset = Column.objects.filter(list = list_id)
+        list_queryset = Column.objects.filter(list = list_id).order_by('position')
         serializer = RelatedColumnsSerializer(list_queryset, many = True, context={'request': request})         
         return serializer.data
     
@@ -400,27 +417,49 @@ class RelatedListSerializer(serializers.ModelSerializer):
     
 class ListSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
+    columns = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.list
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationList.objects.filter(list = obj.id, translation__language = language).first()
+        queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
+        
+    def get_columns(self, obj):
+        request = self.context['request']
+        list_id = obj.id
+        list_queryset = Column.objects.filter(list = list_id).order_by('position')
+        serializer = RelatedColumnsSerializer(list_queryset, many = True, context={'request': request})         
+        return serializer.data
+    
+    class Meta:
+        model = List
+        exclude = ("created_time","modified_time","created_by")
     class Meta:
         model = List
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-        
+    
+    
+    def validate(self, data):
+        list = data.get('list')
+        data['list'] = utils.encode_api_name(list)
+        return data
+    
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        list = instance.list
+        if list:
+            response['list'] = utils.decode_api_name(list)
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
@@ -440,13 +479,14 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         data = obj.column
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationColumn.objects.filter(column = obj.id, translation__language = language).first()
+        queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Column
@@ -458,13 +498,14 @@ class ColumnsSerializer(serializers.ModelSerializer):
         data = obj.column
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationColumn.objects.filter(column = obj.id, translation__language = language).first()
+        queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Column
@@ -475,6 +516,9 @@ class ColumnsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
+        column = instance.column  
+        if column:
+            response['column'] = utils.decode_api_name(column)
         list_data = RelatedListSerializer(instance.list, context={'request': request}).data        
         if 'id' in list_data:
             data = RelatedListSerializer(instance.list, context={'request': request}).data
@@ -482,6 +526,10 @@ class ColumnsSerializer(serializers.ModelSerializer):
             response['list'] = data
         return response
 
+    def validate(self, data):
+        column = data.get('column')
+        data['column'] = utils.encode_api_name(column)
+        return data
 # ************************ Menu Serializer ******************************************
 class RelatedMenuSerializer(serializers.ModelSerializer):
     class Meta:
@@ -516,13 +564,14 @@ class RelatedFormSerializer(serializers.ModelSerializer):
         data = obj.form
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationForm.objects.filter(form = obj.id, translation__language = language).first()
+        queryset = TranslationForm.objects.filter(form = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Form
@@ -534,13 +583,13 @@ class FormSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_form_list(self,obj):
         request = self.context['request']
-        form_list = FormList.objects.filter(form = obj.id)
+        form_list = FormList.objects.filter(form = obj.id).order_by('position')
         serializer = RelatedFormListSerializer(form_list, many = True, context={'request': request})  
         return serializer.data
     
     def get_form_data(self,obj):
         request = self.context['request']
-        form_data = FormData.objects.filter(form = obj.id)
+        form_data = FormData.objects.filter(form = obj.id).order_by('position')
         serializer = RelatedFormDataSerializer(form_data, many = True, context={'request': request})  
         return serializer.data
     
@@ -548,13 +597,14 @@ class FormSerializer(serializers.ModelSerializer):
         data = obj.form
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationForm.objects.filter(form = obj.id, translation__language = language).first()
+        queryset = TranslationForm.objects.filter(form = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
     
     class Meta:
@@ -565,15 +615,19 @@ class FormSerializer(serializers.ModelSerializer):
         
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        # menu_data = RelatedMenuSerializer(instance.menu).data
-        # if 'id' in menu_data:
-        #     response['menu'] = RelatedMenuSerializer(instance.menu).data
-            
+        form = instance.form  
+        if form:
+            response['form'] = utils.decode_api_name(form)          
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response 
 
+    def validate(self, data):
+        form = data.get('form')
+        data['form'] = utils.encode_api_name(form)
+        return data
+    
 class RelatedFormListSerializer(serializers.ModelSerializer):        
     class Meta:
         model = FormList
@@ -597,13 +651,14 @@ class FormListSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        form = RelatedFormSerializer(instance.form).data
+        request = self.context['request']
+        form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
-            response['form'] = RelatedFormSerializer(instance.form).data
+            response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
             
-        list = RelatedListSerializer(instance.list).data
+        list = RelatedListSerializer(instance.list, context={'request': request}).data
         if 'id' in list:
-            response['list'] = RelatedListSerializer(instance.list).data
+            response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
             
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
@@ -618,6 +673,7 @@ class RelatedTranslationSerializer(serializers.ModelSerializer):
 class RelatedFormDataSerializer(serializers.ModelSerializer):
     choices = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    default = serializers.SerializerMethodField()
     
     def get_choices(self, obj):
         form_id = obj.form.id
@@ -667,7 +723,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                            for value in serializers.data]
         
         elif 'column' in data or 'Column' in data:
-            get_column = Column.objects.filter().all()
+            get_column = Column.objects.filter().all().order_by('position')
             serializers =RelatedColumnsSerializer(get_column,many=True)
             return_data =[{"id":value['id'], "label": value['form']}
                            for value in serializers.data]
@@ -683,14 +739,24 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         data = obj.data
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationFromData.objects.filter(formdata = obj.id, translation__language = language).first()
+        queryset = TranslationFromData.objects.filter(formdata = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
+            data = utils.decode_api_name(data)
             return data
+    
+    def get_default(self,obj):
+        data = obj.data
+        data = utils.decode_api_name(data)
+        print(data)
+        queryset = Configuration.objects.filter(configuration = data).first()
+        serializers = RelatedConfigurationSerializer(queryset, many = False)
+        return serializers.data['default_value']
+    
     class Meta:
         model = FormData
         exclude = ("created_time", "modified_time",'form', 'created_by')
@@ -711,15 +777,25 @@ class FormDataSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        form = RelatedFormSerializer(instance.form).data
+        request = self.context['request']
+        
+        data = instance.data
+        if data:
+            response['data'] = utils.decode_api_name(data) 
+        form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
-            response['form'] = RelatedFormSerializer(instance.form).data
+            response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
                         
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
+    def validate(self, data):
+        data = data.get('data')
+        data['data'] = utils.encode_api_name(data)
+        return data
+    
 # ************************ Help Serializer ****************************************** 
 class RelatedHelpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -753,3 +829,4 @@ class RelatedFormSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormSection
         exclude = ("created_time","modified_time","created_by", "form")
+

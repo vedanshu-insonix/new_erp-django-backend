@@ -31,12 +31,12 @@ class UserRoles(BaseContent):
 def get_current_user_language(user):
     try:
         get_address = UserAddress.objects.filter(user = user.id, address__type = "user").first()
-        address_details = Address.objects.filter(id = get_address.address.id).first()
-        if address_details:
-            language = address_details.language
-        else:
-            language = "US English"
-            
+        language = "US English"
+        if get_address:
+            address_details = Address.objects.filter(id = get_address.address.id).first()
+            if address_details:
+                language = address_details.language.name
+                
         return language
     except Exception as e:
         raise ValueError(e)

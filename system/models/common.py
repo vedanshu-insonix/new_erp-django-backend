@@ -81,10 +81,9 @@ class State(BaseContent):
         return self.name
 
 class Stage(BaseContent):
-    application = models.CharField(max_length=255, null=True)
     form = models.ForeignKey('Form', on_delete = models.CASCADE, null=True, blank=True)
-    sequence = models.IntegerField(null=True, blank=True)
     stage = models.CharField(max_length=255, null=True, blank=True)
+    sequence = models.IntegerField(null=True, blank=True)
     warning_interval = models.DateTimeField(null=True, blank=True)
     urgent_interval = models.DateTimeField(null=True, blank=True)
     
@@ -104,23 +103,12 @@ class Configuration(BaseContent):
     category = models.CharField(max_length=255, null=True, blank=True)
     configuration = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
-    current_integer = models.IntegerField(null=True, blank=True)
-    default_integer = models.IntegerField(null=True, blank=True)
-    current_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
-    default_decimal = models.DecimalField(max_digits=30, decimal_places =2, null=True, blank=True)
-    current_alphanumeric = models.CharField(max_length=255, null=True, blank=True)
-    default_alphanumeric = models.CharField(max_length=255, null=True, blank=True)
-    current_color = models.CharField(max_length=255, null=True, blank=True)
-    default_color = models.CharField(max_length=255, null=True, blank=True)
-    current_boolean = models.BooleanField(default=False)
-    default_boolean = models.BooleanField(default=False)
-    current_interval = models.DateTimeField(null=True, blank=True)
-    default_interval = models.DateTimeField(null=True, blank=True)
+    current_value = models.CharField(max_length=255, null=True, blank=True)
+    default_value = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return self.application
+        return self.configuration
     
-
 class Territories(BaseContent):
     use = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -205,7 +193,6 @@ class List(BaseContent):
     list = models.CharField(max_length=255, null=True , blank=True)
     sequence = models.IntegerField(null=True , blank=True)
     description = models.TextField(null=True , blank=True)
-    data_source = models.CharField(max_length=255, null=True , blank=True)
     def __str__(self):
         return self.list
 
@@ -232,4 +219,19 @@ class Tile(BaseContent):
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     list_view = models.CharField(max_length = 255, null=True, blank=True)
     search_criteria = models.CharField(max_length = 255, null=True, blank=True)
+
+# class FieldConfiguration(BaseContent):
+#     form_data = models.ForeignKey('FormData', on_delete=models.CASCADE, null = True)
+#     type  = models.CharField(max_length=255, null=True, blank = True)
+#     default_value = models.CharField(max_length=255, null=True, blank = True)
+#     editable = models.BooleanField(null=True, blank = True)
+    
+# class ThemeConfiguration(BaseContent):
+#     configuration = models.CharField(max_length=255, null=True, blank = True)
+#     type  = models.CharField(max_length=255, null=True, blank = True)
+#     default_value = models.CharField(max_length=255, null=True, blank = True)
+#     editable = models.BooleanField(null=True, blank = True)
+
+# class Configuration(BaseContent):
+    
     

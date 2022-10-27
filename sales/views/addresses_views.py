@@ -80,8 +80,8 @@ class AddressViewSet(viewsets.ModelViewSet):
                     if CommunicationInstance:
                         CommunicationAddress.objects.create(address = AddressInstance, communication = CommunicationInstance)
             
-            returnData = AddressSerializer(AddressInstance)
-            return Response(returnData)
+            returnData = AddressSerializer(AddressInstance, context={'request': request})
+            return Response(returnData.data)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)

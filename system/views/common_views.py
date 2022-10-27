@@ -9,6 +9,7 @@ from ..models.columns import Column
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.decorators import action
+from system import utils
 import os
 import openpyxl
 from ..utils import *
@@ -108,56 +109,61 @@ class StageViewSet(viewsets.ModelViewSet):
             if file:
                 wb = openpyxl.load_workbook(file)
                 sheet = wb.active
+                data_dict = {}
                 defective_data=[]
                 count=0
                 for row in sheet.iter_rows():
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0].lower() == 'application':
+                    if row_data[0].lower() == 'form':
                         pass
                     else:
-                        form_rec = None
-                        try:
-                            form_rec = Form.objects.get(form=row_data[1])
-                        except Exception as e:
-                            print('ERROR: ', str(e))
-                            defective_data.append(row_data[0])
-                            pass
+                        form_rec = Form.objects.filter(form=row_data[0])
                         if form_rec:
-                            stage_rec = Stage.objects.filter(stage = row_data[3],application=row_data[0],form=form_rec.id)
+                            stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
                             if stage_rec:
-                                defective_data.append(row_data[0])
+                                pass
                             else:
-                                stage_rec = Stage.objects.create(application=row_data[0], form=form_rec, sequence=row_data[2],stage=row_data[3], created_by_id=user_id)
-                                count = count+1
-                        if row_data[4]:
-                            text_split = row_data[4].split(',')
-                            for i in range (len(text_split)):
-                                check = StageAction.objects.filter(stage_id=stage_rec.id,action=text_split[i])
-                                if check:
-                                    pass
-                                else:
-                                    StageAction.objects.create(stage_id=stage_rec.id,action=text_split[i],required=True)
-                        if row_data[5]:
-                            text_split = row_data[5].split(',')
-                            for i in range (len(text_split)):
-                                check = StageAction.objects.filter(stage_id=stage_rec.id,action=text_split[i])
-                                if check:
-                                    pass
-                                else:
-                                    StageAction.objects.create(stage_id=stage_rec.id,action=text_split[i],optional=True)
-            if defective_data:
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(count)+" row(s) inserted successfully",
-                             'failed':f'{defective_data}'})
-            else: 
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(count)+" row(s) inserted successfully"
-                             })
+                                data_dict['form']=form_rec.values()[0]['id']
+                                data_dict['sequence']=row_data[1]
+                                data_dict['stage']=row_data[2]
+                                data_dict['created_by_id']=user_id
+                                serializer=StageSerializer(data=data_dict,context={'request': request})
+                                if serializer.is_valid():
+                                    serializer.save()
+                                    count += 1
+                                    stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
+                            req_action = row_data[3]
+                            opt_action = row_data[4]
+                            if req_action:
+                                text_split = req_action.split(',')
+                                for i in range (len(text_split)):
+                                    check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                    if check:
+                                        pass
+                                    else:
+                                        StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],required=True)
+                            if opt_action:
+                                text_split = opt_action.split(',')
+                                for i in range (len(text_split)):
+                                    check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                    if check:
+                                        pass
+                                    else:
+                                        StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],optional=True)
+                if defective_data:
+                    defective_data = {
+                        "missing_form" : f"These {defective_data} are the invalid form names."
+                    }
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+            return Response(utils.error(self,str(e)))
 
 class StageActionViewSet(viewsets.ModelViewSet):
     """
@@ -184,8 +190,6 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            defective_data = []
             count = 0
             if file:
                 wb = openpyxl.load_workbook(file)
@@ -202,28 +206,24 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
                             pass
                         else:
                             if row_data[2] == 'color':
-                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_color=row_data[3], default_color=row_data[3])
+                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_value=row_data[3], default_value=row_data[3])
                                 count += 1
                             if row_data[2] == 'char':
-                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_char=row_data[3], default_char=row_data[3])
+                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_value=row_data[3], default_value=row_data[3])
                                 count += 1
                             if row_data[2] == 'integer':
-                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_integer=row_data[3], default_integer=row_data[3])
+                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_value=row_data[3], default_value=row_data[3])
                                 count += 1
                             if row_data[2] == 'boolean':
-                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_boolean=row_data[3], default_boolean=row_data[3])
+                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_value=row_data[3], default_value=row_data[3])
                                 count += 1
                             if row_data[2] == 'decimal':
-                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_decimal=row_data[3], default_decimal=row_data[3])
+                                new_conf = Configuration.objects.create(category=row_data[0],configuration=row_data[1],type=row_data[2], current_value=row_data[3], default_value=row_data[3])
                                 count += 1
-            return Response({'status':'success', 'code':status.HTTP_200_OK,
-                            'inserted':f'{count} records are inserted'
-                            })
+                return Response(utils.success(self,count))
         except Exception as e:
-            return Response({
-                            'error_msg':str(e),
-                            'status':status.HTTP_400_BAD_REQUEST
-                            })
+            return Response(utils.error(self,str(e)))
+            
         
 
 class TerritoriesViewSet(viewsets.ModelViewSet):
@@ -252,6 +252,7 @@ class ChoiceViewSet(viewsets.ModelViewSet):
             file = request.FILES.get('file')
             user_id = str(request.user.id)
             defective_data = []
+            data_dict = {}
             count = 0
             if file:
                 wb = openpyxl.load_workbook(file)
@@ -263,32 +264,39 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                     if row_data[0] == 'form':
                         pass
                     else:
-                        try:
-                            form_rec = Form.objects.get(form=row_data[0])
-                        except Exception as e:
-                            print('ERROR: ', str(e))
-                            defective_data.append(row_data[0])
-                            pass
-                        else:
-                            if form_rec:
-                                choice_rec = Choice.objects.filter(form_id=form_rec.id, selector=row_data[1], choice=row_data[2])
-                                if choice_rec:
-                                    pass
-                                else:
-                                    Choice.objects.create(form_id=form_rec.id, selector=row_data[1],
-                                                        choice=row_data[2], sequence=row_data[3],
-                                                        created_by_id=request.user.id,default=row_data[4])
+                        form_rec = Form.objects.filter(form=row_data[0])
+                        if form_rec:
+                            choice_rec = Choice.objects.filter(form_id=form_rec.values()[0]['id'], selector=row_data[1], choice=row_data[2])
+                            if choice_rec:
+                                pass
+                            else:
+                                data_dict['form']=form_rec.values()[0]['id']
+                                data_dict['selector']=row_data[1]
+                                data_dict['choice']=row_data[2]
+                                data_dict['sequence']=row_data[3]
+                                data_dict['created_by_id']=user_id
+                                if row_data[4] == 'yes':
+                                    data_dict['default']=True
+                                elif row_data[4] == 'no':
+                                    data_dict['default']=False
+                                serializer=ChoiceSerializer(data=data_dict,context={'request': request})
+                                if serializer.is_valid():
+                                    serializer.save()
                                     count += 1
-                            
-            return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'failed':f'form matching query for {defective_data} does not exist',
-                            'inserted':f'{count} records are inserted'
-                            })
+                        else:
+                            defective_data.append(row_data[0])    
+                if defective_data:
+                    defective_data = {
+                        "missing_form" : f"These {defective_data} are the invalid form names."
+                    } 
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            return Response({
-                            'error_msg':str(e),
-                            'status':status.HTTP_400_BAD_REQUEST
-                            })
+            return Response(utils.error(self,str(e)))
     
 class FormViewSet(viewsets.ModelViewSet):
     """
@@ -309,10 +317,10 @@ class FormViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
         try:
-            file = request.FILES.get('data')
+            file = request.FILES.get('file')
             user_id = str(request.user.id)
-            defective_data = []
             count = 0
+            data_dict = {}
             if file:
                 wb = openpyxl.load_workbook(file)
                 sheet = wb.active
@@ -320,54 +328,27 @@ class FormViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0].lower() == 'title':
+                    if row_data[0].lower() == 'form':
                         pass
                     else:
-                        try:
-                            menurec = Menu.objects.get(menu_category=row_data[1].lower())
-                        except Exception as e:
-                            print('ERROR: ', str(e))
-                            defective_data.append(row_data[1])
+                        formrec = Form.objects.filter(form=row_data[0].lower())
+                        if formrec:
                             pass
                         else:
-                            if menurec:
-                                try:
-                                    formrec = Form.objects.get(title=row_data[0].lower())
-                                    if formrec:
-                                        pass
-                                except Exception as e:
-                                    Form.objects.create(title=row_data[0].lower(),menu_id=menurec.id,created_by_id=user_id)
-                                    count += 1
-                            
-            return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'failed':f'menu matching query for {defective_data} does not exist',
-                            'inserted':f'{count} records are inserted'
-                            })
+                            # data_dict['form'] = row_data[0].lower()
+                            data_dict['form'] = row_data[0]
+                            data_dict['created_by_id'] = user_id
+                            serializer=FormSerializer(data=data_dict,context={'request': request})
+                            if serializer.is_valid():
+                                serializer.save()
+                                count += 1
+                return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            return Response({
-                            'error_msg':str(e),
-                            'status':status.HTTP_400_BAD_REQUEST
-                            })
-    
-# class FieldViewSet(viewsets.ModelViewSet):
-#     """
-#     API’s endpoint that allows Field to be modified.
-#     """
-#     queryset = Field.objects.all()
-#     serializer_class = FieldSerializer
-#     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-#     filterset_fields = {
-#             'application__name': ['exact', 'contains'],
-#             # 'form__title':['exact', 'contains'],
-#             'application': ['exact'],
-#             'form': ['exact'],
-#             'field':['exact', 'contains'],
-#             'name':  ['exact', 'contains'],
-#             'type':  ['exact', 'contains'],
-#             'panel':  ['exact'],
-#             'position': ['exact']
-#             }
-#     ordering_fields = ("__all__")
+            return Response(utils.error(self,str(e)))
+       
 
 class ListViewSet(viewsets.ModelViewSet):
     """
@@ -383,7 +364,7 @@ class ListViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path = "columns")
     def get_columns(self, request, pk=None): 
         queryset = Column.objects.filter(list = pk) 
-        serializer = ColumnsSerializer(queryset, many = True)         
+        serializer = ColumnsSerializer(queryset, many = True, context={'request': request})         
         return Response(serializer.data)
     
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
@@ -391,26 +372,13 @@ class ListViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             user_id = str(request.user.id)
-            filename, filextension = os.path.splitext(str(file))
-            if filextension == '.csv':
-                # df_new = pd.read_csv(file)
-                # data = pd.ExcelWriter(filename+'.xlsx')
-                # df_new.to_excel(data, index=False)
-                # data.save()
-                pass
-            else:
-                if filextension == '.xlsx':
-                    data = request.FILES.get('data')
-                
             if file:
                 wb = openpyxl.load_workbook(file)
                 sheet = wb.active
                 defective_data = []
-                row_count = 0
-                succeed_count = 0
+                count = 0
                 for row in sheet.iter_rows():
                     row_data = []
-                    row_count = row_count + 1
                     for cell in row:
                         row_data.append(cell.value)
                     if row_data[0].lower() == 'form' or row_data[0].lower() == 'list' or row_data[0].lower() == 'sequence':
@@ -419,38 +387,40 @@ class ListViewSet(viewsets.ModelViewSet):
                         form_data = row_data[0]
                         list_data = row_data[1]
                         sequence_data = row_data[2]
+                        
                         data_dict = {}
-                        try:
-                            form_instance = Form.objects.get(form = form_data)
-                            data_dict['form'] = form_instance.id
-                        except Exception as e:
+                        form_instance = Form.objects.filter(form = form_data)
+                        if form_instance:
+                            data_dict['form'] = form_instance.values()[0]['id']
+                            data_dict['created_by_id']=user_id
+                            if list_data:
+                                if " " in list_data:
+                                    list_data.replace(" ","_")
+                                list_data = list_data.lower()
+                                data_dict['list'] = list_data
+                            if sequence_data:
+                                data_dict['sequence'] = sequence_data
+                            list_serializers = ListSerializer(data=data_dict, context={'request': request})
+                            if list_serializers.is_valid():
+                                list_serializers.save()
+                                count = count + 1
+                        else:
                             defective_data.append([form_data])
-                            continue
-                          
-                        if list_data:
-                            data_dict['list'] = list_data
-                        
-                        if sequence_data:
-                            data_dict['sequence'] = sequence_data
-                        
-                        list_serializers = ListSerializer(data=data_dict, context={'request': request})
-                        if list_serializers.is_valid():
-                            list_serializers.save()
-                        
-                        succeed_count = succeed_count + 1
-            if defective_data:
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(succeed_count)+" row(s) inserted successfully",
-                             'failed':f'form matching query for {defective_data} does not exist'})
-            else: 
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(succeed_count)+" row(s) inserted successfully"
-                             })
+                if defective_data:
+                    defective_data = {
+                        "missing_form" : f"These {defective_data} are the invalid form names."
+                    } 
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
-       
-        
+            return Response(utils.error(self,str(e)))
+
+
+     
 class ColumnsViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Columns to be modified.
@@ -482,32 +452,38 @@ class ColumnsViewSet(viewsets.ModelViewSet):
                     if row_data[0].lower() == 'column':
                         pass
                     else:
-                        try:
-                            listrec = List.objects.get(list=row_data[1].lower())
-                        except Exception as e:
-                            defective_data.append(row_data[1])
-                            pass
-                        else:
-                            if listrec:
-                                columnrec = Column.objects.filter(column=row_data[0],list_id=listrec.id)
-                                if columnrec:
-                                    pass
+                        listrec = List.objects.filter(list=row_data[1].lower())
+                        if listrec:
+                            columnrec = Column.objects.filter(column=row_data[0],list_id=listrec.values()[0]['id'])
+                            if columnrec:
+                                pass
+                            else:
+                                type=row_data[3]
+                                if type=='required':
+                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],required=True,created_by_id=user_id)
+                                    count += 1
+                                elif type=='optional':
+                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],optional=True,created_by_id=user_id)
+                                    count += 1
+                                elif type=='default':
+                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],default=True,created_by_id=user_id)
+                                    count += 1
                                 else:
-                                    type=row_data[3]
-                                    if type=='required':
-                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],required=True,created_by_id=user_id)
-                                        count += 1
-                                    elif type=='optional':
-                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],optional=True,created_by_id=user_id)
-                                        count += 1
-                                    elif type=='default':
-                                        Column.objects.create(column=row_data[0],list_id=listrec.id,position=row_data[2],default=True,created_by_id=user_id)
-                                        count += 1
-                                    else:
-                                        pass
-            return Response(success(self,count,set(defective_data)))
+                                    pass
+                        else:
+                            defective_data.append(row_data[1])
+                if defective_data:
+                    defective_data = {
+                        "missing_lists" : f"These {defective_data} are the invalid list names."
+                    } 
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            return Response(error(self,str(e)))
+            return Response(utils.error(self,str(e)))
          
 class MenuViewSet(viewsets.ModelViewSet):
     """
@@ -549,44 +525,44 @@ class MenuViewSet(viewsets.ModelViewSet):
                         pass
                     else:
                         data_dict = {}
-                        try:
-                            listrec = List.objects.get(list = row_data[1])
-                            data_dict['list'] = listrec.id
-                        except Exception as e:
-                            defective_data.append([row_data[1]])
-                            continue
-                        else:
+                        listrec = List.objects.filter(list=row_data[1].lower())
+                        if listrec:
                             label = row_data[2]
                             language = get_current_user_language(request.user)
-                            check=Translation.objects.filter(label=label, language_id=language.id).first()
-                        if check:
-                            label_rec = check
-                            pass
-                        else:
-                            label_rec = Translation.objects.create(label=label, language_id=language.id)
-                        menu_rec = Menu.objects.filter(menu_category=row_data[0], list_id = listrec.id, sequence = row_data[3])
-                        if menu_rec:
-                            pass
-                        else:
-                            if listrec:
+                            check=Translation.objects.filter(label=label, language_id=language.id)
+                            if check:
+                                pass
+                            else:
+                                new_label = Translation.objects.create(label=label, language_id=language.id)
+                            label_rec = Translation.objects.filter(label=label, language_id=language.id)
+                            menu_rec = Menu.objects.filter(menu_category=row_data[0], list_id = listrec.values()[0]['id'], sequence = row_data[3])
+                            if menu_rec:
+                                pass
+                            else:
+                                data_dict['list'] = listrec.values()[0]['id']
                                 data_dict['sequence'] = row_data[3]
                                 data_dict['menu_category'] = row_data[0]
-                            menu_serializer = MenuSerializer(data=data_dict, context={'request': request})
-                            if menu_serializer.is_valid():
-                                menu_serializer.save()
-                                count = count + 1
-                                new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.id)
-            if defective_data:
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(count)+" row(s) inserted successfully",
-                             'failed':f'list matching query for {defective_data} does not exist'})
-            else: 
-                return Response({'status':'success', 'code':status.HTTP_200_OK,
-                             'inserted': str(count)+" row(s) inserted successfully"
-                             })
+                                print(data_dict)
+                                menu_serializer = MenuSerializer(data=data_dict, context={'request': request})
+                                if menu_serializer.is_valid():
+                                    menu_serializer.save()
+                                    count = count + 1
+                                    new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.values()[0]['id'])
+                        else:
+                            defective_data.append(row_data[1])
+                if defective_data:
+                    defective_data = {
+                        "missing_lists" : f"These {defective_data} are the invalid list names."
+                    } 
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
         except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+            print(str(e))
+            return Response(utils.error(self,str(e)))
     
      
 class HelpViewSet(viewsets.ModelViewSet):

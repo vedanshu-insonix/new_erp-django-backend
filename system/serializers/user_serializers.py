@@ -1,6 +1,7 @@
 from asyncore import write
 from xml.dom import ValidationErr
 from django.contrib.auth.models import User, Group
+from system.models.common import Configuration
 from sales.models.customers import Customer
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
@@ -31,9 +32,8 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ("__all__")
         
-
 class UserLoginSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length = 255)
+    username = serializers.CharField(max_length = 255)    
     class Meta:
         model = User
         fields = ["username","password"]
