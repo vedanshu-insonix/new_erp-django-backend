@@ -85,7 +85,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                             # Create Relation between Customer and Address
                             AddressInstance = Address.objects.get(id = address_serializers.data.get("id"))
                             CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-            returnData = CustomerSerializer(CustomerInstance)
+            returnData = CustomerSerializer(CustomerInstance, context={'request': request})
             return Response(returnData.data)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}

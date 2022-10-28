@@ -116,45 +116,51 @@ class StageViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0].lower() == 'form':
-                        pass
-                    else:
-                        form_rec = Form.objects.filter(form=row_data[0])
-                        if form_rec:
-                            stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
-                            if stage_rec:
-                                pass
+                    if row_data[0]:
+                        if row_data[0].lower() == 'form':
+                            pass
+                        else:
+                            form_name=encode_api_name(row_data[0])
+                            form_rec = Form.objects.filter(form=form_name)
+                            if form_rec:
+                                stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
+                                if stage_rec:
+                                    pass
+                                else:
+                                    data_dict['form']=form_rec.values()[0]['id']
+                                    data_dict['sequence']=row_data[1]
+                                    data_dict['stage']=row_data[2]
+                                    data_dict['created_by_id']=user_id
+                                    serializer=StageSerializer(data=data_dict,context={'request': request})
+                                    if serializer.is_valid():
+                                        serializer.save()
+                                        count += 1
+                                        stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
+                                req_action = row_data[3]
+                                opt_action = row_data[4]
+                                if req_action:
+                                    text_split = req_action.split(',')
+                                    for i in range (len(text_split)):
+                                        check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                        if check:
+                                            pass
+                                        else:
+                                            StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],required=True)
+                                if opt_action:
+                                    text_split = opt_action.split(',')
+                                    for i in range (len(text_split)):
+                                        check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                        if check:
+                                            pass
+                                        else:
+                                            StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],optional=True)
                             else:
-                                data_dict['form']=form_rec.values()[0]['id']
-                                data_dict['sequence']=row_data[1]
-                                data_dict['stage']=row_data[2]
-                                data_dict['created_by_id']=user_id
-                                serializer=StageSerializer(data=data_dict,context={'request': request})
-                                if serializer.is_valid():
-                                    serializer.save()
-                                    count += 1
-                                    stage_rec = Stage.objects.filter(stage = row_data[2],form_id=form_rec.values()[0]['id'])
-                            req_action = row_data[3]
-                            opt_action = row_data[4]
-                            if req_action:
-                                text_split = req_action.split(',')
-                                for i in range (len(text_split)):
-                                    check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
-                                    if check:
-                                        pass
-                                    else:
-                                        StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],required=True)
-                            if opt_action:
-                                text_split = opt_action.split(',')
-                                for i in range (len(text_split)):
-                                    check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
-                                    if check:
-                                        pass
-                                    else:
-                                        StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],optional=True)
+                                defective_data.append(row_data[0])
+                    else:
+                        pass   
                 if defective_data:
                     defective_data = {
-                        "missing_form" : f"These {defective_data} are the invalid form names."
+                        "missing_form" : f"These {set(defective_data)} are the invalid form names."
                     }
                     return Response(utils.success_def(self,count,defective_data))
                 else:
@@ -261,33 +267,38 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0] == 'form':
-                        pass
-                    else:
-                        form_rec = Form.objects.filter(form=row_data[0])
-                        if form_rec:
-                            choice_rec = Choice.objects.filter(form_id=form_rec.values()[0]['id'], selector=row_data[1], choice=row_data[2])
-                            if choice_rec:
-                                pass
-                            else:
-                                data_dict['form']=form_rec.values()[0]['id']
-                                data_dict['selector']=row_data[1]
-                                data_dict['choice']=row_data[2]
-                                data_dict['sequence']=row_data[3]
-                                data_dict['created_by_id']=user_id
-                                if row_data[4] == 'yes':
-                                    data_dict['default']=True
-                                elif row_data[4] == 'no':
-                                    data_dict['default']=False
-                                serializer=ChoiceSerializer(data=data_dict,context={'request': request})
-                                if serializer.is_valid():
-                                    serializer.save()
-                                    count += 1
+                    if row_data[0]:
+                        if row_data[0] == 'form':
+                            pass
                         else:
-                            defective_data.append(row_data[0])    
+                            form_name=encode_api_name(row_data[0])
+                            form_rec = Form.objects.filter(form=form_name)
+                            if form_rec:
+                                choice_name=encode_api_name(row_data[2])
+                                choice_rec = Choice.objects.filter(form_id=form_rec.values()[0]['id'], choice=choice_name)
+                                if choice_rec:
+                                    pass
+                                else:
+                                    data_dict['form']=form_rec.values()[0]['id']
+                                    data_dict['selector']=row_data[1]
+                                    data_dict['choice']=row_data[2]
+                                    data_dict['sequence']=row_data[3]
+                                    data_dict['created_by_id']=user_id
+                                    if row_data[4] == 'yes':
+                                        data_dict['default']=True
+                                    elif row_data[4] == 'no':
+                                        data_dict['default']=False
+                                    serializer=ChoiceSerializer(data=data_dict,context={'request': request})
+                                    if serializer.is_valid():
+                                        serializer.save()
+                                        count += 1
+                            else:
+                                defective_data.append(row_data[0])
+                    else:
+                        pass    
                 if defective_data:
                     defective_data = {
-                        "missing_form" : f"These {defective_data} are the invalid form names."
+                        "missing_form" : f"These {set(defective_data)} are the invalid form names."
                     } 
                     return Response(utils.success_def(self,count,defective_data))
                 else:
@@ -331,11 +342,11 @@ class FormViewSet(viewsets.ModelViewSet):
                     if row_data[0].lower() == 'form':
                         pass
                     else:
-                        formrec = Form.objects.filter(form=row_data[0].lower())
-                        if formrec:
+                        form_name=encode_api_name(row_data[0])
+                        form_rec = Form.objects.filter(form=form_name)
+                        if form_rec:
                             pass
                         else:
-                            # data_dict['form'] = row_data[0].lower()
                             data_dict['form'] = row_data[0]
                             data_dict['created_by_id'] = user_id
                             serializer=FormSerializer(data=data_dict,context={'request': request})
@@ -386,24 +397,36 @@ class ListViewSet(viewsets.ModelViewSet):
                     else:
                         form_data = row_data[0]
                         list_data = row_data[1]
-                        sequence_data = row_data[2]
-                        
+                        sequence_data = row_data[3]
+                        label = row_data[2]
+                        language = get_current_user_language(request.user)
+                        lang = Language.objects.filter(name=language)
+                        check=Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
+                        if check:
+                            pass
+                        else:
+                            new_label = Translation.objects.create(label=label,language_id=lang.values()[0]['id'])
+                        label_rec = Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
                         data_dict = {}
-                        form_instance = Form.objects.filter(form = form_data)
+                        form_name=encode_api_name(row_data[0])
+                        form_instance = Form.objects.filter(form=form_name)
                         if form_instance:
                             data_dict['form'] = form_instance.values()[0]['id']
                             data_dict['created_by_id']=user_id
                             if list_data:
-                                if " " in list_data:
-                                    list_data.replace(" ","_")
                                 list_data = list_data.lower()
                                 data_dict['list'] = list_data
                             if sequence_data:
                                 data_dict['sequence'] = sequence_data
-                            list_serializers = ListSerializer(data=data_dict, context={'request': request})
-                            if list_serializers.is_valid():
-                                list_serializers.save()
-                                count = count + 1
+                            list_rec = List.objects.filter(form_id = data_dict['form'], list=data_dict['list'])
+                            if list_rec:
+                                pass
+                            else:
+                                list_serializers = ListSerializer(data=data_dict, context={'request': request})
+                                if list_serializers.is_valid():
+                                    list_serializers.save()
+                                    count = count + 1
+                                    new_trans = TranslationList.objects.create(list_id=list_serializers.data.get('id'), translation_id=label_rec.values()[0]['id'])
                         else:
                             defective_data.append([form_data])
                 if defective_data:
@@ -449,29 +472,29 @@ class ColumnsViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0].lower() == 'column':
+                    if row_data[0].lower() == 'list':
                         pass
                     else:
-                        listrec = List.objects.filter(list=row_data[1].lower())
+                        listrec = List.objects.filter(list=row_data[0].lower())
                         if listrec:
-                            columnrec = Column.objects.filter(column=row_data[0],list_id=listrec.values()[0]['id'])
+                            columnrec = Column.objects.filter(column=row_data[1],list_id=listrec.values()[0]['id'])
                             if columnrec:
                                 pass
                             else:
-                                type=row_data[3]
+                                type=row_data[2]
                                 if type=='required':
-                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],required=True,created_by_id=user_id)
+                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],required=True,created_by_id=user_id)
                                     count += 1
                                 elif type=='optional':
-                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],optional=True,created_by_id=user_id)
+                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],optional=True,created_by_id=user_id)
                                     count += 1
                                 elif type=='default':
-                                    Column.objects.create(column=row_data[0],list_id=listrec.values()[0]['id'],position=row_data[2],default=True,created_by_id=user_id)
+                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],default=True,created_by_id=user_id)
                                     count += 1
                                 else:
                                     pass
                         else:
-                            defective_data.append(row_data[1])
+                            defective_data.append(row_data[0])
                 if defective_data:
                     defective_data = {
                         "missing_lists" : f"These {defective_data} are the invalid list names."
@@ -529,12 +552,13 @@ class MenuViewSet(viewsets.ModelViewSet):
                         if listrec:
                             label = row_data[2]
                             language = get_current_user_language(request.user)
-                            check=Translation.objects.filter(label=label, language_id=language.id)
+                            lang = Language.objects.filter(name=language)
+                            check=Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
                             if check:
                                 pass
                             else:
-                                new_label = Translation.objects.create(label=label, language_id=language.id)
-                            label_rec = Translation.objects.filter(label=label, language_id=language.id)
+                                new_label = Translation.objects.create(label=label, language_id=lang.values()[0]['id'])
+                            label_rec = Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
                             menu_rec = Menu.objects.filter(menu_category=row_data[0], list_id = listrec.values()[0]['id'], sequence = row_data[3])
                             if menu_rec:
                                 pass
@@ -542,7 +566,6 @@ class MenuViewSet(viewsets.ModelViewSet):
                                 data_dict['list'] = listrec.values()[0]['id']
                                 data_dict['sequence'] = row_data[3]
                                 data_dict['menu_category'] = row_data[0]
-                                print(data_dict)
                                 menu_serializer = MenuSerializer(data=data_dict, context={'request': request})
                                 if menu_serializer.is_valid():
                                     menu_serializer.save()

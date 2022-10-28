@@ -11,6 +11,7 @@ from .user_serializers import RelatedUserSerilaizer
 from ..models.translations import TranslationFromData
 from ..models.users import get_current_user_language
 from system import utils
+from django.db.models import Q
 
 
 # ************************ Button Serializer ******************************************
@@ -383,7 +384,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
         data = obj.list
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationList.objects.filter(list = obj.id, translation__language_name = language).first()
+        queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language = language).first()
@@ -471,6 +472,20 @@ class ListSerializer(serializers.ModelSerializer):
         
         return response
 
+class ListIconSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListIcon
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+        
+    # To return forign key values in detail
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        return response
 
 # ************************ Columns Serializer ****************************************** 
 class RelatedColumnsSerializer(serializers.ModelSerializer):
@@ -578,6 +593,7 @@ class RelatedFormSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
    
 class FormSerializer(serializers.ModelSerializer):
+    form = serializers.CharField(max_length= 255, required = True)
     form_list = serializers.SerializerMethodField()
     form_data = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
@@ -627,12 +643,33 @@ class FormSerializer(serializers.ModelSerializer):
         form = data.get('form')
         data['form'] = utils.encode_api_name(form)
         return data
-    
-class RelatedFormListSerializer(serializers.ModelSerializer):        
+
+   
+class RelatedFormListSerializer(serializers.ModelSerializer):  
+    icon = serializers.SerializerMethodField()
+    display_records = serializers.SerializerMethodField()
+    def get_icon(self,obj):
+        list = obj.list
+        if list:
+            queryset = ListIcon.objects.filter(list = obj.list.id).first()
+            serializers = ListIconSerializer(queryset, many=False)
+            return serializers.data['icon'] 
+        return None  
+        
+    def get_display_records(self,obj):
+        list = obj.list.list
+        if list:
+            queryset = Configuration.objects.filter(Q(category = "Lists") | Q(category = "lists"),
+                                                    configuration = list)
+            serializers = RelatedConfigurationSerializer(queryset , many = False)
+            return {"current_value": serializers.data['current_value'],
+                    "default_value": serializers.data['default_value']}
+        return None
+     
     class Meta:
         model = FormList
         exclude = ("created_time", "modified_time","form","created_by")
-        
+      
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -643,6 +680,7 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
         return response
 
 class FormListSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = FormList
         fields = ("__all__")

@@ -41,17 +41,16 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer 
         fields = ('__all__')
-        read_only_fields = ("created_time", "modified_time")
+        read_only_fields = ("created_time", "modified_time", "created_by")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        
+        request = self.context['request']
         sales_currency_data = RelatedCurrencySerializer(instance.sales_currency).data
         if 'id' in sales_currency_data:
             response['sales_currency'] = RelatedCurrencySerializer(instance.sales_currency).data
             
-        request = self.context['request']  
         stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in stage_data:
             response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
