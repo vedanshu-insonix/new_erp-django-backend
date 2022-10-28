@@ -157,7 +157,7 @@ class RelatedStageActionSerializer(serializers.ModelSerializer):
         queryset = TranslationStageAction.objects.filter(stage_action = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -186,7 +186,7 @@ class RelatedStageSerializer(serializers.ModelSerializer):
         queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -214,7 +214,7 @@ class StageSerializer(serializers.ModelSerializer):
         queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -320,7 +320,7 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -341,7 +341,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -387,7 +387,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
         queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -426,7 +426,7 @@ class ListSerializer(serializers.ModelSerializer):
         queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -497,7 +497,8 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -516,7 +517,7 @@ class ColumnsSerializer(serializers.ModelSerializer):
         queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -582,7 +583,7 @@ class RelatedFormSerializer(serializers.ModelSerializer):
         queryset = TranslationForm.objects.filter(form = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -616,7 +617,7 @@ class FormSerializer(serializers.ModelSerializer):
         queryset = TranslationForm.objects.filter(form = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -780,7 +781,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         queryset = TranslationFromData.objects.filter(formdata = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
