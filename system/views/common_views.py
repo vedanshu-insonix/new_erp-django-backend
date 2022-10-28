@@ -392,13 +392,15 @@ class ListViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if row_data[0].lower() == 'form' or row_data[0].lower() == 'list' or row_data[0].lower() == 'sequence':
+                    if row_data[0].lower() == 'category' or row_data[0].lower() == 'list' or row_data[0].lower() == 'form':
                         pass
                     else:
-                        form_data = row_data[0]
+                        category=row_data[0]
                         list_data = row_data[1]
-                        sequence_data = row_data[3]
-                        label = row_data[2]
+                        form_data = row_data[2]
+                        label = row_data[3]
+                        sequence_data = row_data[4]
+                        
                         language = get_current_user_language(request.user)
                         lang = Language.objects.filter(name=language)
                         check=Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
@@ -408,7 +410,7 @@ class ListViewSet(viewsets.ModelViewSet):
                             new_label = Translation.objects.create(label=label,language_id=lang.values()[0]['id'])
                         label_rec = Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
                         data_dict = {}
-                        form_name=encode_api_name(row_data[0])
+                        form_name=encode_api_name(row_data[2])
                         form_instance = Form.objects.filter(form=form_name)
                         if form_instance:
                             data_dict['form'] = form_instance.values()[0]['id']
@@ -418,15 +420,35 @@ class ListViewSet(viewsets.ModelViewSet):
                                 data_dict['list'] = list_data
                             if sequence_data:
                                 data_dict['sequence'] = sequence_data
-                            list_rec = List.objects.filter(form_id = data_dict['form'], list=data_dict['list'])
+                            list_name=encode_api_name(data_dict['list'])
+                            list_rec = List.objects.filter(form_id = data_dict['form'], list=list_name)
                             if list_rec:
+                                list_id=list_rec.values()[0]['id']
                                 pass
                             else:
                                 list_serializers = ListSerializer(data=data_dict, context={'request': request})
                                 if list_serializers.is_valid():
                                     list_serializers.save()
                                     count = count + 1
-                                    new_trans = TranslationList.objects.create(list_id=list_serializers.data.get('id'), translation_id=label_rec.values()[0]['id'])
+                                    
+                                list_id=list_serializers.data.get('id')
+                            trans = TranslationList.objects.filter(list_id=list_id, translation_id=label_rec.values()[0]['id'])
+                            if trans:
+                                pass
+                            else:
+                                TranslationList.objects.create(list_id=list_id, translation_id=label_rec.values()[0]['id'])
+
+                            if category:
+                                menu_rec = Menu.objects.filter(menu_category=category,list_id=list_id)
+                                if menu_rec:
+                                    pass
+                                else:
+                                    mdict = {}
+                                    mdict['menu_category']=category
+                                    mdict['list']=list_id
+                                    mrec=MenuSerializer(data=mdict, context={'request': request})
+                                    if mrec.is_valid():
+                                        mrec.save()
                         else:
                             defective_data.append([form_data])
                 if defective_data:
@@ -475,21 +497,23 @@ class ColumnsViewSet(viewsets.ModelViewSet):
                     if row_data[0].lower() == 'list':
                         pass
                     else:
-                        listrec = List.objects.filter(list=row_data[0].lower())
+                        list  = utils.encode_api_name(row_data[0])
+                        listrec = List.objects.filter(list=list)
                         if listrec:
-                            columnrec = Column.objects.filter(column=row_data[1],list_id=listrec.values()[0]['id'])
+                            column = utils.encode_api_name(row_data[1])
+                            columnrec = Column.objects.filter(column= column,list_id=listrec.values()[0]['id'])
                             if columnrec:
                                 pass
                             else:
                                 type=row_data[2]
                                 if type=='required':
-                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],required=True,created_by_id=user_id)
+                                    Column.objects.create(column=column,list_id=listrec.values()[0]['id'],position=row_data[3],required=True,created_by_id=user_id, field = row_data[4])
                                     count += 1
                                 elif type=='optional':
-                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],optional=True,created_by_id=user_id)
+                                    Column.objects.create(column=column,list_id=listrec.values()[0]['id'],position=row_data[3],optional=True,created_by_id=user_id, field = row_data[4])
                                     count += 1
                                 elif type=='default':
-                                    Column.objects.create(column=row_data[1],list_id=listrec.values()[0]['id'],position=row_data[3],default=True,created_by_id=user_id)
+                                    Column.objects.create(column=column,list_id=listrec.values()[0]['id'],position=row_data[3],default=True,created_by_id=user_id, field = row_data[4])
                                     count += 1
                                 else:
                                     pass
@@ -548,7 +572,8 @@ class MenuViewSet(viewsets.ModelViewSet):
                         pass
                     else:
                         data_dict = {}
-                        listrec = List.objects.filter(list=row_data[1].lower())
+                        list = utils.encode_api_name(row_data[1])
+                        listrec = List.objects.filter(list=list)
                         if listrec:
                             label = row_data[2]
                             language = get_current_user_language(request.user)

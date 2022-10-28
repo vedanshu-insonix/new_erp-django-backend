@@ -127,6 +127,7 @@ class RelatedStateSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
   
 class StateSerializer(serializers.ModelSerializer):
+    state = serializers.CharField(max_length = 255, required = True)
     class Meta:
         model = State
         fields = ("__all__")
@@ -168,6 +169,7 @@ class RelatedStageActionSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by", "stage")
 
 class StageActionSerializer(serializers.ModelSerializer): 
+    action = serializers.CharField(max_length = 255, required = True)
     class Meta:
         model = StageAction
         fields = ("__all__")
@@ -198,6 +200,7 @@ class RelatedStageSerializer(serializers.ModelSerializer):
 
        
 class StageSerializer(serializers.ModelSerializer):
+    stage = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     stage_actions = serializers.SerializerMethodField()
     
@@ -234,7 +237,7 @@ class StageSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
- 
+     
 # ************************ Configuration Serializer ******************************************    
 class RelatedConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -242,6 +245,7 @@ class RelatedConfigurationSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
         
 class ConfigurationSerializer(serializers.ModelSerializer):
+    configuration = serializers.CharField(max_length = 255, required = True)
     class Meta:
         model = Configuration
         fields = ("__all__")
@@ -333,6 +337,7 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         fields = ("id","choice","label")
         
 class ChoiceSerializer(serializers.ModelSerializer):
+    choice = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.choice
@@ -361,6 +366,11 @@ class ChoiceSerializer(serializers.ModelSerializer):
         choice = instance.choice
         if choice:
             response['choice'] = utils.decode_api_name(choice)
+            
+        selector = instance.selector
+        if choice:
+            response['selector'] = utils.decode_api_name(selector)    
+        
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
@@ -373,6 +383,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         choice = data.get('choice')
+        selector = data.get('selector')
+        data['selector'] = utils.encode_api_name(selector)
         data['choice'] = utils.encode_api_name(choice)
         return data
     
@@ -417,6 +429,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
         return response
     
 class ListSerializer(serializers.ModelSerializer):
+    list = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     columns = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -473,6 +486,7 @@ class ListSerializer(serializers.ModelSerializer):
         return response
 
 class ListIconSerializer(serializers.ModelSerializer):
+    icon = serializers.CharField(max_length = 255, required = True)
     class Meta:
         model = ListIcon
         fields = ("__all__")
@@ -509,6 +523,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by","list")
 
 class ColumnsSerializer(serializers.ModelSerializer):
+    column = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.column
@@ -681,7 +696,7 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
         return response
 
 class FormListSerializer(serializers.ModelSerializer):
-    
+    list = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormList
         fields = ("__all__")
@@ -802,12 +817,16 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        data = instance.data
+        if data:
+            response['data'] = utils.decode_api_name(data)
         section = RelatedFormSectionSerializer(instance.section).data
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section).data            
         return response 
 
 class FormDataSerializer(serializers.ModelSerializer):
+    data = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormData
         fields = ("__all__")
@@ -821,6 +840,7 @@ class FormDataSerializer(serializers.ModelSerializer):
         data = instance.data
         if data:
             response['data'] = utils.decode_api_name(data) 
+            
         form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
             response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
@@ -863,8 +883,8 @@ class HelpSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response 
 
- 
 class RelatedFormSectionSerializer(serializers.ModelSerializer):
+    section_title = serializers.CharField(required = True, max_length = 255)
     class Meta:
         model = FormSection
         exclude = ("created_time","modified_time","created_by", "form")
