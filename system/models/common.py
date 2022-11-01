@@ -155,9 +155,7 @@ class Menu(BaseContent):
         return self.menu_category
 
 class Form(BaseContent):
-    # menu = models.ForeignKey('Menu', on_delete=models.SET_NULL, null=True, blank=True)
     form = models.CharField(max_length=255, null=True, unique=True)
-    
     def __str__(self):
         return self.form
 
@@ -171,7 +169,10 @@ class FormList(BaseContent):
 class FormData(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     data = models.CharField(max_length=255, null=True)
-    TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),('radio','Radio'))
+    table = models.CharField(max_length=255, null=True)
+    field = models.CharField(max_length=255, null=True)
+    TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
+                    ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'), ('decimal', 'Decimal'))
     type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
     section = models.ForeignKey('FormSection', on_delete=models.SET_NULL, null=True, blank=True)
     column = models.IntegerField(null=True, blank=True)
@@ -189,8 +190,8 @@ class FormSection(BaseContent):
         return self.section_title
 
 class List(BaseContent):
-    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     list = models.CharField(max_length=255, null=True)
+    data_source = models.CharField(max_length=255, null=True)
     sequence = models.IntegerField(null=True , blank=True)
     description = models.TextField(null=True , blank=True)
     def __str__(self):
@@ -225,19 +226,3 @@ class Tile(BaseContent):
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     list_view = models.CharField(max_length = 255, null=True, blank=True)
     search_criteria = models.CharField(max_length = 255, null=True, blank=True)
-
-# class FieldConfiguration(BaseContent):
-#     form_data = models.ForeignKey('FormData', on_delete=models.CASCADE, null = True)
-#     type  = models.CharField(max_length=255, null=True, blank = True)
-#     default_value = models.CharField(max_length=255, null=True, blank = True)
-#     editable = models.BooleanField(null=True, blank = True)
-    
-# class ThemeConfiguration(BaseContent):
-#     configuration = models.CharField(max_length=255, null=True, blank = True)
-#     type  = models.CharField(max_length=255, null=True, blank = True)
-#     default_value = models.CharField(max_length=255, null=True, blank = True)
-#     editable = models.BooleanField(null=True, blank = True)
-
-# class Configuration(BaseContent):
-    
-    

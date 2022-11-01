@@ -162,7 +162,6 @@ class RelatedStageActionSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = StageAction
@@ -192,7 +191,6 @@ class RelatedStageSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Stage
@@ -221,7 +219,6 @@ class StageSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
         
     class Meta:
@@ -328,7 +325,6 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     
     
@@ -350,7 +346,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     
     class Meta:
@@ -363,10 +358,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
-        choice = instance.choice
-        if choice:
-            response['choice'] = utils.decode_api_name(choice)
-            
+                    
         selector = instance.selector
         if choice:
             response['selector'] = utils.decode_api_name(selector)    
@@ -382,10 +374,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        choice = data.get('choice')
         selector = data.get('selector')
         data['selector'] = utils.encode_api_name(selector)
-        data['choice'] = utils.encode_api_name(choice)
         return data
     
 # ************************ List Serializer ****************************************** 
@@ -403,7 +393,6 @@ class RelatedListSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     
     def get_columns(self, obj):
@@ -420,12 +409,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        request = self.context['request']
-        form = RelatedFormSerializer(instance.form, context={'request': request}).data
-        if 'id' in form:
-            data = RelatedFormSerializer(instance.form, context={'request': request}).data
-            response['form'] = data['form'] if data else None
-            
+        request = self.context['request']            
         return response
     
 class ListSerializer(serializers.ModelSerializer):
@@ -443,7 +427,6 @@ class ListSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
         
     def get_columns(self, obj):
@@ -461,28 +444,16 @@ class ListSerializer(serializers.ModelSerializer):
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-    
-    
-    def validate(self, data):
-        list = data.get('list')
-        data['list'] = utils.encode_api_name(list)
-        return data
-    
+        
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         list = instance.list
-        if list:
-            response['list'] = utils.decode_api_name(list)
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         
-        request = self.context['request']
-        form = RelatedFormSerializer(instance.form, context={'request': request}).data
-        if 'id' in form:
-            response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
-        
+        request = self.context['request']        
         return response
 
 class ListIconSerializer(serializers.ModelSerializer):
@@ -516,7 +487,6 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Column
@@ -536,7 +506,6 @@ class ColumnsSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Column
@@ -547,9 +516,6 @@ class ColumnsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        column = instance.column  
-        if column:
-            response['column'] = utils.decode_api_name(column)
         list_data = RelatedListSerializer(instance.list, context={'request': request}).data        
         if 'id' in list_data:
             data = RelatedListSerializer(instance.list, context={'request': request}).data
@@ -557,10 +523,7 @@ class ColumnsSerializer(serializers.ModelSerializer):
             response['list'] = data
         return response
 
-    def validate(self, data):
-        column = data.get('column')
-        data['column'] = utils.encode_api_name(column)
-        return data
+
 # ************************ Menu Serializer ******************************************
 class RelatedMenuSerializer(serializers.ModelSerializer):
     class Meta:
@@ -568,6 +531,7 @@ class RelatedMenuSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
          
 class MenuSerializer(serializers.ModelSerializer):
+    menu_category = serializers.CharField(max_length = 255, required = True)
     class Meta:
         model = Menu
         fields = ("__all__")
@@ -602,7 +566,6 @@ class RelatedFormSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     class Meta:
         model = Form
@@ -636,7 +599,6 @@ class FormSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     
     class Meta:
@@ -646,21 +608,13 @@ class FormSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         
     def to_representation(self, instance):
-        response = super().to_representation(instance)
-        form = instance.form  
-        if form:
-            response['form'] = utils.decode_api_name(form)          
+        response = super().to_representation(instance)        
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response 
-
-    def validate(self, data):
-        form = data.get('form')
-        data['form'] = utils.encode_api_name(form)
-        return data
-
-   
+    
+    
 class RelatedFormListSerializer(serializers.ModelSerializer):  
     icon = serializers.SerializerMethodField()
     display_records = serializers.SerializerMethodField()
@@ -692,7 +646,6 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
         list = RelatedCurrencySerializer(instance.list).data
         if 'id' in list:
             response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
-        
         return response
 
 class FormListSerializer(serializers.ModelSerializer):
@@ -731,59 +684,61 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     
     def get_choices(self, obj):
         form_id = obj.form.id
-        data = obj.data
+        field = obj.field
+        if field:
+            field = field.replace("_", " ")
         request = self.context['request']
         
-        if data == 'State' or data == 'state':
+        if field == 'State' or field == 'state':
             get_state = State.objects.filter().all()
             serializers = RelatedStateSerializer(get_state,many=True)
             return_data =[{"id":value['id'], "label": value['name']}
                            for value in serializers.data]
         
-        elif data == 'Country' or data == 'country':
+        elif field == 'Country' or field == 'country':
             get_country = Country.objects.filter().all()
             serializers = RelatedCountrySerializer(get_country,many=True)
             return_data =[{"id":value['id'], "label": value['name']}
                            for value in serializers.data]
         
-        elif data == 'Language' or data == 'language':
+        elif field == 'Language' or field == 'language':
             get_language = Language.objects.filter().all()
             serializers = RelatedLanguageSerializer(get_language,many=True)
             return_data =[{"id":value['id'], "label": value['name']}
                            for value in serializers.data]
             
-        elif data == 'Stage' or data == 'stage':
+        elif field == 'Stage' or field == 'stage':
             get_stage = Stage.objects.filter().all()
             serializers = RelatedStageSerializer(get_stage,many=True)
             return_data =[{"id":value['id'], "label": value['stage']}
                            for value in serializers.data]
             
-        elif 'currency'in data or 'Currency' in data:
+        elif 'currency'in field or 'Currency' in field:
             get_currency = Currency.objects.filter().all()
             serializers = RelatedCurrencySerializer(get_currency,many=True)
             return_data =[{"id":value['id'], "label": value['code']}
                            for value in serializers.data]
         
-        elif 'list' in data or 'List' in data:
+        elif 'list' in field or 'List' in field:
             get_list = List.objects.filter().all()
             serializers = RelatedListSerializer(get_list,many=True)
             return_data =[{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
         
-        elif 'form' in data or 'Form' in data:
+        elif 'form' in field or 'Form' in field:
             get_form = Form.objects.filter().all()
             serializers = RelatedFormSerializer(get_form,many=True)
             return_data =[{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
         
-        elif 'column' in data or 'Column' in data:
+        elif 'column' in field or 'Column' in field:
             get_column = Column.objects.filter().all().order_by('position')
             serializers =RelatedColumnsSerializer(get_column,many=True)
             return_data =[{"id":value['id'], "label": value['form']}
                            for value in serializers.data]
         
         else:
-            choice_queryset = Choice.objects.filter(form = form_id, selector = data)
+            choice_queryset = Choice.objects.filter(form = form_id, selector = field)
             serializers = RelatedChoiceSerializer(choice_queryset, many=True,context={'request': request})
             return_data = [{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
@@ -800,13 +755,10 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
-            data = utils.decode_api_name(data)
             return data
     
     def get_default(self,obj):
         data = obj.data
-        data = utils.decode_api_name(data)
-        print(data)
         queryset = Configuration.objects.filter(configuration = data).first()
         serializers = RelatedConfigurationSerializer(queryset, many = False)
         return serializers.data['default_value']
@@ -818,8 +770,6 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         data = instance.data
-        if data:
-            response['data'] = utils.decode_api_name(data)
         section = RelatedFormSectionSerializer(instance.section).data
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section).data            
@@ -827,6 +777,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
 
 class FormDataSerializer(serializers.ModelSerializer):
     data = serializers.CharField(max_length= 255, required = True)
+    field = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormData
         fields = ("__all__")
@@ -836,11 +787,7 @@ class FormDataSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        
-        data = instance.data
-        if data:
-            response['data'] = utils.decode_api_name(data) 
-            
+                    
         form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
             response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
@@ -849,11 +796,6 @@ class FormDataSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
-
-    def validate(self, data):
-        data = data.get('data')
-        data['data'] = utils.encode_api_name(data)
-        return data
     
 # ************************ Help Serializer ****************************************** 
 class RelatedHelpSerializer(serializers.ModelSerializer):
@@ -888,4 +830,3 @@ class RelatedFormSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormSection
         exclude = ("created_time","modified_time","created_by", "form")
-

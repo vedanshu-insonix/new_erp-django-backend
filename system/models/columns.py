@@ -5,6 +5,7 @@ from system.utils import ColumnTypeChoice, StatusChoice
 class Column(BaseContent):
     list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True)
     column = models.CharField(max_length=255, null=True, blank=True)
+    table = models.CharField(max_length=255, null=True, blank=True)
     field = models.CharField(max_length=255, null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
     default = models.BooleanField(default=False)
