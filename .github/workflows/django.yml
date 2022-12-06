@@ -33,11 +33,12 @@ jobs:
     # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
       uses: appleboy/ssh-action@v0.1.5
       with:
-        key: ${{secrets.UBUNTU_SSH}}
+        key: ${{secrets.UBUNTU_SSH_KEY}}
         host: ${{secrets.UBUNTU_IP}}
         username: ${{secrets.UBUNTU_USERNAME}}
-          app
-          ./k8s
-    - name: Check pods # checking pod list to see if they are running.
-      run: kubectl get pods
+        script: |
+            mkdir test 
+            cd test 
+            git clone git@github.com:Mulubwa17/ci-cd-to-digitalocean-with-github-actions.git 
+            echo 'Deployment successful to digital ocean' 
     
