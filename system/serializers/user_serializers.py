@@ -1,8 +1,25 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from asyncore import write
 from xml.dom import ValidationErr
 from django.contrib.auth.models import User, Group
 from system.models.common import Configuration
-from sales.models.customers import Customer
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError

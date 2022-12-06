@@ -382,6 +382,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 class RelatedListSerializer(serializers.ModelSerializer):
     columns = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.list
         user = self.context['request'].user
@@ -402,6 +403,14 @@ class RelatedListSerializer(serializers.ModelSerializer):
         serializer = RelatedColumnsSerializer(list_queryset, many = True, context={'request': request})         
         return serializer.data
     
+    def get_icon(self,obj):
+        list = obj.id
+        if list:
+            queryset = ListIcon.objects.filter(list = list).first()
+            serializers = ListIconSerializer(queryset, many=False)
+            return serializers.data['icon'] 
+        return None  
+        
     class Meta:
         model = List
         exclude = ("created_time","modified_time","created_by")
@@ -494,6 +503,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
 
 class ColumnsSerializer(serializers.ModelSerializer):
     column = serializers.CharField(max_length = 255, required = True)
+    field = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.column
@@ -532,6 +542,18 @@ class RelatedMenuSerializer(serializers.ModelSerializer):
          
 class MenuSerializer(serializers.ModelSerializer):
     menu_category = serializers.CharField(max_length = 255, required = True)
+    form = serializers.SerializerMethodField()
+    def get_form(self, obj):
+        request = self.context['request']
+        list_details = obj.list
+        if list_details != None:
+            list_id = list_details.id
+            formlist = FormList.objects.filter(Q(relation = "Parent") | Q(relation = "parent"), list__id = list_id).first()
+            serializers = FormListSerializer(formlist, many= False, context={'request': request})
+            if serializers.data:
+                 return serializers.data['form']
+            return serializers.data
+        return None
     class Meta:
         model = Menu
         fields = ("__all__")
@@ -683,10 +705,9 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     default = serializers.SerializerMethodField()
     
     def get_choices(self, obj):
-        form_id = obj.form.id
         field = obj.field
-        if field:
-            field = field.replace("_", " ")
+        # if field:
+        #     field = field.replace("_", " ")
         request = self.context['request']
         
         if field == 'State' or field == 'state':
@@ -707,9 +728,9 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
             return_data =[{"id":value['id'], "label": value['name']}
                            for value in serializers.data]
             
-        elif field == 'Stage' or field == 'stage':
+        elif 'Stage' in field or 'stage' in field :
             get_stage = Stage.objects.filter().all()
-            serializers = RelatedStageSerializer(get_stage,many=True)
+            serializers = RelatedStageSerializer(get_stage,many=True, context={'request': request})
             return_data =[{"id":value['id'], "label": value['stage']}
                            for value in serializers.data]
             
@@ -721,24 +742,24 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         
         elif 'list' in field or 'List' in field:
             get_list = List.objects.filter().all()
-            serializers = RelatedListSerializer(get_list,many=True)
+            serializers = RelatedListSerializer(get_list,many=True, context={'request': request})
             return_data =[{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
         
         elif 'form' in field or 'Form' in field:
             get_form = Form.objects.filter().all()
-            serializers = RelatedFormSerializer(get_form,many=True)
+            serializers = RelatedFormSerializer(get_form,many=True, context={'request': request})
             return_data =[{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
         
         elif 'column' in field or 'Column' in field:
             get_column = Column.objects.filter().all().order_by('position')
-            serializers =RelatedColumnsSerializer(get_column,many=True)
+            serializers =RelatedColumnsSerializer(get_column,many=True, context={'request': request})
             return_data =[{"id":value['id'], "label": value['form']}
                            for value in serializers.data]
         
         else:
-            choice_queryset = Choice.objects.filter(form = form_id, selector = field)
+            choice_queryset = Choice.objects.filter(selector = field)
             serializers = RelatedChoiceSerializer(choice_queryset, many=True,context={'request': request})
             return_data = [{"id":value['id'], "label": value['label']}
                            for value in serializers.data]

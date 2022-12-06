@@ -18,13 +18,13 @@ class BaseContent(models.Model):
         abstract = True
 
 class Button(BaseContent):
-    name = models.CharField(max_length=255, null=True, blank=True, unique=True)
-    function = models.CharField(max_length=255, null=True, blank=True)
+    form = models.ForeignKey('Form', on_delete= models.CASCADE, null = True, blank=True)
+    button = models.CharField(max_length=255, null=True, blank=True)
+    button_type = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.name
     
-   
 class Currency(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
     code = models.CharField(max_length=3, null=True, unique=True)
@@ -40,7 +40,7 @@ class Currency(BaseContent):
         verbose_name_plural = "Countries"
      
 class Tag(BaseContent):
-    name = models.CharField(max_length=255, null=True, unique=True)
+    tag = models.CharField(max_length=255, null=True, unique=True)
     color = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
     used = models.DateTimeField(null=True, blank=True)
@@ -132,20 +132,6 @@ class Choice(BaseContent):
     def __str__(self):
         return self.choice
     
-# class Field(BaseContent):
-#     application = models.ForeignKey('App', on_delete=models.CASCADE, null=True, blank=True)
-#     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
-#     field = models.CharField(max_length=255, null=True, blank=True)
-#     name = models.CharField(max_length=255, null=True, blank=True)
-#     TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),('radio','Radio'))
-#     type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
-#     data_source = models.CharField(max_length=50, null=True, blank=True)
-#     panel = models.IntegerField(null=True, blank=True)
-#     position = models.IntegerField(null=True, blank=True)
-    
-#     def __str__(self):
-#         return self.name
-
 class Menu(BaseContent):
     menu_category = models.CharField(max_length = 255, null=True, blank =True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
@@ -170,10 +156,13 @@ class FormData(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     data = models.CharField(max_length=255, null=True)
     table = models.CharField(max_length=255, null=True)
+    parent_field = models.CharField(max_length=255, null=True, blank=True)
     field = models.CharField(max_length=255, null=True)
     TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
-                    ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'), ('decimal', 'Decimal'))
+                    ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'),
+                    ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'))
     type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
+    link = models.CharField(max_length=255, null = True, blank = True)
     section = models.ForeignKey('FormSection', on_delete=models.SET_NULL, null=True, blank=True)
     column = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
@@ -205,15 +194,11 @@ class ListIcon(BaseContent):
 
 class Help(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
-    title = models.CharField(max_length=255, null=True, blank=True)
-    content = models.TextField(null=True, blank=True)
-    stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=255, null=True, blank=True)
-    published = models.BooleanField(default = True)
+    language = models.ForeignKey('Language', on_delete =models.SET_NULL, null =True, blank = True)
+    help = models.TextField(null=True, blank=True)
     
     def __str__(self):
-        return self.title
+        return self.form
     
 class Category(BaseContent):
     type = models.CharField(max_length=255, null=True, blank=True)

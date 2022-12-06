@@ -1,12 +1,12 @@
 from django.db import models
-from sales.models.address import Address
+from sales.models.address import Addresses
 from ..models.common import BaseContent, Language
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
   
 class UserAddress(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserAddress')
-    address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True)
+    address = models.OneToOneField(Addresses, on_delete=models.SET_NULL, null=True, blank=True)
     def __str__(self):
         return str(self.id)
 
@@ -30,10 +30,10 @@ class UserRoles(BaseContent):
 """ get user langauge"""
 def get_current_user_language(user):
     try:
-        get_address = UserAddress.objects.filter(user = user.id, address__type = "user").first()
+        get_address = UserAddress.objects.filter(user = user.id, address__address_type = "user").first()
         language = "US English"
         if get_address:
-            address_details = Address.objects.filter(id = get_address.address.id).first()
+            address_details = Addresses.objects.filter(id = get_address.address.id).first()
             if address_details:
                 language = address_details.language.name
                 

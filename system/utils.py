@@ -68,7 +68,11 @@ TimeFormatChoice =(
     
 )
 
-
+Column_Visibility_Choice =(
+    ("1","Required"),
+    ("2","Optional"),
+    ("3","Default")
+)
 """ Send email function """
 def send_email(subject, message, mail_to, mail_from=None, attachement=None):
     try:

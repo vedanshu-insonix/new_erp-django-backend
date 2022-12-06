@@ -6,7 +6,7 @@ from system.models.common import *
 
 class PurchaseOrder(BaseContent):
     purchase_order_id = models.IntegerField(null=True,blank=True)
-    vendor = models.ForeignKey('sales.Vendor', on_delete=models.CASCADE, null=True)
+    vendor = models.ForeignKey('sales.Vendors', on_delete=models.CASCADE, null=True)
     #contact_address_id = 
     contact_first = models.CharField(max_length = 255, null=True, blank=True)
     contact_last = models.CharField(max_length = 255, null=True, blank=True)
@@ -80,7 +80,7 @@ class Disbursment(BaseContent):
     currency_id = models.ForeignKey('system.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     disbursment_for = models.CharField(max_length=100, null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    #sales_credit = models.ForeignKey('sales.Credit', on_delete=models.SET_NULL, null=True, blank=True)
+    #sales_credit = models.ForeignKey('sales.SalesCredits', on_delete=models.SET_NULL, null=True, blank=True)
     #vendor_bill = models.ForeignKey('sales.VendorBill', on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)

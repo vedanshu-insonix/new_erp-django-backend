@@ -46,9 +46,9 @@ class CommunicationSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
-        channel = RelatedChannelSerializer(instance.channel).data
-        if 'id' in channel:
-            response['channel'] = RelatedChannelSerializer(instance.channel).data
+        #channel = RelatedChannelSerializer(instance.channel).data
+        #if 'id' in channel:
+        #    response['channel'] = RelatedChannelSerializer(instance.channel).data
         return response
 
    
@@ -59,25 +59,17 @@ class CommunicationAddressSerializer(serializers.ModelSerializer):
         depth = 1
 
 @receiver(post_save, sender=Communication)
-def alert_msg(created,instance,**kwargs):
+def update_comm(created,instance,**kwargs):
     if created==True:
         pass
     else:
         if instance.id is not None:
-            comm_rec = CommunicationAddress.objects.get(communication_id=instance.id)
-            #serializer = CommunicationSerializer(data=instance, partial=True)
-            #if serializer.is_valid():
-            #    serializer.save()
-            if instance.primary:
-                if instance.primary == True:
+            addr_rec = CommunicationAddress.objects.filter(communication_id=instance.id)
+            if addr_rec:
+                comm_rec=Communication.objects.filter(id=instance.id)
+                if comm_rec.values()[0]['primary'] == True:
                     if instance.communication_channel=='telephone':
-                        address_rec = Address.objects.filter(id=comm_rec.address_id).update(telephone = instance.external_routing,
-                                                                                            telephone_type = instance.communication_type,
-                                                                                            type = 'communication')
+                        address_rec = Addresses.objects.filter(id=addr_rec.values()[0]['address_id']).update(telephone = instance.external_routing,
+                                                                                            telephone_type = instance.communication_type)
                     elif instance.communication_channel=='email':
-                        address_rec = Address.objects.filter(id=comm_rec.address_id).update(email = instance.external_routing,
-                                                                                            type = 'communication')
-                    #elif instance.communication_channel=='3' or instance.communication_channel=='4':
-                    #    address_rec = Address.objects.filter(id=comm_rec.address_id).update(other_communication = instance.external_routing,
-                    #                                                                        other_communication_type = instance.communication_channel,
-                    #                                                                        type = 'communication')
+                        address_rec = Addresses.objects.filter(id=addr_rec.values()[0]['address_id']).update(email = instance.external_routing)

@@ -1,10 +1,12 @@
 from rest_framework import serializers
-from ..models.address import Address, AddressTag
+from ..models.address import Addresses, AddressTag
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.serializers.company_serializers import CompanyAddressSerializer
 from system.serializers.communication_serializers import CommunicationAddressSerializer
 from system.models.company import CompanyAddress
+from system.models.communication import Communication
+from system.serializers.communication_serializers import RelatedCommunicationSerializer
 from system.models.communication import CommunicationAddress
 from .customers_serializers import CustomerAddressSerializer
 from .vendors_serializers import VendorAddressSerializer
@@ -45,9 +47,12 @@ class AddressSerializer(serializers.ModelSerializer):
 
     def get_communication(self, obj):
         queryset = CommunicationAddress.objects.filter(address = obj.id)
-        serializer = CommunicationAddressSerializer(queryset, many=True)
-        return_comm = serializer.data[0]['communication'] if serializer.data else None
-        return return_comm
+        ids = []
+        for ele in queryset:
+            ids.append(ele.communication.id)
+        comm_queryset = Communication.objects.filter(id__in = ids)
+        serializer = RelatedCommunicationSerializer(comm_queryset, many=True)
+        return serializer.data
 
     def get_tags(self, obj):
         queryset = AddressTag.objects.filter(address = obj.id)
@@ -59,7 +64,7 @@ class AddressSerializer(serializers.ModelSerializer):
         return serializer.data
 
     class Meta:
-        model = Address
+        model = Addresses
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}

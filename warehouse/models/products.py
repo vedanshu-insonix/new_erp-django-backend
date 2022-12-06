@@ -3,19 +3,21 @@ from system.models.common import BaseContent
 from system.models.common import *
 
 
-class Template(BaseContent):
-    pass
-
 class Product(BaseContent):
-    template = models.ForeignKey('Template', on_delete = models.SET_NULL, null=True, blank=True)
-    is_template = models.BooleanField(default=False)
-    is_product = models.BooleanField(default=False)
-    sales_description = models.TextField(null=True, blank=True)
-    website_description = models.TextField(null=True, blank=True)
+    template = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
+    template_name = models.CharField(max_length = 255, null=True, blank=True)
+    template_subname = models.CharField(max_length = 255, null=True, blank=True)
+    template_description = models.TextField(null=True, blank=True)
+    template_variant = models.CharField(max_length = 255, null=True, blank=True)#FKEY Lookup Field
+    template_variant_name = models.CharField(max_length = 255, null=True, blank=True)
+    stock_number = models.CharField(max_length = 255, null=True, blank=True)
+    variant_name = models.CharField(max_length = 255, null=True, blank=True)
+    cart_line_discription = models.TextField(null=True, blank=True)
+    sales_line_description = models.TextField(null=True, blank=True)
     list_price = models.DecimalField(max_digits=30,decimal_places=2,default=0.0)
     # selling_unit = models.ForeignKey('UOM', on_delete = models.SET_NULL, null=True, blank=True)
-    # stocking_unit = models.ForeignKey('UOM', on_delete = models.SET_NULL, null=True, blank=True)
-    product_type = models.CharField(max_length=255, null=True, blank =True)
+    stocking_unit = models.ForeignKey('UOM', on_delete = models.SET_NULL, null=True, blank=True)
+    product_type = models.ForeignKey('system.Configuration', on_delete = models.SET_NULL, null=True, blank=True)
     version = models.CharField(max_length = 100, null=True, blank=True)
     warranty = models.IntegerField(null=True, blank=True)
     tracking = models.IntegerField(null=True, blank=True)
@@ -55,30 +57,38 @@ class Product(BaseContent):
     deferred_revenue_type = models.CharField(max_length=255, null=True, blank=True)
     asset_type = models.CharField(max_length=255, null=True, blank=True)
     stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
-    
-    
+    status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
+
 class Bom(BaseContent):
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
-    template = models.ForeignKey('Template', on_delete = models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
     resulting_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    #bom_type_choice_id = 
+    bom_description = models.TextField(null=True, blank=True)
+    label = models.CharField(max_length=255, null=True, blank=True)
+    bom_type = models.CharField(max_length=255, null=True, blank=True)
     version = models.IntegerField(null=True, blank=True)
 
 class Components(BaseContent):
     bom = models.ForeignKey('Bom', on_delete=models.SET_NULL, null=True, blank=True)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    uom = models.ForeignKey('UOM', on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
 
 class Characteristics(BaseContent):
-    template_id = models.ForeignKey('Template', on_delete = models.SET_NULL, null=True, blank=True)
-    #Characteristics = (lookup)
+    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
+    Characteristics = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
     before = models.CharField(max_length=255, null=True, blank=True)
     after = models.CharField(max_length=255, null=True, blank=True)
 
 class Value(BaseContent):
-    Characteristics_id = models.ForeignKey('Characteristics', on_delete = models.SET_NULL, null=True, blank=True)
-    #value_choices_id = (lookup)
+    value = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
+    attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True)
+
+class Product_Values(BaseContent):
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+    value = models.ForeignKey('Value', on_delete=models.SET_NULL, null=True, blank=True)
 
 class ProductCategory(BaseContent):
     usage = models.CharField(max_length=255, null=True, blank=True)
@@ -92,7 +102,7 @@ class Equivalents(BaseContent):
     company_product = models.ForeignKey('system.CompanyProducts', on_delete=models.SET_NULL, null=True, blank=True)
     company_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #company_uom = data type not defined
-    vendor_id = models.ForeignKey('sales.Vendor', on_delete=models.SET_NULL, null=True, blank=True)
+    vendor_id = models.ForeignKey('sales.Vendors', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_product = models.ForeignKey('sales.VendorProducts', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #vendor_uom = data type not defined
@@ -101,7 +111,7 @@ class Locations(BaseContent):
     parent_location = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
     locations_name = models.CharField(max_length=100,null=True,blank=True)
     code = models.CharField(max_length=100,null=True,blank=True)
-    loc_address = models.ForeignKey('sales.Address', on_delete=models.SET_NULL, null=True, blank=True)
+    loc_address = models.ForeignKey('sales.Addresses', on_delete=models.SET_NULL, null=True, blank=True)
     comments = models.TextField(null=True,blank=True)
     function_choice = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -124,3 +134,11 @@ class ProductLocations(BaseContent):
     comment = models.TextField(null=True,blank=True)
     stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
+
+class UOM(BaseContent):
+    uom_category = models.CharField(max_length=100,null=True,blank=True)#choice field
+    name = models.CharField(max_length=100,null=True,blank=True)
+    abbreviation = models.CharField(max_length=100,null=True,blank=True)
+    unit = models.TextField(null=True,blank=True)
+    reference = models.TextField(null=True,blank=True)
+    rounding = models.TextField(null=True,blank=True)

@@ -1,18 +1,18 @@
 from rest_framework import serializers
-from ..models.customers import Customer, CustomerAddress
-from ..models.address import Address
+from ..models.customers import Customers, CustomerAddress
+from ..models.address import Addresses
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from django.db.models import Q
 
 class RelatedCustomerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Customer
+        model = Customers
         exclude = ("created_time","modified_time","created_by")
 
 class RelatedAddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Address
+        model = Addresses
         exclude = ("created_time","modified_time","created_by")
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         address_ids = []
         for ele in queryset:
             address_ids.append(ele.address.id)
-        address_queryset = Address.objects.filter(Q(id__in = address_ids), Q(type = "customer") | Q(type = "Customer"))
+        address_queryset = Addresses.objects.filter(Q(id__in = address_ids), Q(address_type = "customer") | Q(address_type = "Customer"))
         serializer = RelatedAddressSerializer(address_queryset, many = True)         
         return serializer.data[0] if serializer.data else None
     
@@ -33,13 +33,13 @@ class CustomerSerializer(serializers.ModelSerializer):
         address_ids = []
         for ele in queryset:
             address_ids.append(ele.address.id)
-        address_queryset = Address.objects.filter(id__in = address_ids).exclude(Q(type = "customer") | Q(type = "Customer"),
+        address_queryset = Addresses.objects.filter(id__in = address_ids).exclude(Q(address_type = "customer") | Q(address_type = "Customer"),
                                                                                 default = True)  
         serializer = RelatedAddressSerializer(address_queryset, many = True)         
         return serializer.data
     
     class Meta:
-        model = Customer 
+        model = Customers 
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time", "created_by")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
@@ -47,13 +47,13 @@ class CustomerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        sales_currency_data = RelatedCurrencySerializer(instance.sales_currency).data
-        if 'id' in sales_currency_data:
-            response['sales_currency'] = RelatedCurrencySerializer(instance.sales_currency).data
+        currency_data = RelatedCurrencySerializer(instance.currency).data
+        if 'id' in currency_data:
+            response['currency'] = RelatedCurrencySerializer(instance.currency).data
             
-        stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        stage_data = RelatedStageSerializer(instance.customer_stage, context={'request': request}).data
         if 'id' in stage_data:
-            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
+            response['customer_stage'] = RelatedStageSerializer(instance.customer_stage, context={'request': request}).data
             
         created_data = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_data:

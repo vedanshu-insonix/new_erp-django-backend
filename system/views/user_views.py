@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
-from sales.models.customers import Customer
 from ..models.users import *
 from ..serializers.user_serializers import *
 from ..serializers.common_serializers import RelatedConfigurationSerializer

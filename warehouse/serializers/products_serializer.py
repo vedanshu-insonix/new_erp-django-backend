@@ -1,46 +1,118 @@
-from attr import field
 from rest_framework import serializers
-from erp_system.warehouse.models.products import *
+from warehouse.models.products import *
+from system.serializers.user_serializers import RelatedUserSerilaizer
+from system.serializers.common_serializers import RelatedStageSerializer, RelatedConfigurationSerializer, RelatedChoiceSerializer
+from warehouse.models.general import *
+from warehouse.serializers.general_serializer import *
 
-class TemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Template
-        field = ('__all__')
 
-class ProductSerializer(serializers.ModelSerializer):
+#******************************* Product Serializer *******************************
+class RelatedProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        field = ('__all__')
+        exclude = ("created_time","modified_time","created_by")
+
+class ProductSerializer(serializers.ModelSerializer):
+    attribute = serializers.SerializerMethodField()
+    value = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    def get_attribute(self, obj):
+        queryset = Product_Attribute.objects.filter(product=obj.id)
+        serializer = ProductAttributeSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_value(self, obj):
+        queryset = Product_Values.objects.filter(product = obj.id)
+        serializer = ProductValueSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_image(self, obj):
+        queryset = Product_Images.objects.filter(product = obj.id)
+        serializer = ProductImagesSerializer(queryset, many=True)
+        return serializer.data
+
+    class Meta:
+        model = Product
+        fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context['request']
+
+        template = JournalTemplateSerializer(instance.template, context={'request': request}).data
+        if 'id' in template:
+            response['template'] = JournalTemplateSerializer(instance.template, context={'request': request}).data
+        stocking_unit = UOMSerializer(instance.stocking_unit, context={'request': request}).data
+        if 'id' in stocking_unit:
+            response['stocking_unit'] = UOMSerializer(instance.stocking_unit, context={'request': request}).data
+        product_type = RelatedConfigurationSerializer(instance.product_type, context={'request': request}).data
+        if 'id' in product_type:
+            response['product_type'] = RelatedConfigurationSerializer(instance.product_type, context={'request': request}).data
+        stage = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        if 'id' in stage:
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        status_choices = RelatedChoiceSerializer(instance.status_choices, context={'request': request}).data
+        if 'id' in status_choices:
+            response['status_choices'] = RelatedChoiceSerializer(instance.status_choices, context={'request': request}).data
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        return response
 
 class BomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bom
-        field = ('__all__')
+        fields = ('__all__')
 
 class ComponentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Components
-        field = ('__all__')
+        fields = ('__all__')
 
 class CharacteristicsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Characteristics
-        field = ('__all__')
+        fields = ('__all__')
+
+class RelatedValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Value
+        exclude = ("created_time","modified_time","created_by")
 
 class ValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Value
-        field = ('__all__')
+        fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+            
+        return response
+
+class ProductValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product_Values
+        fields = ('value',)
+        depth = 1
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        field = ('__all__')
+        fields = ('__all__')
 
 class EquivalentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equivalents
-        field = ('__all__')
+        fields = ('__all__')
 
 class LocationsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,9 +122,14 @@ class LocationsSerializer(serializers.ModelSerializer):
 class ProductCountsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCounts
-        field = ('__all__')
+        fields = ('__all__')
 
 class ProductLocationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductLocations
-        field = ('__all__')
+        fields = ('__all__')
+
+class UOMSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UOM
+        fields = ('__all__')

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from system.serializers.common_serializers import *
-from ..models.vendors import Vendor, VendorAddress, VendorProducts
+from ..models.vendors import Vendors, VendorAddress, VendorProducts
 from system.serializers.user_serializers import RelatedUserSerilaizer
 
 
@@ -12,12 +12,12 @@ class VendorAddressSerializer(serializers.ModelSerializer):
     
 class RelatedVendorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Vendor
+        model = Vendors
         exclude = ("created_time","modified_time","created_by")
         
 class VendorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Vendor
+        model = Vendors
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}

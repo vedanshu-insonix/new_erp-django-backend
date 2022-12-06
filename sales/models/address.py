@@ -5,9 +5,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 from system.models.common import *
 
 
-class Address(BaseContent):
-    type = models.CharField(max_length=255, null=True, blank=True) #choice
-    location = models.CharField(max_length=255, null=True, blank=True) #choice
+class Addresses(BaseContent):
+    address_type = models.CharField(max_length=255, null=True, blank=True) #choice
+    address_location_type = models.CharField(max_length=255, null=True, blank=True) #choice
     default = models.BooleanField(default=False)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
@@ -19,9 +19,10 @@ class Address(BaseContent):
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     postal_code = models.CharField(max_length=6, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
-    description = models.CharField(max_length=255, null=True, blank=True) #choice
-    comment = models.TextField(blank=True, null=True)
-    warning = models.TextField(blank=True, null=True)
+    address_description = models.CharField(max_length=255, null=True, blank=True) #choice
+    internal_comments= models.TextField(blank=True, null=True)
+    internal_warning = models.TextField(blank=True, null=True)
+    external_comments = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=2, blank=True, null=True)
     email = models.EmailField(('email'),max_length=255,null=True,blank=True)
@@ -45,7 +46,7 @@ class Address(BaseContent):
     
     
 class AddressTag(BaseContent):
-    address = models.ForeignKey('Address', on_delete=models.CASCADE, null=True)
+    address = models.ForeignKey('Addresses', on_delete=models.CASCADE, null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, null=True)
     
     def __str__(self):

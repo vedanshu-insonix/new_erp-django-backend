@@ -19,12 +19,15 @@ from django.urls import path,include
 from django.urls import include, path
 from rest_framework import routers
 from system.views import user_views, common_views, communication_views, company_views, translation_views
-from sales.views import customers_views, vendors_views, addresses_views
+from sales.views import customers_views, vendors_views, addresses_views, invoices_views, receipts_views, pricelists_views, orders_views, quotations_views, credits_views, cart_views, return_views
 from rest_framework_simplejwt import views as jwt_views
+from warehouse.views import products_views, general_views
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 from rest_framework.authtoken import views
-from rest_framework_swagger.views import get_swagger_view
+from django.conf import settings
+from django.conf.urls.static import static 
+# from rest_framework_swagger.views import get_swagger_view
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
@@ -64,7 +67,28 @@ router.register(r'formlist', common_views.FormListViewSet)
 router.register(r'communications', communication_views.CommunicationViewSet)
 router.register(r'channels', communication_views.ChannelViewSet)
 router.register(r'companies', company_views.CompanyViewSet)
+router.register(r'invoices', invoices_views.SalesInvoicesViewSet)
+router.register(r'receipts', receipts_views.ReceiptsViewSet)
 router.register(r'translations', translation_views.TranslationViewSet)
+router.register(r'price_lists', pricelists_views.SalesPriceListsViewSet)
+router.register(r'orders', orders_views.SalesOrdersViewSet)
+router.register(r'order_lines', orders_views.SalesOrderLinesViewSet)
+router.register(r'quotations', quotations_views.SalesQuotationsViewSet)
+router.register(r'credits', credits_views.SalesCreditsViewSet)
+router.register(r'products', products_views.ProductViewSet)
+router.register(r'product_locations', products_views.ProductLocationsViewSet)
+router.register(r'product_counts', products_views.ProductCountsViewSet)
+router.register(r'journals', general_views.JournalViewSet)
+router.register(r'journal_templates', general_views.JournalTemplateViewSet)
+router.register(r'attributes', general_views.AttributeViewSet)
+router.register(r'images', general_views.ImagesViewSet)
+#router.register(r'bom', products_views.BOMViewSet)
+router.register(r'values', products_views.ValueViewSet)
+router.register(r'uom', products_views.UOMViewSet)
+router.register(r'carts', cart_views.CartsViewSet)
+router.register(r'cart_lines', cart_views.CartlinesViewSet)
+router.register(r'returns', return_views.SalesReturnsViewSet)
+router.register(r'return_lines', return_views.SalesReturnLinesViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -74,4 +98,4 @@ urlpatterns = [
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token-refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token-verify/', jwt_views.TokenVerifyView.as_view(), name='verify_token'),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

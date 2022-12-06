@@ -10,8 +10,8 @@ class Translation(BaseContent):
     language = models.ForeignKey('Language', on_delete = models.SET_NULL, null = True, blank = True)
     translation = models.CharField(max_length = 255, null=True, blank = True)
     
-    def __str__(self):
-        return self.label 
+    # def __str__(self):
+    #     return self.label 
     
 class TranslationColumn(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
@@ -26,8 +26,8 @@ class TranslationMenu(BaseContent):
     menu = models.ForeignKey('Menu', on_delete = models.CASCADE, null = True)
     
 class TranslationChoice(BaseContent):
-    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
-    choice = models.ForeignKey('Choice', on_delete=models.CASCADE, null = True)
+    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
+    choice = models.OneToOneField('Choice', on_delete=models.CASCADE, null = True)
     
 class TranslationHelp(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
@@ -50,8 +50,8 @@ class TranslationTile(BaseContent):
     tag = models.ForeignKey('Tile', on_delete=models.CASCADE, null = True)
     
 class TranslationList(BaseContent):
-    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
-    list = models.ForeignKey('List', on_delete=models.CASCADE, null = True)
+    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
+    list = models.OneToOneField('List', on_delete=models.CASCADE, null = True)
 
 class TranslationForm(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
