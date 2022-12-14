@@ -26,7 +26,6 @@ jobs:
         username: ${{ secrets.UBUNTU_USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: 
-          whoami
+        script:
           ls
     
