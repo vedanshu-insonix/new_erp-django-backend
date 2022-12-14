@@ -27,5 +27,7 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script:
-          ls
+            mkdir test 
+            cd test 
+            git clone git@github.com:vedanshu-insonix/erp-django-backend.git
     
