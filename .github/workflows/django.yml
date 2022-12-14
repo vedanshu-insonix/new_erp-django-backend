@@ -24,7 +24,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirement.txt
     - name: SSH Remote Commands
     # You may pin to the exact commit or the version.
     # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
