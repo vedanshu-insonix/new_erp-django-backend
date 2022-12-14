@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     services:
       postgres_main:
@@ -19,9 +18,8 @@ jobs:
           POSTGRES_USER: doadmin
           POSTGRES_PASSWORD: AVNS_-Df0ctPeZMiFnZWBAYT
           POSTGRES_DB: defaultdb
-      ports:
-          -25060:25060
-      options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+          POSTGRES_PORT: 25060
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
 
