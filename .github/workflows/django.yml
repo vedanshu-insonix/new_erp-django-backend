@@ -1,4 +1,4 @@
-name: Django CI/CD with Django, Postgres, Digitalocean
+name: Django CI
 
 on:
   push:
@@ -6,51 +6,36 @@ on:
   pull_request:
     branches: [ "main" ]
 
-  workflow_dispatch:
-
 jobs:
   build:
+
     runs-on: ubuntu-latest
-    services:
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.9]
 
     steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run Tests
-        env:
-          DEBUG: "0"
-          DJANGO_SECRET_KEY: CI_CD_TEST_KEY
-          POSTGRES_USER: doadmin
-          POSTGRES_PASSWORD: AVNS_-Df0ctPeZMiFnZWBAYT
-          POSTGRES_DB: defaultdb
-          POSTGRES_PORT: 5432
-        run: |
-          python manage.py test
-
-      - name: Push Main Branch into Production
-        uses: vedanshu-insonix/erp-django-backend/action-branch-to-branch@main
-        with:
-          dest-branch: production-3
-          source-branch: main
-          commit-message: "Release production version"
-        env:
-          GITUB_TOCKEN: ${{ secrets.PERSONAL_ACCESS_TOCKEN }}
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DO_ACCESS_TOKEN }}
-      - name: Run a DOCTL Command
-        run: |
-          doctl apps update ${{ secrets.UBUNTU_SSH_KEY }} 
-    
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: SSH Remote Commands
+    # You may pin to the exact commit or the version.
+    # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        key: ${{secrets.UBUNTU_SSH_KEY}}
+        host: ${{secrets.UBUNTU_IP}}
+        username: ${{secrets.UBUNTU_USERNAME}}
+        script: |
+            mkdir test 
+            cd test 
+            git clone git@github.com:vedanshu-insonix/erp-django-backend.git 
+            echo 'Deployment successful to digital ocean' 
     
