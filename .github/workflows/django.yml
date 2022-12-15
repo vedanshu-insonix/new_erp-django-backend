@@ -28,8 +28,6 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
             cd test 
-              git clone https://github.com/vedanshu-insonix/erp-django-backend.git
-              vedanshu-insonix
-              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
+            git clone https://github.com/vedanshu-insonix/erp-django-backend.git
               
     
