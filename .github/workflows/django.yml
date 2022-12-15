@@ -29,7 +29,7 @@ jobs:
         script: |
             cd test 
               git clone https://github.com/vedanshu-insonix/erp-django-backend.git
-              git config --global user.name "vedanshu-insonix"
-              git config --global user.email "vedanshullr@gmail.com"
+              vedanshu-insonix
+              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
               
     
