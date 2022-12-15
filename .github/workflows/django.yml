@@ -28,5 +28,5 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
             cd test 
-            git clone https://github.com/vedanshu-insonix/erp-django-backend.git
+            git clone git@github.com:vedanshu-insonix/erp-django-backend.git
     
