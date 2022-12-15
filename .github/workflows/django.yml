@@ -33,6 +33,6 @@ jobs:
         script: |
             cd test 
               git clone git@github.com:vedanshu-insonix/erp-django-backend.git
-              git config --global user.name "vedanshu-insonix"
+              
               
     
