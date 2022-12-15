@@ -26,6 +26,7 @@ jobs:
         username: ${{ secrets.UBUNTU_USERNAME }}
         key: ${{ secrets.secrets.SSH_KEY_PUB }}
         pvkey: ${{ secrets.SSH_KEY_PV}}
+        password: ${{ secrets.PASSWORD }}
         
        
         
