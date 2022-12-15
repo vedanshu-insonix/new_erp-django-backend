@@ -24,12 +24,12 @@ jobs:
       with:
         host: ${{ secrets.UBUNTU_IP }}
         username: ${{ secrets.UBUNTU_USERNAME }}
-        key: ${{ secrets.UBUNTU_SSH_KEY}}
+        password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
             cd test 
-              git clone git@github.com:vedanshu-insonix/erp-django-backend.git
+              git clone https://github.com/vedanshu-insonix/erp-django-backend.git
               git config --global user.name "vedanshu-insonix"
-              
+              git config --global user.email "vedanshullr@gmail.com"
               
     
