@@ -28,7 +28,6 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
             cd test 
-              git clone git@github.com:vedanshu-insonix/erp-django-backend.git
-              git config --global user.name "vedanshu-insonix"
-              git config --global user.email "vedanshullr@gmail.com"
+              git clone https://github.com/vedanshu-insonix/erp-django-backend.git
+              
     
