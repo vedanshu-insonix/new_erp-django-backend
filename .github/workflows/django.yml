@@ -22,9 +22,11 @@ jobs:
     # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.UBUNTU_IP }}
+        host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.UBUNTU_USERNAME }}
         key: ${{ secrets.secrets.SSH_KEY_PUB }}
+        pvkey: ${{ secrets.SSH_KEY_PV}}
+        
        
         
         script: |
