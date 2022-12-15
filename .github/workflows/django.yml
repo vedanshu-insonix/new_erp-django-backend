@@ -24,7 +24,6 @@ jobs:
       with:
         host: ${{ secrets.UBUNTU_IP }}
         username: ${{ secrets.UBUNTU_USERNAME }}
-        password: ${{ secrets.PASSWORD }}
         key: ${{ secrets.UBUNTU_SSH_KEY}}
         port: ${{ secrets.PORT }}
         script: |
