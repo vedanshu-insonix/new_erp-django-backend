@@ -28,8 +28,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
             cd test 
-              git clone ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCtLiNt0Aw0moK52uvZpHMRAgEQy5PNtqczZFcg1LVt7ZhSo5eEwKfYUntC9OcFxG2oiSWARnE8ihjPZ33odjXGzTqKCoG5aoJ7ZQbVLEApbXa2Pe5FoO6FvwTUQ/31L9buLKYax4TUp6/LCEuREKa26lEcNpEge1MroyaSSza77xjDUJb0ZFi3JPeHOrhxQmUJ2E6VmJEC8ILeEPKI0lckJpcIXO2EW7/MxMtD/gqENY+ypcZG+osZ/0OM9xc25XZ07zfKfxkQft2u6eS2EWDsCQfqzuw2AiF9X01j8R/qcR//k0GqrLbv7KMlSogsiC+9D1rHWsgUwCGwGN1vuxVh8ma3xMOqTgodpBZeSpD0zyz5NhdzMgh/4HWCigCVYO+/KmR9BwnDniYqWfAWzP08skueeV9GlOBLkO7LvkIMIvl0rl4EZFbNt/yRrcS6wma9lQj6XCyzv++uGre+gvCJbgInN1i+1XPoB84SrDKH7GFP4n61MA+A8f8G6rKCaaxOdJks87My+CMKyhb8WZy4oIjd9JTnp9DAiv4L+RH5kl1M1u8ID7BVqUx0x0CTJzUrIOKAu+cGVSpnyNfXmLqf4KTbQhtal02AMJ2SJJLE/XvfPtRxkWB+LbL0D3EUVkjH/kKB2k3uho2EPvTKqRjQCU2Bp45hYV8ljq8mDplGxw== vedanshullr@gmail.com
-              @github.com:vedanshu-insonix/erp-django-backend.git
+              git clone git@github.com:vedanshu-insonix/erp-django-backend.git
               git config --global user.name "vedanshu-insonix"
               git config --global user.email "vedanshullr@gmail.com"
     
