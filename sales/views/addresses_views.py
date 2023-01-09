@@ -263,6 +263,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                             pass
                         else:
                             for key in new_sequence:
+                                print(key)
                                 data_dict[key] = row_data[new_sequence[key]-1]
                                 if key == 'state':
                                     state_name = row_data[new_sequence[key]-1]
@@ -280,6 +281,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                                     language = row_data[new_sequence[key]-1]
                                     language = Language.objects.filter(name=language)
                                     data_dict[key]=language.values()[0]['id']
+                            print(data_dict)
                             try:       
                                 serializers = AddressSerializer(data = data_dict, context={'request': request})
                                 if serializers.is_valid(raise_exception=True):

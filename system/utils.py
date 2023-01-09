@@ -40,7 +40,7 @@ StatusChoice=(
     ("1","Closed"),
     ("2","Normal"),
     ("3","Warning"),
-    ("3","Urgent"),
+    ("4","Urgent"),
 )
 
 ChannelTypeChoice=(
@@ -113,6 +113,14 @@ def success_def(self,count,defective_data):
                     "status" : "success",
                     "rejected_records" : defective_data,
                     "code"   : status.HTTP_200_OK
+                }
+    return response
+
+def success_msg(self,msg):
+    response = {
+                    "message": msg,
+                    "status" : "success",
+                    "code"   : status.HTTP_201_CREATED
                 }
     return response
 

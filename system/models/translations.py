@@ -22,7 +22,7 @@ class TranslationFromData(BaseContent):
     formdata = models.ForeignKey('FormData', on_delete = models.CASCADE, null = True)
     
 class TranslationMenu(BaseContent):
-    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
+    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
     menu = models.ForeignKey('Menu', on_delete = models.CASCADE, null = True)
     
 class TranslationChoice(BaseContent):

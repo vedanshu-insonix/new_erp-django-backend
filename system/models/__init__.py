@@ -7,3 +7,4 @@ from .teams import *
 from .users import *
 from .roles_permissions import *
 from .translations import *
+from .rules import *

@@ -38,6 +38,13 @@ class RelatedCurrencySerializer(serializers.ModelSerializer):
         exclude = ("created_time", "modified_time", "created_by")
         
 class CurrencySerializer(serializers.ModelSerializer):
+    country = serializers.SerializerMethodField()
+
+    def get_country(self, obj):
+        queryset = Country.objects.filter(currency=obj.id)
+        serializer = CountrySerializer(queryset, many=True)
+        return serializer.data
+
     class Meta:
         model = Currency
         fields = ("__all__")
@@ -110,10 +117,6 @@ class CountrySerializer(serializers.ModelSerializer):
     # To return foreign key values in details
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        currency = RelatedCurrencySerializer(instance.currency).data
-        if 'id' in currency:
-            response['currency'] = RelatedCurrencySerializer(instance.currency).data
-            
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
@@ -127,7 +130,7 @@ class RelatedStateSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
   
 class StateSerializer(serializers.ModelSerializer):
-    state = serializers.CharField(max_length = 255, required = True)
+    
     class Meta:
         model = State
         fields = ("__all__")

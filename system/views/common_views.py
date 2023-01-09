@@ -8,6 +8,7 @@ from rest_framework import filters
 from rest_framework.decorators import action
 from system import utils
 import openpyxl
+from django.db.models import Q
 
 
 # Generate Token Manually
@@ -18,6 +19,26 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
+#**********************************Function To Extract Data From Excel File******************************************#
+def importing_data(file):
+    xl_data = []
+    heading = []
+    wb = openpyxl.load_workbook(file)
+    sheet = wb.active
+    max_col = sheet.max_column
+    for i in range(1, max_col+1):
+        cell_obj = sheet.cell(row = 1, column = i)
+        heading.append((cell_obj.value).lower())
+    for row in sheet.iter_rows(min_row=2):
+        data_dict={}
+        row_data = []
+        for cell in row:
+            row_data.append(cell.value)
+        for i in range(len(row_data)):
+            data_dict[heading[i]]=row_data[i]
+        xl_data.append(data_dict)
+    return(xl_data)
 
 class ButtonViewSet(viewsets.ModelViewSet):
     """
@@ -38,6 +59,29 @@ class CurrencyViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
+
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            if file:
+                data_dict = importing_data(file)
+                count = 0
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        try:
+                            serializer=CurrencySerializer(data=data_dict[i], context={'request':request})
+                            if serializer.is_valid(raise_exception=True):
+                                serializer.save()
+                                count += 1
+                        except Exception as e:
+                            pass          
+                return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
+        except Exception as e:
+            return Response(utils.error(self,str(e)))
            
 class TagViewSet(viewsets.ModelViewSet):
     """
@@ -68,6 +112,44 @@ class CountryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
+
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            if file:
+                data_dict = importing_data(file)
+                count = 0
+                defective_data=[]
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        currency=data_dict[i].get('currency')
+                        if currency:
+                            check = Currency.objects.filter(name=currency)
+                            if check:
+                                data_dict[i]['currency']=check.values()[0]['id']
+                                try:
+                                    serializer=CountrySerializer(data=data_dict[i], context={'request':request})
+                                    if serializer.is_valid(raise_exception=True):
+                                        serializer.save()
+                                        count += 1
+                                except Exception as e:
+                                    print(str(e))
+                                    pass
+                            else:
+                                defective_data.append(currency)
+                if defective_data:
+                    defective_data = {
+                        "inavlid_currencies" : f"These {set(defective_data)} are the invalid currency names."
+                    }
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
+        except Exception as e:
+            return Response(utils.error(self,str(e)))
         
 class StateViewSet(viewsets.ModelViewSet):
     """
@@ -78,6 +160,49 @@ class StateViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
+
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            if file:
+                data_dict = importing_data(file)
+                count = 0
+                defective_data=[]
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        country=data_dict[i].get('country')
+                        if country:
+                            check = Country.objects.filter(Q(country__name=country) | Q(country=country))
+                            if check:
+                                data_dict[i]['country']=check.values()[0]['id']
+                                state_name = data_dict[i].get('name')
+                                state_check=State.objects.filter(name=state_name, country=data_dict[i]['country'])
+                                if state_check:
+                                    pass
+                                else:
+                                    try:
+                                        serializer=StateSerializer(data=data_dict[i], context={'request':request})
+                                        if serializer.is_valid(raise_exception=True):
+                                            serializer.save()
+                                            count += 1
+                                    except Exception as e:
+                                        print(str(e))
+                                        pass
+                            else:
+                                defective_data.append(country)
+                if defective_data:
+                    defective_data = {
+                        "inavlid_country" : f"These {set(defective_data)} are the invalid country names."
+                    }
+                    return Response(utils.success_def(self,count,defective_data))
+                else:
+                    return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
+        except Exception as e:
+            return Response(utils.error(self,str(e)))
     
 class StageViewSet(viewsets.ModelViewSet):
     """
@@ -94,64 +219,52 @@ class StageViewSet(viewsets.ModelViewSet):
         serializers = StageSerializer(queryset, many = True, context = {"request": request})
         return super().list(request, args, *kwargs)
     
-
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                data_dict = {}
+                data_dict = importing_data(file)
+                count = 0
                 defective_data=[]
-                count=0
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    stage_name=row_data[2]
-                    if stage_name:
-                        if row_data[0] == 'form' or row_data[0] == 'Form':
-                            pass
-                        else:
-                            form_name=row_data[0]
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        stage_name = data_dict[i]['stage']
+                        if stage_name:
+                            form_name = data_dict[i]['form']
                             form_rec = Form.objects.filter(form=form_name)
                             if form_rec:
+                                req_action = data_dict[i].pop('required action buttons')
+                                opt_action = data_dict[i].pop('optional action buttons')
+                                data_dict[i]['form']=form_rec.values()[0]['id']
                                 stage_rec = Stage.objects.filter(stage = stage_name,form_id=form_rec.values()[0]['id'])
                                 if stage_rec:
-                                    pass
+                                    stage_id = stage_rec.values()[0]['id']
                                 else:
-                                    data_dict['form']=form_rec.values()[0]['id']
-                                    data_dict['sequence']=row_data[1]
-                                    data_dict['stage']=stage_name
-                                    data_dict['created_by_id']=user_id
-                                    serializer=StageSerializer(data=data_dict,context={'request': request})
+                                    serializer=StageSerializer(data=data_dict[i],context={'request': request})
                                     if serializer.is_valid():
                                         serializer.save()
                                         count += 1
-                                        stage_rec = Stage.objects.filter(stage = stage_name,form_id=form_rec.values()[0]['id'])
-                                req_action = row_data[3]
-                                opt_action = row_data[4]
+                                    stage_rec = Stage.objects.get(stage = stage_name,form_id=form_rec.values()[0]['id'])
+                                    stage_id=stage_rec.id
                                 if req_action:
                                     text_split = req_action.split(',')
                                     for i in range (len(text_split)):
-                                        check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                        check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
                                         if check:
                                             pass
                                         else:
-                                            StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],required=True)
+                                            StageAction.objects.create(stage_id=stage_id,action=text_split[i],required=True)
                                 if opt_action:
                                     text_split = opt_action.split(',')
                                     for i in range (len(text_split)):
-                                        check = StageAction.objects.filter(stage_id=stage_rec.values()[0]['id'],action=text_split[i])
+                                        check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
                                         if check:
                                             pass
                                         else:
-                                            StageAction.objects.create(stage_id=stage_rec.values()[0]['id'],action=text_split[i],optional=True)
+                                            StageAction.objects.create(stage_id=stage_id,action=text_split[i],optional=True)
                             else:
-                                defective_data.append(row_data[0])
+                                defective_data.append(form_name)
                 if defective_data:
                     defective_data = {
                         "missing_form" : f"These {set(defective_data)} are the invalid form names."
@@ -164,6 +277,7 @@ class StageViewSet(viewsets.ModelViewSet):
                 return Response(utils.error(self,msg))
         except Exception as e:
             return Response(utils.error(self,str(e)))
+
 
 class StageActionViewSet(viewsets.ModelViewSet):
     """
@@ -190,30 +304,19 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            count = 0
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    data_dict={}
-                    conf_name=row_data[1]
-                    if conf_name:
-                        if row_data[0] == 'category' or row_data[0] == 'Category':
-                            pass
-                        else:
-                            conf = Configuration.objects.filter(category=row_data[0],configuration=row_data[1])
+                data_dict = importing_data(file)
+                count = 0
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        conf_name = data_dict[i]['configuration']
+                        if conf_name:
+                            category = data_dict[i]['category']
+                            conf = Configuration.objects.filter(category=category,configuration=conf_name)
                             if conf:
                                 pass
                             else:
-                                data_dict['category']=row_data[0]
-                                data_dict['configuration']=row_data[1]
-                                data_dict['type']=row_data[2]
-                                data_dict['current_value']=row_data[3]
-                                data_dict['default_value']=row_data[3]
-                                serializer=ConfigurationSerializer(data=data_dict,context={'request': request})
+                                serializer=ConfigurationSerializer(data=data_dict[i],context={'request': request})
                                 if serializer.is_valid():
                                     serializer.save()
                                     count += 1
@@ -248,22 +351,16 @@ class ChoiceViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            data_dict = {}
-            count = 0
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    choice_name=row_data[1]
-                    label=row_data[4]
-                    if choice_name:
-                        if row_data[0] == 'selector' or row_data[0]=='Selector':
-                            pass
-                        else:
+                data_dict = importing_data(file)
+                count = 0
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        choice_name=data_dict[i]['choice']
+                        label=data_dict[i].pop('label (us english)')
+                        selector=utils.encode_api_name(data_dict[i]['selector'])
+                        default=data_dict[i]['default']
+                        if choice_name:
                             language = get_current_user_language(request.user)
                             lang = Language.objects.filter(name=language)
                             check=Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
@@ -273,21 +370,16 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                                 new_label = Translation.objects.create(label=label,language_id=lang.values()[0]['id'])
                             label_rec = Translation.objects.filter(label=label,language_id=lang.values()[0]['id'])
                             
-                            choice_rec = Choice.objects.filter(selector=row_data[0], choice=choice_name)
+                            choice_rec = Choice.objects.filter(selector=selector, choice=choice_name)
                             if choice_rec:
                                 choice_id=choice_rec.values()[0]['id']
                                 pass
                             else:
-                                data_dict['selector']=row_data[0]
-                                data_dict['choice']=row_data[1]
-                                data_dict['sequence']=row_data[2]
-                                data_dict['created_by_id']=user_id
-                                
-                                if row_data[3]:
-                                    data_dict['default']=row_data[3]
+                                if default:
+                                    continue
                                 else:
-                                    data_dict['default']=False
-                                serializer=ChoiceSerializer(data=data_dict,context={'request': request})
+                                    data_dict[i]['default']=False
+                                serializer=ChoiceSerializer(data=data_dict[i],context={'request': request})
                                 if serializer.is_valid(raise_exception=True):
                                     serializer.save()
                                     count += 1
@@ -319,36 +411,25 @@ class FormViewSet(viewsets.ModelViewSet):
         serializers = FormSerializer(queryset, many = True, context = {"request": request})
         return super().list(request, *args, **kwargs)
 
-    
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            count = 0
-            data_dict = {}
+            print(file)
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    form_name=row_data[0]
-                    if form_name:
-                        if row_data[0].lower() == 'form':
+                data_dict = importing_data(file)
+                count = 0
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        form_name = data_dict[i]['form']
+                        form_rec = Form.objects.filter(form=form_name)
+                        if form_rec:
                             pass
                         else:
-                            form_rec = Form.objects.filter(form=form_name)
-                            if form_rec:
-                                pass
-                            else:
-                                data_dict['form'] = row_data[0]
-                                data_dict['created_by_id'] = user_id
-                                serializer=FormSerializer(data=data_dict,context={'request': request})
-                                if serializer.is_valid():
-                                    serializer.save()
-                                    count += 1
+                            serializer=FormSerializer(data=data_dict[i],context={'request': request})
+                            if serializer.is_valid():
+                                serializer.save()
+                                count += 1
                 return Response(utils.success(self,count))
             else:
                 msg="Please Upload A Suitable Excel File."
@@ -394,8 +475,8 @@ class ListViewSet(viewsets.ModelViewSet):
                     label=row_data[3]
                     sequence_data = row_data[4]
                     description = row_data[5]
-                    data_filter = row_data[6]
-                    data_sort = row_data[7]
+                    #data_filter = row_data[6]
+                    #data_sort = row_data[7]
 
                     if list_data:
                         if row_data[0] == 'category' or row_data[0] == 'Category':
@@ -410,10 +491,10 @@ class ListViewSet(viewsets.ModelViewSet):
                                 data_dict['list'] = list_data
                             if sequence_data:
                                 data_dict['sequence'] = sequence_data
-                            if data_filter:
+                            """if data_filter:
                                 data_dict['data_filter'] = data_filter
                             if data_sort:
-                                data_dict['data_sort'] = data_sort
+                                data_dict['data_sort'] = data_sort"""
                             if description:
                                 data_dict['description'] = description
                             list_name=data_dict['list']
@@ -487,33 +568,29 @@ class ColumnsViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            defective_data = []
-            count = 0
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    column = row_data[1]
-                    field = row_data[4]
-                    if column and field:
-                        if row_data[0] == 'list' or row_data[0] == 'List':
-                            pass
-                        else:
-                            list  = row_data[0]
+                data_dict = importing_data(file)
+                count = 0
+                defective_data=[]
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        column = data_dict[i]['column']
+                        field = data_dict[i]['field']
+                        if column and field:
+                            list = data_dict[i]['list']
                             listrec = List.objects.filter(list=list)
                             if listrec:
+                                data_dict[i]['list'] = listrec.values()[0]['id']
                                 columnrec = Column.objects.filter(column= column,list_id=listrec.values()[0]['id'])
                                 if columnrec:
                                     pass
                                 else:
-                                    Column.objects.create(column=column,list_id=listrec.values()[0]['id'],position=row_data[3],visibility=row_data[2],created_by_id=user_id, table = row_data[4], field = row_data[5])
-                                    count = count+1
+                                    serializer = ColumnsSerializer(data=data_dict[i],context={'request': request})
+                                    if serializer.is_valid(raise_exception=True):
+                                        serializer.save()
+                                        count = count+1
                             else:
-                                defective_data.append(row_data[0])
+                                defective_data.append(list)
                 if defective_data:
                     defective_data = {
                         "missing_lists" : f"These {defective_data} are the invalid list names."
@@ -542,7 +619,6 @@ class MenuViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ("__all__")
     
-    
     def list(self, request, *args, **kwargs):
         queryset = Menu.objects.filter().all()
         serializers = MenuSerializer(queryset, many = True, context = {"request": request})
@@ -552,52 +628,47 @@ class MenuViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            defective_data = []
-            count = 0
-            check = None
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    menu_category = row_data[0]
-                    if menu_category:
-                        if row_data[0].lower() == 'category':
-                            pass
-                        else:
-                            data_dict = {}
-                            list = row_data[1]
-                            listrec = List.objects.filter(list=list)
-                            if listrec:
-                                label = row_data[2]
-                                language = get_current_user_language(request.user)
-                                lang = Language.objects.filter(name=language)
-                                check=Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
-                                if check:
-                                    pass
+                data_dict = importing_data(file)
+                count = 0
+                defective_data = []
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        menu_category = data_dict[i]['menu_category']
+                        if menu_category:
+                            list = data_dict[i]['list']
+                            sequence = data_dict[i]['sequence']
+                            if list:
+                                listrec = List.objects.filter(list=list)
+                                if listrec:
+                                    data_dict[i]['list'] = listrec.values()[0]['id']
+                                    list_id = listrec.values()[0]['id']
+                                    menu_rec = Menu.objects.filter(menu_category=menu_category, list_id = list_id, sequence = sequence)
                                 else:
-                                    new_label = Translation.objects.create(label=label, language_id=lang.values()[0]['id'])
-                                label_rec = Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
-                                menu_rec = Menu.objects.filter(menu_category=row_data[0], list_id = listrec.values()[0]['id'], sequence = row_data[3])
-                                if menu_rec:
-                                    pass
-                                else:
-                                    data_dict['list'] = listrec.values()[0]['id']
-                                    data_dict['sequence'] = row_data[3]
-                                    data_dict['menu_category'] = row_data[0]
-                                    menu_serializer = MenuSerializer(data=data_dict, context={'request': request})
-                                    if menu_serializer.is_valid():
-                                        menu_serializer.save()
-                                        count = count + 1
-                                        new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.values()[0]['id'])
+                                    defective_data.append(list)
                             else:
-                                defective_data.append(row_data[1])
+                                data_dict[i]['list'] = None
+                                menu_rec = Menu.objects.filter(menu_category=menu_category)
+                            label = data_dict[i].pop('label (us english)')
+                            language = get_current_user_language(request.user)
+                            lang = Language.objects.filter(name=language)
+                            check=Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
+                            if check:
+                                pass
+                            else:
+                                new_label = Translation.objects.create(label=label, language_id=lang.values()[0]['id'])
+                            label_rec = Translation.objects.filter(label=label, language_id=lang.values()[0]['id'])
+                            if menu_rec:
+                                pass
+                            else:
+                                menu_serializer = MenuSerializer(data=data_dict[i], context={'request': request})
+                                if menu_serializer.is_valid(raise_exception=True):
+                                    menu_serializer.save()
+                                    count = count + 1
+                                    new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.values()[0]['id'])
                 if defective_data:
                     defective_data = {
-                        "missing_lists" : f"These {set(defective_data)} are the invalid list names."
+                        "invalid_lists" : f"These {set(defective_data)} are the invalid list name(s)."
                     } 
                     return Response(utils.success_def(self,count,defective_data))
                 else:
@@ -638,39 +709,30 @@ class FormDataViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            user_id = str(request.user.id)
-            defective_data = []
-            count = 0
             if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows():
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    data=row_data[1]
-                    table = row_data[2]
-                    print('table is',table)
-                    field = row_data[3]
-                    type = row_data[4]
-                    parent_field = row_data[5]
-                    link = row_data[6]
-                    if data and field:
-                        if row_data[0] == 'form' or row_data[0] == 'Form' :
-                            pass
-                        else:
-                            formrec = Form.objects.filter(form=row_data[0])
+                data_dict = importing_data(file)
+                count = 0
+                defective_data=[]
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        data=data_dict[i]['data']
+                        field = data_dict[i]['field']
+                        if data and field:
+                            form_name=data_dict[i]['form']
+                            formrec = Form.objects.filter(form=form_name)
                             if formrec:
-                                columnrec = FormData.objects.filter(data= row_data[1],form_id=formrec.values()[0]['id'])
+                                columnrec = FormData.objects.filter(data=data,form_id=formrec.values()[0]['id'])
                                 if columnrec:
                                     pass
                                 else:
-                                    FormData.objects.create(form_id=formrec.values()[0]['id'],data=data, table = table
-                                                            ,field=field,created_by_id=user_id, type = type.lower(),
-                                                            parent_field=parent_field, link=link)
-                                    count += 1
+                                    data_dict[i]['form']=formrec.values()[0]['id']
+                                    data_dict[i]['type']=(data_dict[i]['type']).lower()
+                                    serializer=FormDataSerializer(data=data_dict[i], context={'request':request})
+                                    if serializer.is_valid(raise_exception=True):
+                                        serializer.save()
+                                        count += 1
                             else:
-                                defective_data.append(row_data[0])
+                                defective_data.append(form_name)
                 if defective_data:
                     defective_data = {
                         "missing_forms" : f"These {set(defective_data)} are the invalid form names."
@@ -683,4 +745,3 @@ class FormDataViewSet(viewsets.ModelViewSet):
                 return Response(utils.error(self,msg))
         except Exception as e:
             return Response(utils.error(self,str(e)))
-    

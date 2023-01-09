@@ -3,6 +3,7 @@ from enum import unique
 from django.db import models
 from system.utils import DateFormatChoices, TimeFormatChoice
 from django.contrib.auth.models import User
+from django_countries.fields import CountryField
 
 # Create your models here.
 # Base class for all models
@@ -23,7 +24,7 @@ class Button(BaseContent):
     button_type = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return self.button
     
 class Currency(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
@@ -37,7 +38,7 @@ class Currency(BaseContent):
 
     class Meta:
         verbose_name = "Currency"
-        verbose_name_plural = "Countries"
+        verbose_name_plural = "Currencies"
      
 class Tag(BaseContent):
     tag = models.CharField(max_length=255, null=True, unique=True)
@@ -46,7 +47,7 @@ class Tag(BaseContent):
     used = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return self.tag
     
 class Language(BaseContent): 
     name = models.CharField(max_length=255, null=True, unique=True)
@@ -61,12 +62,12 @@ class Language(BaseContent):
         return self.name
     
 class Country(BaseContent):
-    name = models.CharField(max_length=255, null=True,unique=True)
-    abbreviation = models.CharField(max_length=255, null=True, unique=True)
-    currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
+    country = CountryField(unique=True)
+    telephone = models.CharField(max_length=5, null=True, unique= True)
+    currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True)
     
     def __str__(self):
-        return self.name
+        return self.country.name
 
     class Meta:
         verbose_name = "Country"
@@ -74,8 +75,8 @@ class Country(BaseContent):
 
 class State(BaseContent):
     country = models.ForeignKey('Country', on_delete=models.CASCADE, null=True)
-    name = models.CharField(max_length=255, null=True)
-    abbreviation = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=255, null=False, blank=True)
+    abbreviation = models.CharField(max_length=3, null=False, blank=True)
     
     def __str__(self):
         return self.name
@@ -119,7 +120,7 @@ class Territories(BaseContent):
         return self.name
     
     class Meta:
-        verbose_name = "Territories"
+        verbose_name = "Territory"
         verbose_name_plural = "Territories"
     
 class Choice(BaseContent):
@@ -160,7 +161,8 @@ class FormData(BaseContent):
     field = models.CharField(max_length=255, null=True)
     TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
                     ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'),
-                    ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'))
+                    ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'),
+                    ('composite', 'Composite'))
     type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
     link = models.CharField(max_length=255, null = True, blank = True)
     section = models.ForeignKey('FormSection', on_delete=models.SET_NULL, null=True, blank=True)

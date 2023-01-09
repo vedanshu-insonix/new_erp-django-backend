@@ -2,8 +2,8 @@ from django.db import models
 from system.models.common import BaseContent
 
 class SalesQuotations(BaseContent):
-    order_id = models.CharField(max_length = 255, null = True, blank = True)
-    customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
+    quotation_id = models.CharField(max_length = 10, unique=True)
+    customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
     contact_first = models.CharField(max_length = 255, null = True, blank = True)
     contact_last = models.CharField(max_length = 255, null = True, blank = True)
@@ -52,5 +52,6 @@ class SalesQuotations(BaseContent):
     quotation_stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    
-    
+
+    def __str__(self):
+        return self.quotation_id 
