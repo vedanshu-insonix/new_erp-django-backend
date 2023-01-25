@@ -272,8 +272,3 @@ class CustomerViewSet(viewsets.ModelViewSet):
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)
-    
-    
-
-
-

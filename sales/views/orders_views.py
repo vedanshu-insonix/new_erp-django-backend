@@ -23,9 +23,9 @@ class SalesOrdersViewSet(viewsets.ModelViewSet):
             new=False
             order_id=create_unique_id('SO')
             while (new == False):
-                check = SalesOrders.objects.filter(quotation_id=quotation_id)
+                check = SalesOrders.objects.filter(order_id=order_id)
                 if check:
-                    quotation_id=create_unique_id('SO')
+                    order_id=create_unique_id('SO')
                 else:
                     new = True
             data['order_id'] = order_id

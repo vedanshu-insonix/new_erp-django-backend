@@ -2,9 +2,9 @@ from rest_framework import serializers
 from ..models.address import Addresses, AddressTag
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
-from system.serializers.company_serializers import CompanyAddressSerializer
+from system.serializers.entity_serializers import EntityAddressSerializer
 from system.serializers.communication_serializers import CommunicationAddressSerializer
-from system.models.company import CompanyAddress
+from system.models.entity import EntityAddress
 from system.models.communication import Communication
 from system.serializers.communication_serializers import RelatedCommunicationSerializer
 from system.models.communication import CommunicationAddress
@@ -23,7 +23,7 @@ class AddressTagSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     vendor = serializers.SerializerMethodField()
-    company = serializers.SerializerMethodField()
+    entity = serializers.SerializerMethodField()
     communication = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
         
@@ -39,11 +39,11 @@ class AddressSerializer(serializers.ModelSerializer):
         return_vendor = serializer.data[0]['vendor'] if serializer.data else None
         return return_vendor
 
-    def get_company(self, obj):
-        queryset = CompanyAddress.objects.filter(address = obj.id)
-        serializer = CompanyAddressSerializer(queryset, many=True)
-        return_company = serializer.data[0]['company'] if serializer.data else None
-        return return_company
+    def get_entity(self, obj):
+        queryset = EntityAddress.objects.filter(address = obj.id)
+        serializer = EntityAddressSerializer(queryset, many=True)
+        return_entity = serializer.data[0]['entity'] if serializer.data else None
+        return return_entity
 
     def get_communication(self, obj):
         queryset = CommunicationAddress.objects.filter(address = obj.id)

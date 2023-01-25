@@ -336,10 +336,10 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         fields = ("id","choice","label")
         
 class ChoiceSerializer(serializers.ModelSerializer):
-    choice = serializers.CharField(max_length = 255, required = True)
+    choice_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
-        data = obj.choice
+        data = obj.choice_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
@@ -362,9 +362,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
                     
-        selector = instance.selector
+        choice_name = instance.choice_name
         if choice:
-            response['selector'] = utils.decode_api_name(selector)    
+            response['choice_name'] = utils.decode_api_name(choice_name)    
         
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
@@ -377,8 +377,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        selector = data.get('selector')
-        data['selector'] = utils.encode_api_name(selector)
+        choice_name = data.get('choice_name')
+        data['choice_name'] = utils.encode_api_name(choice_name)
         return data
     
 # ************************ List Serializer ****************************************** 
@@ -545,7 +545,7 @@ class RelatedMenuSerializer(serializers.ModelSerializer):
          
 class MenuSerializer(serializers.ModelSerializer):
     menu_category = serializers.CharField(max_length = 255, required = True)
-    form = serializers.SerializerMethodField()
+    """form = serializers.SerializerMethodField()
     def get_form(self, obj):
         request = self.context['request']
         list_details = obj.list
@@ -556,7 +556,7 @@ class MenuSerializer(serializers.ModelSerializer):
             if serializers.data:
                  return serializers.data['form']
             return serializers.data
-        return None
+        return None"""
     class Meta:
         model = Menu
         fields = ("__all__")
@@ -597,10 +597,11 @@ class RelatedFormSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
    
 class FormSerializer(serializers.ModelSerializer):
-    form = serializers.CharField(max_length= 255, required = True)
     form_list = serializers.SerializerMethodField()
     form_data = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    section = serializers.SerializerMethodField()
+
     def get_form_list(self,obj):
         request = self.context['request']
         form_list = FormList.objects.filter(form = obj.id).order_by('position')
@@ -626,6 +627,12 @@ class FormSerializer(serializers.ModelSerializer):
         else:
             return data
     
+    def get_section(self,obj):
+        request = self.context['request']
+        form_section = FormSection.objects.filter(form = obj.id).order_by('section_sequence')
+        serializer = RelatedFormSectionSerializer(form_section, many = True, context={'request': request})  
+        return serializer.data
+
     class Meta:
         model = Form
         fields = ("__all__")

@@ -124,25 +124,30 @@ class Territories(BaseContent):
         verbose_name_plural = "Territories"
     
 class Choice(BaseContent):
-    form = models.ForeignKey('Form', on_delete = models.CASCADE, null=True, blank=True)
-    selector = models.CharField(max_length = 255, null=True, blank = True)
-    choice = models.CharField(max_length=255, null=True)
+    selector = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    choice_name = models.CharField(max_length=255, null=True)
+    description = models.TextField(null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
-    default = models.BooleanField(default=False)
+    EDIT_CHOICES = (('Custom','Editable'),('System','Non-Editable'))
+    editable = models.CharField(max_length=50, null=True, blank=True, choices=EDIT_CHOICES)
+    DEFAULT_CHOICES = (('default','Default'),('None',''))
+    deafult = models.CharField(max_length=50, null=True, blank=True, choices=DEFAULT_CHOICES)
     
     def __str__(self):
-        return self.choice
+        return self.choice_name
     
 class Menu(BaseContent):
     menu_category = models.CharField(max_length = 255, null=True, blank =True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
+    menu_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.menu_category
 
 class Form(BaseContent):
-    form = models.CharField(max_length=255, null=True, unique=True)
+    form = models.CharField(max_length=255, unique=True)
     def __str__(self):
         return self.form
 

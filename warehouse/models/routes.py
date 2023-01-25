@@ -5,8 +5,8 @@ class Routes(BaseContent):
     ApplicationChoice =(("Sales Orders","sales orders"),("Sales Return Orders","sales return orders"),("Purchase Orders","purchase orders"),
                         ("Purchase Return Orders","purchase return orders"),("Manufacturing Orders","manufacturing orders"),("Transfer Orders","transfer orders"))
     route_application=models.CharField(max_length = 255, null=True, blank=True, choices=ApplicationChoice)
-    route_type=models.CharField(max_length=255, null=True, blank=True)
-    code=models.CharField(max_length=255, null=True, blank=True)
+    route_type=models.ForeignKey('Route_Types', on_delete=models.SET_NULL, null=True, blank=True)
+    #code=models.CharField(max_length=255, null=True, blank=True)
     identifier=models.CharField(max_length=255, null=True, blank=True)
     description=models.CharField(max_length=255, null=True, blank=True)
     stage=models.ForeignKey('system.Stage', on_delete = models.SET_NULL, null=True, blank=True)

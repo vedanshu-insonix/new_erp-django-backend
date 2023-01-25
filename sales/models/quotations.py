@@ -54,4 +54,24 @@ class SalesQuotations(BaseContent):
     status = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.quotation_id 
+        return self.quotation_id
+
+class SalesQuotationLines(BaseContent):
+    quotation_id = models.ForeignKey('system.Currency', on_delete = models.SET_NULL, null= True, blank = True)
+    stock_id = models.CharField(max_length = 255, null = True, blank = True)
+    #stock_number = 
+    product_name = models.CharField(max_length = 255, null = True, blank = True)
+    #description = 
+    list_price = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    multiplier = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    #uom = FKEY
+    quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    route = models.ForeignKey('warehouse.Routes', on_delete = models.SET_NULL, null= True, blank = True)
+    #via_choice = 
+    date = models.DateTimeField(null=True,blank=True)
+    #bundle_line_id = 
+    #order_id = 
+    #sequence = 
+    comment = models.TextField(null = True, blank = True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
+    #status_choices_id = 

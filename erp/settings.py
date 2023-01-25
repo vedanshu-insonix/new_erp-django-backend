@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7!2&=0ra#slpfrmediemjx)55z1=5u-ke7%gve5dr_63(t!_5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -121,9 +121,9 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'erp',
-        'USER': 'prosebit',
-        'PASSWORD': 'password',
+        'NAME': 'erp2',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
     }

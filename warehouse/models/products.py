@@ -99,8 +99,8 @@ class ProductCategory(BaseContent):
     sequence = models.CharField(max_length=255, null=True, blank=True)
 
 class Equivalents(BaseContent):
-    company = models.ForeignKey('system.Company', on_delete=models.SET_NULL, null=True, blank=True)
-    company_product = models.ForeignKey('system.CompanyProducts', on_delete=models.SET_NULL, null=True, blank=True)
+    company = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
+    company_product = models.ForeignKey('system.EntityProducts', on_delete=models.SET_NULL, null=True, blank=True)
     company_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #company_uom = data type not defined
     vendor_id = models.ForeignKey('sales.Vendors', on_delete=models.SET_NULL, null=True, blank=True)
@@ -155,3 +155,15 @@ class UOM(BaseContent):
     unit = models.TextField(null=True,blank=True)
     reference = models.TextField(null=True,blank=True)
     rounding = models.TextField(null=True,blank=True)
+
+class ProductLine(BaseContent):
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    reserve = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    ship = models.IntegerField(null=True, blank=True)
+    route = models.ForeignKey('warehouse.Routes', on_delete=models.SET_NULL, null=True, blank=True)
+    via = models.CharField(max_length=255, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    unit = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    discount = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    net = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)

@@ -18,7 +18,7 @@ from django.urls import path,include
 
 from django.urls import include, path
 from rest_framework import routers
-from system.views import user_views, common_views, communication_views, company_views, translation_views, team_views
+from system.views import user_views, common_views, communication_views, entity_views, translation_views, team_views, role_permission_views, dataset_views
 from sales.views import customers_views, vendors_views, addresses_views, invoices_views, receipts_views, pricelists_views, orders_views, quotations_views, credits_views, cart_views, return_views
 from rest_framework_simplejwt import views as jwt_views
 from warehouse.views import products_views, general_views, route_views, operation_views
@@ -41,7 +41,11 @@ schema_view = swagger_get_schema_view(
 router = routers.DefaultRouter()
 ##****************************************SYSTEM APP URL'S****************************************##
 router.register(r'users', user_views.UserViewSet)
+router.register(r'tables', dataset_views.TableViewSet)
+router.register(r'data', dataset_views.DataViewSet)
 router.register(r'groups', user_views.GroupViewSet)
+router.register(r'roles', role_permission_views.RoleViewSet)
+router.register(r'permissions', role_permission_views.PermissionViewSet)
 router.register(r'menus', common_views.MenuViewSet)
 router.register(r'lists', common_views.ListViewSet)
 router.register(r'columns', common_views.ColumnsViewSet)
@@ -62,9 +66,10 @@ router.register(r'choices', common_views.ChoiceViewSet)
 router.register(r'helps', common_views.HelpViewSet)
 router.register(r'formdata', common_views.FormDataViewSet)
 router.register(r'formlist', common_views.FormListViewSet)
+router.register(r'formsections', common_views.FormSectionViewSet)
 router.register(r'communications', communication_views.CommunicationViewSet)
 router.register(r'channels', communication_views.ChannelViewSet)
-router.register(r'companies', company_views.CompanyViewSet)
+router.register(r'entities', entity_views.EntityViewSet)
 router.register(r'translations', translation_views.TranslationViewSet)
 router.register(r'teams', team_views.TeamViewSet)
 ##****************************************SALES APP URL'S****************************************##

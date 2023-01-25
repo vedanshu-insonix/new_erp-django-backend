@@ -415,7 +415,6 @@ class FormViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            print(file)
             if file:
                 data_dict = importing_data(file)
                 count = 0
@@ -745,3 +744,10 @@ class FormDataViewSet(viewsets.ModelViewSet):
                 return Response(utils.error(self,msg))
         except Exception as e:
             return Response(utils.error(self,str(e)))
+
+class FormSectionViewSet(viewsets.ModelViewSet):
+    queryset = FormSection.objects.all()
+    serializer_class = RelatedFormSectionSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
