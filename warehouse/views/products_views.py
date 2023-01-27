@@ -8,7 +8,7 @@ from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from system import utils
-from system.views.common_views import importing_data
+from system.views.common_views import extracting_data
 
 def create_attribute(variant_values,temp_id):
     product_id=Product.objects.get(id=temp_id)
@@ -150,7 +150,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         try:
             template_file = request.FILES.get('template_file')
             if template_file:
-                data_dict = importing_data(template_file)
+                data_dict = extracting_data(template_file)
                 template_count = 0
                 defective_data=[]
                 attr_dict={}

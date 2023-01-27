@@ -21,7 +21,7 @@ def get_tokens_for_user(user):
     }
 
 #**********************************Function To Extract Data From Excel File******************************************#
-def importing_data(file):
+def extracting_data(file):
     xl_data = []
     heading = []
     wb = openpyxl.load_workbook(file)
@@ -65,7 +65,7 @@ class CurrencyViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
                     if data_dict[i] != None:
@@ -118,7 +118,7 @@ class CountryViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
@@ -166,7 +166,7 @@ class StateViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
@@ -224,7 +224,7 @@ class StageViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
@@ -305,7 +305,7 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
                     if data_dict[i] != None:
@@ -352,6 +352,23 @@ class ChoiceViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
+                data_dict = extracting_data(file)
+                count = 0
+                for i in range(len(data_dict)):
+                    if data_dict[i] != None:
+                        print(data_dict[i])
+                return Response(utils.success(self,count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(self,msg))
+        except Exception as e:
+            return Response(utils.error(self,str(e)))
+        
+    """@action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            if file:
                 data_dict = importing_data(file)
                 count = 0
                 for i in range(len(data_dict)):
@@ -394,7 +411,7 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                 msg="Please Upload A Suitable Excel File."
                 return Response(utils.error(self,msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(self,str(e)))"""
 
 class FormViewSet(viewsets.ModelViewSet):
     """
@@ -416,7 +433,7 @@ class FormViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
                     if data_dict[i] != None:
@@ -568,7 +585,7 @@ class ColumnsViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
@@ -628,7 +645,7 @@ class MenuViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data = []
                 for i in range(len(data_dict)):
@@ -709,7 +726,7 @@ class FormDataViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
