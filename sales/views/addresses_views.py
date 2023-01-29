@@ -7,7 +7,7 @@ from system.serializers.communication_serializers import CommunicationSerializer
 from ..models.address import Addresses
 from system.models.communication import Communication, CommunicationAddress
 from ..models.vendors import Vendors, VendorAddress
-from system.models.company import Company, CompanyAddress
+from system.models.entity import Entity, EntityAddress
 from ..models.address import AddressTag
 from rest_framework.response import Response
 from rest_framework import status
@@ -77,9 +77,9 @@ class AddressViewSet(viewsets.ModelViewSet):
                         VendorAddress.objects.create(address = AddressInstance, vendor = VendorInstance)
 
                 if HaveCompany == True:
-                    CompanyInstance = Company.objects.get(id = company)
+                    CompanyInstance = Entity.objects.get(id = company)
                     if CompanyInstance:
-                        CompanyAddress.objects.create(address = AddressInstance, company = CompanyInstance)
+                        EntityAddress.objects.create(address = AddressInstance, company = CompanyInstance)
 
                 if HaveCommunication == True:
                     for comm in communication:
@@ -157,17 +157,17 @@ class AddressViewSet(viewsets.ModelViewSet):
                     else:
                         VendorAddress.objects.create(address = address_instance, vendor = vendor_instance)
                 
-            # Create Record in CompanyAddress
+            # Create Record in EntityAddress
             if HaveCompany == True:
-                company_instance = Company.objects.get(id = company)
+                company_instance = Entity.objects.get(id = company)
                 if company_instance != None:
                     address_instance = Addresses.objects.get(id = address_id)
-                    get_company = CompanyAddress.objects.filter(address = address_instance.id, company = company_instance.id)
+                    get_company = EntityAddress.objects.filter(address = address_instance.id, company = company_instance.id)
                     if get_company:
                         del_obj = get_company.delete()
-                        CompanyAddress.objects.create(address = address_instance, company = company_instance)
+                        EntityAddress.objects.create(address = address_instance, company = company_instance)
                     else:
-                        CompanyAddress.objects.create(address = address_instance, company = company_instance)
+                        EntityAddress.objects.create(address = address_instance, company = company_instance)
   
             # Create Record in CommunicationAddress
             if HaveCommunication == True:
@@ -263,6 +263,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                             pass
                         else:
                             for key in new_sequence:
+                                print(key)
                                 data_dict[key] = row_data[new_sequence[key]-1]
                                 if key == 'state':
                                     state_name = row_data[new_sequence[key]-1]
@@ -280,6 +281,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                                     language = row_data[new_sequence[key]-1]
                                     language = Language.objects.filter(name=language)
                                     data_dict[key]=language.values()[0]['id']
+                            print(data_dict)
                             try:       
                                 serializers = AddressSerializer(data = data_dict, context={'request': request})
                                 if serializers.is_valid(raise_exception=True):

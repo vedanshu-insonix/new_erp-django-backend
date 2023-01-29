@@ -2,9 +2,8 @@ from django.db import models
 from system.models.common import BaseContent
 
 class SalesOrders(BaseContent):
-    order_id = models.CharField(max_length = 255, null = True, blank = True)
-    #order_id = models.AutoField(primary_key=True, unique=True)
-    customer = models.ForeignKey('Customers', on_delete = models.SET_NULL, null = True, blank = True)
+    order_id = models.CharField(max_length = 255, unique=True)
+    customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
     contact_first = models.CharField(max_length = 255, null = True, blank = True)
     contact_last = models.CharField(max_length = 255, null = True, blank = True)
@@ -53,25 +52,28 @@ class SalesOrders(BaseContent):
     order_stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.order_id
     
 class SalesOrderLines(BaseContent):
-    order_id = models.CharField(max_length = 255, null = True, blank = True)
+    order = models.ForeignKey('SalesOrders', on_delete=models.SET_NULL, null=True, blank=True)
     stock_id = models.CharField(max_length = 255, null = True, blank = True)#Fkey
     stock_number = models.CharField(max_length = 255, null = True, blank = True)
     product_name = models.CharField(max_length = 255, null = True, blank = True)
     description = models.TextField(null = True, blank = True)
     list_price = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     multiplier = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    uom = models.CharField(max_length = 255, null = True, blank = True)
+    uom = models.ForeignKey('warehouse.UOM', on_delete=models.SET_NULL, null=True, blank=True)
     ordered = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     canceled = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     reserved = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     ready = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     released = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     shipped = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    invoiced = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    route_id = models.CharField(max_length = 255, null = True, blank = True) #FKEY
-    via_choice_id = models.CharField(max_length = 255, null = True, blank = True) #FKEY
+    invoiced = models.IntegerField(null=True, blank=True)
+    route = models.ForeignKey('warehouse.Routes', on_delete=models.SET_NULL, null=True, blank=True)
+    via_choice = models.CharField(max_length = 255, null = True, blank = True)
     date = models.DateTimeField(null = True, blank = True)
     bundle_line_id =models.CharField(max_length = 255, null = True, blank = True)#references primary key of orderline that is a bundle
     shipment_id = models.CharField(max_length = 255, null = True, blank = True)# FKEY

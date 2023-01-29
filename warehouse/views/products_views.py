@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from warehouse.models.products import *
 from warehouse.serializers.products_serializer import *
-from warehouse.serializers.general_serializer import AttributesSerializer
-from warehouse.models.general import Attributes, Product_Attribute, Journal_Template
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.response import Response
-from rest_framework import status
-
+from rest_framework.decorators import action
+from system import utils
+from warehouse.services.product_services import product_services, attribute_services
+from warehouse.services.location_services import location_services
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -16,74 +16,58 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 
+    @action(detail=False, methods=['GET'], name='template')
+    def get_template(self):
+        try:
+            template_rec = Product.objects.filter(id = 1)
+            serializer = RelatedProductSerializer(template_rec, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(utils.error(self,str(e)))
+
     def create(self, request):
-        try:
-            data = request.data
-            have_attr = False
-            have_images = False
-            if 'attribute' in data:
-                attribute_data = data.pop('attribute')
-                have_attr=True
-            if 'images' in data:
-                image_data = data.pop('images')
-                have_images = True
-            template_name = data.get('template_name')
-            if template_name:
-                template_rec = Journal_Template.objects.create(journal_template_name=template_name)
-                if template_rec:
-                    data['template'] = template_rec.id
-                    serializer = ProductSerializer(data=data, context={'request':request})
-                    if serializer.is_valid(raise_exception=True):
-                        serializer.save()
-                        product_id = Product.objects.get(id = serializer.data.get("id"))
-                        if have_images == True:
-                            for image in image_data:
-                                image_rec = Images.objects.create(image=image, title=template_name, file=image)
-                                Product_Images.objects.create(product= product_id, image=image_rec)
-                        if have_attr==True:
-                            for attributes in attribute_data:
-                                attr_id = Attributes.objects.filter(attribute=attributes)
-                                if attr_id:
-                                    attr_id = Attributes.objects.get(attribute=attributes)
-                                    pass
-                                else:
-                                    attr_id = Attributes.objects.create(attribute=attributes)
-                                createproductattribute = Product_Attribute.objects.create(product=product_id, attribute=attr_id)
-                                check = Value.objects.filter(value=attribute_data[attributes], attribute=attr_id)
-                                if check:
-                                    value_id = Value.objects.get(value=attribute_data[attributes], attribute=attr_id)
-                                    pass
-                                else:
-                                    value_id = Value.objects.create(value=attribute_data[attributes], attribute=attr_id)
-                                createproductValue = Product_Values.objects.create(product=product_id, value=value_id)
-                        product_rec = Product.objects.get(id = product_id.id)
-                        return_data = ProductSerializer(product_rec, context={'request': request})
-                        return Response(return_data.data)
+        prod_create = product_services.create_product(self,request)
+        if 'success' in prod_create:
+            ret = prod_create['success']
+            return Response(utils.success_msg(self,ret))
+        else:
+            ret = prod_create['error']
+            return Response(utils.error(self,ret))
+
+    @action(detail=True, methods=['post'],url_path = "add_attributes")
+    def add_attributes(self,request,pk=None):
+        create_attribute = attribute_services.add_attributes(self, request, pk)
+        if 'success' in create_attribute:
+            ret = create_attribute['success']
+            return Response(ret)
+        else:
+            ret = create_attribute['error']
+            return Response(utils.error(self,ret))
+
+    @action(detail=True, methods=['post'], url_path='remove_attributes')
+    def remove_attributes(self,request,pk=None):
+        del_attr = attribute_services.delete_attribute(self, request, pk)
+        if 'success' in del_attr:
+            ret = del_attr['success']
+            return Response(ret)
+        else:
+            ret = del_attr['error']
+            return Response(utils.error(self,ret))
+
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        bulk_upload = product_services.bulk_upload(self, request)
+        if 'success' in bulk_upload:
+            ret = bulk_upload['success']
+            return Response(utils.success(self,ret))
+        else:
+            if 'success' in bulk_upload:
+                success_def = bulk_upload['success_def']
+                defect = bulk_upload['defect']
+                return Response(utils.success_def(self,success_def,defect))
             else:
-                msg = 'please enter a valid template name'
-                response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': msg}
-                return Response(response)
-        except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
-
-    def update(self,request,pk=None):
-        try:
-            data = request.data
-            product_rec = Product.objects.get(id=pk)
-            updateproduct = ProductSerializer(product_rec, data=data, context={'request': request})
-            if updateproduct.is_valid():
-                updateproduct.save()
-                if 'template_name' in data:
-                    template_rec = Journal_Template.objects.filter(id = product_rec.template.id)
-                    template_rec = template_rec.update(journal_template_name=data.get('template_name'))
-
-            product_rec = Product.objects.get(id = pk)
-            return_data = ProductSerializer(product_rec, context={'request': request})
-            return Response(return_data.data)
-        except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+                ret = bulk_upload['error']
+                return Response(utils.error(self,ret))
 
 class CharacteristicsViewSet(viewsets.ModelViewSet):
     queryset = Characteristics.objects.all()
@@ -104,6 +88,24 @@ class EquivalentsViewSet(viewsets.ModelViewSet):
 class LocationsViewSet(viewsets.ModelViewSet):
     queryset = Locations.objects.all()
     serializer_class = LocationsSerializer
+
+    def create(self,request):
+        loc_create = location_services.create_location(self, request)
+        if 'success' in loc_create:
+            ret = loc_create['success']
+            return Response(utils.success_msg(self,ret))
+        else:
+            ret = loc_create['error']
+            return Response(utils.error(self,ret))
+
+    def update(self,request,pk):
+        loc_update = location_services.update_location(self, request, pk)
+        if 'success' in loc_update:
+            ret = loc_update['success']
+            return Response(utils.success_msg(self,ret))
+        else:
+            ret = loc_update['error']
+            return Response(utils.error(self,ret))
 
 class ProductCountsViewSet(viewsets.ModelViewSet):
     queryset = ProductCounts.objects.all()

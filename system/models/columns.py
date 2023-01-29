@@ -8,9 +8,6 @@ class Column(BaseContent):
     table = models.CharField(max_length=255, null=True, blank=True)
     field = models.CharField(max_length=255, null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
-    #default = models.BooleanField(default=False)
-    #required = models.BooleanField(default = False)
-    #optional = models.BooleanField(default = False)
     visibility = models.CharField(max_length=255, choices=Column_Visibility_Choice, null=True, blank=True)
     
     

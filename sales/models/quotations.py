@@ -2,8 +2,8 @@ from django.db import models
 from system.models.common import BaseContent
 
 class SalesQuotations(BaseContent):
-    order_id = models.CharField(max_length = 255, null = True, blank = True)
-    customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
+    quotation_id = models.CharField(max_length = 10, unique=True)
+    customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
     contact_first = models.CharField(max_length = 255, null = True, blank = True)
     contact_last = models.CharField(max_length = 255, null = True, blank = True)
@@ -52,5 +52,26 @@ class SalesQuotations(BaseContent):
     quotation_stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    
-    
+
+    def __str__(self):
+        return self.quotation_id
+
+class SalesQuotationLines(BaseContent):
+    quotation_id = models.ForeignKey('system.Currency', on_delete = models.SET_NULL, null= True, blank = True)
+    stock_id = models.CharField(max_length = 255, null = True, blank = True)
+    #stock_number = 
+    product_name = models.CharField(max_length = 255, null = True, blank = True)
+    #description = 
+    list_price = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    multiplier = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    #uom = FKEY
+    quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    route = models.ForeignKey('warehouse.Routes', on_delete = models.SET_NULL, null= True, blank = True)
+    #via_choice = 
+    date = models.DateTimeField(null=True,blank=True)
+    #bundle_line_id = 
+    #order_id = 
+    #sequence = 
+    comment = models.TextField(null = True, blank = True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
+    #status_choices_id = 

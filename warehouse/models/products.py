@@ -1,7 +1,5 @@
 from django.db import models
-from system.models.common import BaseContent
 from system.models.common import *
-
 
 class Product(BaseContent):
     template = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
@@ -12,7 +10,7 @@ class Product(BaseContent):
     template_variant_name = models.CharField(max_length = 255, null=True, blank=True)
     stock_number = models.CharField(max_length = 255, null=True, blank=True)
     variant_name = models.CharField(max_length = 255, null=True, blank=True)
-    cart_line_discription = models.TextField(null=True, blank=True)
+    cart_line_description = models.TextField(null=True, blank=True)
     sales_line_description = models.TextField(null=True, blank=True)
     list_price = models.DecimalField(max_digits=30,decimal_places=2,default=0.0)
     # selling_unit = models.ForeignKey('UOM', on_delete = models.SET_NULL, null=True, blank=True)
@@ -65,7 +63,10 @@ class Bom(BaseContent):
     resulting_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     bom_description = models.TextField(null=True, blank=True)
     label = models.CharField(max_length=255, null=True, blank=True)
-    bom_type = models.CharField(max_length=255, null=True, blank=True)
+    BOMTypeChoice =(("1","Assembly"),("2","Kit"),
+                    ("3","Set"),("4","Bundle")
+                    )
+    bom_type = models.CharField(max_length=255, null=True, blank=True, choices=BOMTypeChoice)
     version = models.IntegerField(null=True, blank=True)
 
 class Components(BaseContent):
@@ -94,12 +95,12 @@ class ProductCategory(BaseContent):
     usage = models.CharField(max_length=255, null=True, blank=True)
     category = models.ForeignKey('system.Category', on_delete = models.SET_NULL, null=True, blank=True)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True) # parent_id
-    has_children = models.BooleanField()
+    has_children = models.BooleanField(default = False)
     sequence = models.CharField(max_length=255, null=True, blank=True)
 
 class Equivalents(BaseContent):
-    company = models.ForeignKey('system.Company', on_delete=models.SET_NULL, null=True, blank=True)
-    company_product = models.ForeignKey('system.CompanyProducts', on_delete=models.SET_NULL, null=True, blank=True)
+    company = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
+    company_product = models.ForeignKey('system.EntityProducts', on_delete=models.SET_NULL, null=True, blank=True)
     company_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #company_uom = data type not defined
     vendor_id = models.ForeignKey('sales.Vendors', on_delete=models.SET_NULL, null=True, blank=True)
@@ -113,7 +114,19 @@ class Locations(BaseContent):
     code = models.CharField(max_length=100,null=True,blank=True)
     loc_address = models.ForeignKey('sales.Addresses', on_delete=models.SET_NULL, null=True, blank=True)
     comments = models.TextField(null=True,blank=True)
-    function_choice = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    LocationTypeChoice =(("company","Companies"),("customer","Customers"),
+                        ("vendor","Vendors"))
+    loc_type=models.CharField(max_length=255, null=True, blank=True, choices=LocationTypeChoice)
+    stock=models.BooleanField(default = False)
+    packing=models.BooleanField(default = False)
+    manufacturing=models.BooleanField(default = False)
+    shipping=models.BooleanField(default = False)
+    receiving=models.BooleanField(default = False)
+    inspection=models.BooleanField(default = False)
+    transit=models.BooleanField(default = False)
+    scrap=models.BooleanField(default = False)
+    stage=models.ForeignKey('system.Stage', on_delete = models.SET_NULL, null=True, blank=True)
+    status=models.CharField(max_length = 255, null=True, blank=True)
 
 class ProductCounts(BaseContent):
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
@@ -130,7 +143,7 @@ class ProductLocations(BaseContent):
     locations = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
     current_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     max_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    mimi_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    mini_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
     stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
@@ -142,3 +155,15 @@ class UOM(BaseContent):
     unit = models.TextField(null=True,blank=True)
     reference = models.TextField(null=True,blank=True)
     rounding = models.TextField(null=True,blank=True)
+
+class ProductLine(BaseContent):
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    reserve = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    ship = models.IntegerField(null=True, blank=True)
+    route = models.ForeignKey('warehouse.Routes', on_delete=models.SET_NULL, null=True, blank=True)
+    via = models.CharField(max_length=255, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    unit = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    discount = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
+    net = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)

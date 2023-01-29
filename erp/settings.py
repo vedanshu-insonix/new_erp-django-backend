@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7!2&=0ra#slpfrmediemjx)55z1=5u-ke7%gve5dr_63(t!_5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -111,12 +111,6 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.db.backends.sqlite3',
-#          'NAME': BASE_DIR / 'db.sqlite3',
-#      }
-#  }
 
 DATABASES = {
     'default': {

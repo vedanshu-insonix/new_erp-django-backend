@@ -1,14 +1,14 @@
-from lib2to3.pytree import Base
 from django.db import models
 from .common import BaseContent
 
 class Translation(BaseContent):
-    type = models.CharField(max_length = 255, null=True, blank = True)
-    item = models.CharField(max_length = 255, null=True, blank = True)
     label = models.CharField(max_length = 255, null=True, blank = True)
-    sub_label = models.CharField(max_length = 255, null=True, blank = True)
+    description = models.CharField(max_length = 255, null=True, blank = True)
+    default_label = models.CharField(max_length = 255, null=True, blank = True)
+    default_description = models.CharField(max_length = 255, null=True, blank = True)
     language = models.ForeignKey('Language', on_delete = models.SET_NULL, null = True, blank = True)
-    translation = models.CharField(max_length = 255, null=True, blank = True)
+    table = models.ForeignKey('Table', on_delete = models.SET_NULL, null = True, blank = True)
+    table_record = models.IntegerField(null=True, blank = True)
     
     # def __str__(self):
     #     return self.label 
@@ -22,7 +22,7 @@ class TranslationFromData(BaseContent):
     formdata = models.ForeignKey('FormData', on_delete = models.CASCADE, null = True)
     
 class TranslationMenu(BaseContent):
-    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
+    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
     menu = models.ForeignKey('Menu', on_delete = models.CASCADE, null = True)
     
 class TranslationChoice(BaseContent):

@@ -5,7 +5,7 @@ from sales.models.sales_orders import SalesOrders, SalesOrderLines
 from sales.serializers.orders_serializers import SalesOrdersSerializer, SalesOrderLinesSerializer
 from rest_framework.response import Response
 from rest_framework import status
-
+from sales.views.quotations_views import create_unique_id
 
 class SalesOrdersViewSet(viewsets.ModelViewSet):
     """
@@ -20,9 +20,19 @@ class SalesOrdersViewSet(viewsets.ModelViewSet):
     def create(self,request):
         data = request.data
         try:
+            new=False
+            order_id=create_unique_id('SO')
+            while (new == False):
+                check = SalesOrders.objects.filter(order_id=order_id)
+                if check:
+                    order_id=create_unique_id('SO')
+                else:
+                    new = True
+            data['order_id'] = order_id
             if data['merchandise']:
                 price = data['merchandise']
-                cal_tax = (float(price)*10)/100
+                tax_percent = data['tax']
+                cal_tax = (float(price)*float(tax_percent))/100
                 data['tax'] = cal_tax
                 total = float(price) + cal_tax + float(data.get('other')) + float(data.get('shipping'))
                 data['total'] = total

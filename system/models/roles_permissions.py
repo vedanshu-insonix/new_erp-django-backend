@@ -4,16 +4,19 @@ from system.models.common import BaseContent
 from django.contrib.auth.models import User
 
 class Permission(BaseContent):
-    permission = models.CharField(max_length = 255, null= True, blank=True)
+    permission = models.CharField(max_length = 255, null= True, blank=True, unique=True)
     description = models.TextField(null= True, blank=True)
+    visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    entity = models.ForeignKey('Entity', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return self.permission
     
     
 class Role(BaseContent):
-    name = models.CharField(max_length=255, null=True, blank=True)
-    editable = models.BooleanField(default=True)
+    name = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    editable = models.BooleanField(default=False)
+    description = models.TextField(null=True, blank=True)
     
     def __str__(self):
         return self.name

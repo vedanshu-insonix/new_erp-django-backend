@@ -1,18 +1,16 @@
 from django.db import models
-from django.forms import CharField
-from system.models.common import BaseContent
-from system.utils import EntityChoice, ShippingTermsChoice, StatusChoice
+from system.utils import ShippingTermsChoice, StatusChoice
 from system.models.common import *
 
 class PurchaseOrder(BaseContent):
-    purchase_order_id = models.IntegerField(null=True,blank=True)
+    purchase_order_id = models.CharField(max_length = 10, unique=True)
     vendor = models.ForeignKey('sales.Vendors', on_delete=models.CASCADE, null=True)
-    #contact_address_id = 
+    contact_address = models.ForeignKey('sales.Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
     contact_first = models.CharField(max_length = 255, null=True, blank=True)
     contact_last = models.CharField(max_length = 255, null=True, blank=True)
-    contact_telephone = models.IntegerField()
+    contact_telephone = models.CharField(max_length = 255, null = True, blank = True)
     contact_email = models.EmailField('Email', max_length=255,null=True, blank=True)
-    #purchase_addr_id =
+    purchase_address = models.ForeignKey('sales.Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_purchase_address")
     purchasing_first = models.CharField(max_length = 255, null=True, blank=True)
     purchasing_last = models.CharField(max_length = 255, null=True, blank=True)
     purchasing_company = models.CharField(max_length = 255, null=True, blank=True)
@@ -25,8 +23,8 @@ class PurchaseOrder(BaseContent):
     purchasing_country = models.CharField(max_length = 255, null=True, blank=True)
     purchasing_telephone = models.CharField(max_length = 255, null=True, blank=True)
     purchasing_email = models.EmailField('Email', max_length=255,null=True, blank=True)
-    purchasing_note = models.TextField()
-    #shipping_address_id = 
+    purchasing_note = models.TextField(null = True, blank = True)
+    shipping_address = models.ForeignKey('sales.Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_shipping_address")
     shipping_first = models.CharField(max_length = 255, null=True, blank=True)
     shipping_last = models.CharField(max_length = 255, null=True, blank=True)
     shipping_company = models.CharField(max_length = 255, null=True, blank=True)
@@ -40,12 +38,12 @@ class PurchaseOrder(BaseContent):
     shipping_telephone = models.CharField(max_length = 255, null=True, blank=True)
     shipping_email = models.EmailField('Email', max_length=255,null=True, blank=True)
     shipping_note = models.TextField(null=True,blank=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(null=True,blank=True)
     reference = models.CharField(max_length = 255, null=True, blank=True)
-    # payment_terms_choices_id = 
-    shipping_terms_choices_id = models.CharField(max_length=1, choices=ShippingTermsChoice, null=True, blank=True)
-    # Priority = 
-    # authorized_by_id = 
+    # payment_terms_choices = 
+    shipping_terms_choices = models.CharField(max_length=1, choices=ShippingTermsChoice, null=True, blank=True)
+    Priority = models.CharField(max_length = 255, null = True, blank = True)
+    authorized_by_id = models.ForeignKey('system.UserAddress', on_delete=models.SET_NULL, null=True, blank=True)
     stage_id = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(auto_now_add=True)
     status_choices_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
@@ -64,10 +62,10 @@ class PurchaseOrderLines(BaseContent):
     confirmed = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
     shipped = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
     invoiced = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
-    #route_id = FKey
-    #via_choice_id = Fkey
-    date = models.DateTimeField()
-    sequence = models.IntegerField()
+    route = models.ForeignKey('warehouse.Routes', on_delete=models.SET_NULL, null=True, blank=True)
+    via_choice = models.CharField(max_length = 255, null=True, blank=True)
+    date = models.DateTimeField(null=True,blank=True)
+    sequence = models.IntegerField(null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
     product = models.TextField(null=True,blank=True)
     delivery_id = models.ForeignKey('warehouse.Deliveries', on_delete=models.SET_NULL, null=True, blank=True)
@@ -80,7 +78,7 @@ class Disbursment(BaseContent):
     currency_id = models.ForeignKey('system.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     disbursment_for = models.CharField(max_length=100, null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    #sales_credit = models.ForeignKey('sales.SalesCredits', on_delete=models.SET_NULL, null=True, blank=True)
+    sales_credit = models.ForeignKey('sales.SalesCredits', on_delete=models.SET_NULL, null=True, blank=True)
     #vendor_bill = models.ForeignKey('sales.VendorBill', on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)

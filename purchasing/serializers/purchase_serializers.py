@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from system.serializers.common_serializer import *
 from purchasing.models.purchase import *
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):

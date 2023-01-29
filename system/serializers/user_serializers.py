@@ -1,21 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 from asyncore import write
 from xml.dom import ValidationErr
 from django.contrib.auth.models import User, Group
@@ -28,9 +10,41 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from system.utils import send_email
+from system.models.teams import TeamUser
+from system.serializers.team_serializer import TeamUserSerializer
+from system.models.users import UserAddress, UserRoles
+
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
+    teams = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
+
+    def get_teams(self, obj):
+        queryset = TeamUser.objects.filter(user=obj.id)
+        serializer = TeamUserSerializer(queryset, many=True)
+        result=[]
+        for i in range(len(serializer.data)):
+            result.append(serializer.data[i]['team']) if serializer.data else None
+        return result
+
+    def get_address(self, obj):
+        queryset = UserAddress.objects.filter(user=obj.id)
+        serializer = UserAddressSerilaizer(queryset, many=True)
+        result=[]
+        for i in range(len(serializer.data)):
+            result.append(serializer.data[i]['address']) if serializer.data else None
+        return result
+        
+    def get_roles(self, obj):
+        queryset = UserRoles.objects.filter(user = obj.id)
+        serializer = UserRoleSerilaizer(queryset, many=True)
+        result=[]
+        for i in range(len(serializer.data)):
+            result.append(serializer.data[i]['role']) if serializer.data else None
+        return result
+
     class Meta:
         model = User
         fields = ("__all__")
@@ -39,10 +53,28 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data['password'])
         return super(UserSerializer, self).create(validated_data)
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context['request']
+
+        return response
+
 class RelatedUserSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields =("id","first_name", "last_name", "email")
+
+class UserAddressSerilaizer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        exclude =("id","user", "created_time", "modified_time", "created_by")
+        depth = 1
+
+class UserRoleSerilaizer(serializers.ModelSerializer):
+    class Meta:
+        model = UserRoles
+        exclude =("id","user", "created_time", "modified_time", "created_by")
+        depth = 1
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
