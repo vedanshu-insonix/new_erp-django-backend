@@ -61,4 +61,6 @@ class TranslationStageAction(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
     stage_action = models.ForeignKey('StageAction', on_delete=models.CASCADE, null = True)
 
-
+class TranslationFormSection(BaseContent):
+    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
+    form = models.ForeignKey('FormSection', on_delete=models.CASCADE, null = True)

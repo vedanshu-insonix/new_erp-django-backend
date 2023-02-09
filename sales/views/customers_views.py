@@ -248,23 +248,19 @@ class CustomerViewSet(viewsets.ModelViewSet):
                     row_data = []
                     for cell in row:
                         row_data.append(cell.value)
-                    if 'Customer' in row_data:
-                        pass
-                    else:
-                        for key in sequences:
-                            data_dict[key] = row_data[sequences[key]-1]
-                        data_dict['entity'] = '1'
-                        data_dict['require_pos'] = True
-                        data_dict['average_pay_days'] = 10
-                        data_dict['last_credit_review'] = '2022-12-11'
-                        data_dict['used'] = '2022-12-11'
-                        data_dict['created_by']=request.user.id
-                        # sorting data based on the sequence from the front-end
-                       
-                        serializers = CustomerSerializer(data = data_dict, context={'request': request})
-                        if serializers.is_valid(raise_exception=True):
-                            serializers.save()
-                            count += 1
+                    for key in sequences:
+                        data_dict[key] = row_data[sequences[key]-1]
+                    data_dict['entity'] = '1'
+                    data_dict['require_pos'] = True
+                    data_dict['average_pay_days'] = 10
+                    data_dict['last_credit_review'] = '2022-12-11'
+                    data_dict['used'] = '2022-12-11'
+                    data_dict['created_by']=request.user.id
+                    
+                    serializers = CustomerSerializer(data = data_dict, context={'request': request})
+                    if serializers.is_valid(raise_exception=True):
+                        serializers.save()
+                        count += 1
             else:
                 msg="Please Upload A Suitable Excel File."
                 return Response(utils.error(self,msg))

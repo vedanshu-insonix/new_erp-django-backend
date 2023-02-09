@@ -68,7 +68,7 @@ TimeFormatChoice =(
     
 )
 
-Column_Visibility_Choice =(
+ColumnVisibilityChoice =(
     ("1","Required"),
     ("2","Optional"),
     ("3","Default")
@@ -91,7 +91,7 @@ def send_email(subject, message, mail_to, mail_from=None, attachement=None):
         raise ValueError(err)
 
 ## Uniform api response
-def success(self, count):
+def success(count):
     response = {
                     'inserted': str(count)+" row(s) inserted successfully",
                     "status" : "success",
@@ -99,7 +99,7 @@ def success(self, count):
                 }
     return response
 
-def error(self, msg):
+def error(msg):
     response = {
                     "message": msg,
                     "status" : "error",
@@ -107,7 +107,7 @@ def error(self, msg):
                 }
     return response
 
-def success_def(self,count,defective_data):
+def success_def(count,defective_data):
     response = {
                     'inserted': str(count)+" row(s) inserted successfully",
                     "status" : "success",
@@ -116,7 +116,7 @@ def success_def(self,count,defective_data):
                 }
     return response
 
-def success_msg(self,msg):
+def success_msg(msg):
     response = {
                     "message": msg,
                     "status" : "success",
@@ -126,6 +126,7 @@ def success_msg(self,msg):
 
 #*************** Encode API Name **************
 def encode_api_name(value):
+    value=str(value)
     lowercase = value.lower()
     value = lowercase.replace(" ", "_")
     return value

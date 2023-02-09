@@ -11,9 +11,7 @@ def create_attribute(variant_values,temp_id):
         else:
             attr_id = Attributes.objects.create(attribute=attr)
         check = Product_Attribute.objects.filter(product=product_id, attribute=attr_id)
-        if check:
-            continue
-        else:
+        if not check:
             Product_Attribute.objects.create(product=product_id, attribute=attr_id)
         check = Value.objects.filter(value=variant_values[attr], attribute=attr_id)
         if check:
@@ -21,8 +19,6 @@ def create_attribute(variant_values,temp_id):
         else:
             value_id = Value.objects.create(value=variant_values[attr], attribute=attr_id)
         check = Product_Values.objects.filter(product=product_id, value=value_id)
-        if check:
-            continue
-        else:
+        if not check:
             Product_Values.objects.create(product=product_id, value=value_id)
     return True

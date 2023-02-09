@@ -26,7 +26,6 @@ class AddressSerializer(serializers.ModelSerializer):
     entity = serializers.SerializerMethodField()
     communication = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-        
     def get_customer(self, obj):
         queryset = CustomerAddress.objects.filter(address = obj.id)
         serializer = CustomerAddressSerializer(queryset, many=True)
@@ -93,8 +92,3 @@ class AddressSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
         return response
-    
-    
-        
-        
-        

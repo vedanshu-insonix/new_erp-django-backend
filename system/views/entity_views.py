@@ -115,9 +115,7 @@ class EntityViewSet(viewsets.ModelViewSet):
                         if update_address.is_valid(raise_exception=True):
                             update_address.save()
                         billing_address=EntityAddress.objects.filter(address=address_id,entity=entity_rec)
-                        if billing_address:
-                            pass
-                        else:
+                        if not billing_address:
                             create_billing_address=EntityAddress.objects.create(address=new_address,entity=entity_rec)
                     else:
                         new_address = AddressSerializer(data=billing_address, context={'request':request})
@@ -134,9 +132,7 @@ class EntityViewSet(viewsets.ModelViewSet):
                         if update_address.is_valid(raise_exception=True):
                             update_address.save()
                         shipping_address=EntityAddress.objects.filter(address=address_id,entity=entity_rec)
-                        if shipping_address:
-                            pass
-                        else:
+                        if not shipping_address:
                             create_shipping_address=EntityAddress.objects.create(address=new_address,entity=entity_rec)
                     else:
                         new_address = AddressSerializer(data=shipping_address, context={'request':request})
@@ -151,9 +147,7 @@ class EntityViewSet(viewsets.ModelViewSet):
                         user = user.get('id')
                         user=User.objects.get(id=user)
                         find = EntityUser.objects.filter(user=user, entity=entity_rec)
-                        if find:
-                            pass
-                        else:
+                        if not find:
                             add_user=EntityUser.objects.create(user=user, entity=entity_rec)
                 if RemoveUser == True:
                     for user in remove_users:
@@ -167,9 +161,7 @@ class EntityViewSet(viewsets.ModelViewSet):
                         team = team.get('id')
                         team=Team.objects.get(id=team)
                         find = EntityTeam.objects.filter(team=team, entuty=entity_rec)
-                        if find:
-                            pass
-                        else:
+                        if not find:
                             add_Team=EntityTeam.objects.create(team=team, entuty=entity_rec)
                 if RemoveTeam == True:
                     for team in remove_teams:

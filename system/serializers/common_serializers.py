@@ -120,7 +120,8 @@ class CountrySerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-            
+        response['name']=instance.country.name
+        response['flag']=instance.country.flag
         return response
 
 # ************************ State Serializer ******************************************
@@ -313,12 +314,35 @@ class TerritoriesSerializer(serializers.ModelSerializer):
             
 #         return response
 
+# ************************ Selector Serializer ******************************************
+class SelectorSerializer(serializers.ModelSerializer):
+    selector = serializers.CharField(max_length = 255, required = True)
+    class Meta:
+        model = Selectors
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+    
+    # To return forign key values in detail
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+                    
+        return response
+    
+    def validate(self, data):
+        selector = data.get('selector')
+        data['selector'] = utils.encode_api_name(selector)
+        return data
+    
 # ************************ Choice Serializer ******************************************
 class RelatedChoiceSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
        
     def get_label(self, obj):
-        data = obj.choice
+        data = obj.choice_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__name = language).first()
@@ -333,7 +357,7 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Choice
-        fields = ("id","choice","label")
+        fields = ("id","choice_name","label")
         
 class ChoiceSerializer(serializers.ModelSerializer):
     choice_name = serializers.CharField(max_length = 255, required = True)
@@ -370,9 +394,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
         request = self.context['request']
-        form = RelatedFormSerializer(instance.form, context={'request': request}).data
-        if 'id' in form:
-            response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
+        # form = RelatedFormSerializer(instance.form, context={'request': request}).data
+        # if 'id' in form:
+        #     response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
             
         return response
 
@@ -387,7 +411,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
     def get_label(self, obj):
-        data = obj.list
+        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
@@ -425,11 +449,11 @@ class RelatedListSerializer(serializers.ModelSerializer):
         return response
     
 class ListSerializer(serializers.ModelSerializer):
-    list = serializers.CharField(max_length = 255, required = True)
+    system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     columns = serializers.SerializerMethodField()
     def get_label(self, obj):
-        data = obj.list
+        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationList.objects.filter(list = obj.id, translation__language__name = language).first()
@@ -450,9 +474,6 @@ class ListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = List
-        exclude = ("created_time","modified_time","created_by")
-    class Meta:
-        model = List
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
@@ -460,13 +481,20 @@ class ListSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        list = instance.list
+        #list = instance.system_name
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         
         request = self.context['request']        
         return response
+
+class ListFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListFilters
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
 class ListIconSerializer(serializers.ModelSerializer):
     icon = serializers.CharField(max_length = 255, required = True)
@@ -545,7 +573,7 @@ class RelatedMenuSerializer(serializers.ModelSerializer):
          
 class MenuSerializer(serializers.ModelSerializer):
     menu_category = serializers.CharField(max_length = 255, required = True)
-    """form = serializers.SerializerMethodField()
+    form = serializers.SerializerMethodField()
     def get_form(self, obj):
         request = self.context['request']
         list_details = obj.list
@@ -556,7 +584,7 @@ class MenuSerializer(serializers.ModelSerializer):
             if serializers.data:
                  return serializers.data['form']
             return serializers.data
-        return None"""
+        return None
     class Meta:
         model = Menu
         fields = ("__all__")
@@ -601,6 +629,7 @@ class FormSerializer(serializers.ModelSerializer):
     form_data = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     section = serializers.SerializerMethodField()
+    icons = serializers.SerializerMethodField()
 
     def get_form_list(self,obj):
         request = self.context['request']
@@ -632,6 +661,12 @@ class FormSerializer(serializers.ModelSerializer):
         form_section = FormSection.objects.filter(form = obj.id).order_by('section_sequence')
         serializer = RelatedFormSectionSerializer(form_section, many = True, context={'request': request})  
         return serializer.data
+    
+    def get_icons(self,obj):
+        request = self.context['request']
+        form_icons = FormIcon.objects.filter(form = obj.id)
+        serializer = FormIconSerializer(form_icons, many = True, context={'request': request})  
+        return serializer.data
 
     class Meta:
         model = Form
@@ -640,13 +675,17 @@ class FormSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         
     def to_representation(self, instance):
-        response = super().to_representation(instance)        
+        response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response 
+        return response
     
-    
+class FormIconSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=FormIcon
+        fields = ("__all__")
+
 class RelatedFormListSerializer(serializers.ModelSerializer):  
     icon = serializers.SerializerMethodField()
     display_records = serializers.SerializerMethodField()
@@ -675,7 +714,7 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        list = RelatedCurrencySerializer(instance.list).data
+        list = RelatedListSerializer(instance.list).data
         if 'id' in list:
             response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
         return response
@@ -728,7 +767,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         
         elif field == 'Country' or field == 'country':
             get_country = Country.objects.filter().all()
-            serializers = RelatedCountrySerializer(get_country,many=True)
+            serializers = CountrySerializer(get_country,many=True)
             return_data =[{"id":value['id'], "label": value['name']}
                            for value in serializers.data]
         
@@ -769,7 +808,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                            for value in serializers.data]
         
         else:
-            choice_queryset = Choice.objects.filter(selector = field)
+            choice_queryset = Choice.objects.filter(choice_name = field)
             serializers = RelatedChoiceSerializer(choice_queryset, many=True,context={'request': request})
             return_data = [{"id":value['id'], "label": value['label']}
                            for value in serializers.data]
@@ -861,3 +900,8 @@ class RelatedFormSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormSection
         exclude = ("created_time","modified_time","created_by", "form")
+
+class IconSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Icons
+        exclude = ("created_time","modified_time","created_by")
