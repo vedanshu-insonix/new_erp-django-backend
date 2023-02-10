@@ -209,7 +209,7 @@ class FormSection(BaseContent):
 class List(BaseContent):
     system_name = models.CharField(max_length=255, blank=True)
     description = models.TextField(null=True , blank=True)
-    primary_table = models.ForeignKey('Table', on_delete=models.CASCADE, null=True, blank=True)
+    data_source = models.ForeignKey('Table', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
     default_view = models.CharField(max_length=255, null=True)
     visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='visibility')

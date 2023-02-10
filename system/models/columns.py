@@ -1,6 +1,5 @@
 from django.db import models
 from .common import BaseContent
-from system.utils import ColumnVisibilityChoice
     
 class Column(BaseContent):
     list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True)

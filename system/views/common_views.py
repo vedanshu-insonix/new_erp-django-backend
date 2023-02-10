@@ -125,16 +125,16 @@ class CountryViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    print(data_dict[i])
                     currency=data_dict[i].get('currency')
                     country=data_dict[i].get('country')
+                    currency_id = data_dict[i].get('currency_id')
                     symbol_position = data_dict[i].pop('currency_symbol_position')
                     money_format = data_dict[i].pop('money_format')
                     data_format = data_dict[i].pop('date_format')
                     time_format = data_dict[i].pop('time_format')
                     if currency and country:
                         try:
-                            currency_rec = Currency.objects.get(Q(name=currency)| Q(code=currency))
+                            currency_rec = Currency.objects.get(code=currency, id = currency_id)
                             symbol_rec = Choice.objects.filter(choice_name=symbol_position, selector=symbol_selector.id)
                             money_rec = Choice.objects.filter(choice_name=money_format, selector=money_selector.id)
                             date_rec = Choice.objects.filter(choice_name=data_format, selector=date_selector.id)
@@ -155,7 +155,7 @@ class CountryViewSet(viewsets.ModelViewSet):
                                 serializer.save()
                                 count += 1
                         except Exception as e:
-                            #print("COUNTRY ERROR >>>> ", str(e), data_dict[i])
+                            print("COUNTRY ERROR >>>> ", str(e), data_dict[i])
                             pass
                 return Response(utils.success(count))
             else:
@@ -467,8 +467,8 @@ class FormViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    if data_dict[i] != None:
-                        form_name = data_dict[i]['form']
+                    form_name = data_dict[i]['form']
+                    if form_name:
                         form_rec = Form.objects.filter(form=form_name)
                         if not form_rec:
                             serializer=FormSerializer(data=data_dict[i],context={'request': request})
@@ -503,52 +503,59 @@ class ListViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
+            selector_id = Selectors.objects.get(selector='list type')
             if file:
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    list_data = data_dict[i]['system_name']
-                    category=data_dict[i].pop('category')
-                    label = data_dict[i].pop('label (us english)')
-                    data_source = data_dict[i]['primary_table']
-                    list_type = data_dict[i]['list_type']
-                    visibility = data_dict[i]['visibility']
-                    table_rec = Table.objects.filter(table=data_source)
-                    list_type_rec = Choice.objects.filter(choice_name=list_type)
-                    visibility_rec = Choice.objects.filter(choice_name=visibility)
-                    if list_data and table_rec and list_type_rec and visibility_rec:
-                        list_rec = List.objects.filter(system_name=list_data)
-                        if list_rec:
-                            list_id=list_rec.values()[0]['id']
-                        else:
-                            data_dict[i]['primary_table']=table_rec.values()[0]['id']
-                            data_dict[i]['list_type']=list_type_rec.values()[0]['id']
-                            data_dict[i]['visibility']=visibility_rec.values()[0]['id']
-                            list_serializers = ListSerializer(data=data_dict[i], context={'request': request})
-                            if list_serializers.is_valid(raise_exception=True):
-                                list_serializers.save()
-                                count = count + 1    
-                            list_id=list_serializers.data.get('id')
-                        language = get_current_user_language(request.user)
-                        lang = Language.objects.get(name=language)
-                        if label:
-                            language_id = lang.id
-                            check=Translation.objects.filter(label=label,language_id=language_id)
-                            if not check:
-                                new_label = Translation.objects.create(label=label,language_id=language_id)
-                            label_rec = Translation.objects.get(label=label,language_id=language_id)
-                            trans = TranslationList.objects.filter(list_id=list_id, translation_id=label_rec.id)
-                            if not trans:
-                                TranslationList.objects.create(list_id=list_id, translation_id=label_rec.id)
-                        if category:
-                            menu_rec = Menu.objects.filter(menu_category=category,list_id=list_id)
-                            if not menu_rec:
-                                mdict = {}
-                                mdict['menu_category']=category
-                                mdict['list']=list_id
-                                mrec=MenuSerializer(data=mdict, context={'request': request})
-                                if mrec.is_valid():
-                                    mrec.save()
+                    try:
+                        list_data = data_dict[i]['system_name']
+                        category=data_dict[i].pop('category')
+                        label = data_dict[i].pop('label (us english)')
+                        data_source = data_dict[i]['primary_table']
+                        list_type = data_dict[i]['list_type']
+                        visibility = data_dict[i]['visibility']
+                        table_rec = Table.objects.filter(table=data_source)
+                        list_type_rec = Choice.objects.filter(selector=selector_id.id, choice_name=list_type)
+                        if visibility:
+                            visibility_rec = Choice.objects.filter(choice_name=visibility)
+                        if list_data and table_rec and list_type_rec:
+                            list_rec = List.objects.filter(system_name=list_data)
+                            if list_rec:
+                                list_id=list_rec.values()[0]['id']
+                            else:
+                                data_dict[i]['primary_table']=table_rec.values()[0]['id']
+                                data_dict[i]['list_type']=list_type_rec.values()[0]['id']
+                                if visibility:
+                                    data_dict[i]['visibility']=visibility_rec.values()[0]['id']
+                                list_serializers = ListSerializer(data=data_dict[i], context={'request': request})
+                                if list_serializers.is_valid(raise_exception=True):
+                                    list_serializers.save()
+                                    count = count + 1    
+                                list_id=list_serializers.data.get('id')
+                            language = get_current_user_language(request.user)
+                            lang = Language.objects.get(name=language)
+                            if label:
+                                language_id = lang.id
+                                check=Translation.objects.filter(label=label,language_id=language_id)
+                                if not check:
+                                    new_label = Translation.objects.create(label=label,language_id=language_id)
+                                label_rec = Translation.objects.get(label=label,language_id=language_id)
+                                trans = TranslationList.objects.filter(list_id=list_id, translation_id=label_rec.id)
+                                if not trans:
+                                    TranslationList.objects.create(list_id=list_id, translation_id=label_rec.id)
+                            if category:
+                                menu_rec = Menu.objects.filter(menu_category=category,list_id=list_id)
+                                if not menu_rec:
+                                    mdict = {}
+                                    mdict['menu_category']=category
+                                    mdict['list']=list_id
+                                    mrec=MenuSerializer(data=mdict, context={'request': request})
+                                    if mrec.is_valid():
+                                        mrec.save()
+                    except Exception as e:
+                        print(str(e))
+                        pass
                 return Response(utils.success(count))
             else:
                 msg="Please Upload A Suitable Excel File."
@@ -707,6 +714,46 @@ class FormListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
+
+    @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    def import_data(self, request):
+        try:
+            file = request.FILES.get('file')
+            if file:
+                data_dict = extracting_data(file)
+                count = 0
+                defective_data=[]
+                for i in range(len(data_dict)):
+                    list=data_dict[i]['list']
+                    form = data_dict[i]['form']
+                    if list and form:
+                        try:
+                            formrec = Form.objects.get(form=form)
+                            listrec = List.objects.get(system_name__contains=list)
+                            if formrec and listrec:
+                                formlistrec = FormList.objects.filter(list=listrec.id,form=formrec.id)
+                                data_dict[i]['form']= formrec.id
+                                data_dict[i]['list']= listrec.id
+                                primary = data_dict[i]['primary']
+                                if primary == 'yes' or 'Yes':
+                                    data_dict[i]['primary'] = True
+                                else:
+                                    data_dict[i]['primary'] = False
+
+                                if not formlistrec:
+                                    serializer=FormListSerializer(data=data_dict[i], context={'request':request})
+                                    if serializer.is_valid(raise_exception=True):
+                                        serializer.save()
+                                        count += 1
+                        except Exception as e:
+                            print(str(e), data_dict[i])
+                            pass
+                return Response(utils.success(count))
+            else:
+                msg="Please Upload A Suitable Excel File."
+                return Response(utils.error(msg))
+        except Exception as e:
+            return Response(utils.error(str(e)))
 
 class FormDataViewSet(viewsets.ModelViewSet):
     queryset = FormData.objects.all()

@@ -12,6 +12,7 @@ from ..models.translations import TranslationFromData
 from ..models.users import get_current_user_language
 from system import utils
 from django.db.models import Q
+from system.serializers.dataset_serializers import RelatedTableSerializer
 
 
 # ************************ Button Serializer ******************************************
@@ -449,6 +450,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
         return response
     
 class ListSerializer(serializers.ModelSerializer):
+    data_source = serializers.SlugRelatedField(read_only=True, slug_field='table')
     system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     columns = serializers.SerializerMethodField()
@@ -720,7 +722,6 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
         return response
 
 class FormListSerializer(serializers.ModelSerializer):
-    list = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormList
         fields = ("__all__")

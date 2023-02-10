@@ -2,6 +2,11 @@ from rest_framework import serializers
 from system.models.dataset import Table, Data
 from system.serializers.user_serializers import RelatedUserSerilaizer
 
+class RelatedTableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table
+        exclude =("created_by", "created_time", "modified_time", "description")
+
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
 

@@ -21,20 +21,21 @@ class TableViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    if data_dict[i] != None:
-                        try:
-                            serializer=TableSerializer(data=data_dict[i], context={'request':request})
-                            if serializer.is_valid(raise_exception=True):
-                                serializer.save()
-                                count += 1
-                        except Exception as e:
-                            pass          
-                return Response(utils.success(self,count))
+                    try:
+                        id = data_dict[i]['id']
+                        serializer=TableSerializer(data=data_dict[i], context={'request':request})
+                        if serializer.is_valid(raise_exception=True):
+                            serializer.save(id=id)
+                            count += 1
+                    except Exception as e:
+                        print(str(e))
+                        pass          
+                return Response(utils.success(count))
             else:
                 msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(self,msg))
+                return Response(utils.error(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
 class DataViewSet(viewsets.ModelViewSet):
     """
@@ -64,9 +65,9 @@ class DataViewSet(viewsets.ModelViewSet):
                                     if serializer.is_valid(raise_exception=True):
                                         serializer.save()
                                         count += 1    
-                return Response(utils.success(self,count))
+                return Response(utils.success(count))
             else:
                 msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(self,msg))
+                return Response(utils.error(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
