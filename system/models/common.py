@@ -51,20 +51,24 @@ class Tag(BaseContent):
     
 class Language(BaseContent): 
     name = models.CharField(max_length=255, null=True, unique=True)
-    date_format = models.CharField(max_length=255, choices=DateFormatChoices, null=True, blank=True)
-    time_format = models.CharField(max_length=255, choices=TimeFormatChoice, null=True, blank=True)
-    symbol_position = models.IntegerField(null=True, blank=True)
-    thousands_separator = models.CharField(max_length=255, null=True, blank=True)
-    fraction_separator = models.CharField(max_length=255, null=True, blank=True)
-    decimal_places = models.IntegerField(null=True, blank=True)
+    native_Translation = models.CharField(max_length=255, null=True, blank=True)
+    code = models.CharField(max_length=255, blank=True)
+    direction=models.CharField(max_length=255, null=True, blank=True)
+    dir_choice =models.ForeignKey('Choice', on_delete= models.CASCADE, null = True, blank=True)
+    # date_format = models.CharField(max_length=255, choices=DateFormatChoices, null=True, blank=True)
+    # time_format = models.CharField(max_length=255, choices=TimeFormatChoice, null=True, blank=True)
+    # symbol_position = models.IntegerField(null=True, blank=True)
+    # thousands_separator = models.CharField(max_length=255, null=True, blank=True)
+    # fraction_separator = models.CharField(max_length=255, null=True, blank=True)
+    # decimal_places = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
         return self.name
     
 class Country(BaseContent):
-    country = CountryField(unique=True, countries_flag_url="/static/flags/{code}.png")
+    country = CountryField(max_length=255,unique=True, countries_flag_url="/static/flags/{code}.png")
     native_name = models.CharField(max_length=255, null=True, unique= True, blank=True)
-    telephone_code = models.CharField(max_length=10, null=True, blank=True)
+    telephone_code = models.CharField(max_length=255, null=True, blank=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
     symbol_position = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_symbol_position")
     money_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_money_format")
@@ -81,7 +85,7 @@ class Country(BaseContent):
 class State(BaseContent):
     country = models.ForeignKey('Country', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, null=False, blank=True)
-    abbreviation = models.CharField(max_length=10, null=False, blank=True)
+    abbreviation = models.CharField(max_length=255, null=False, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
     
     def __str__(self):
@@ -112,7 +116,7 @@ class Configuration(BaseContent):
     type = models.CharField(max_length=255, null=True, blank=True)
     current_value = models.CharField(max_length=255, null=True, blank=True)
     default_value = models.CharField(max_length=255, null=True, blank=True)
-    editable = models.BooleanField(default = False)
+    editable = models.BooleanField(null=True, blank=True)
     
     def __str__(self):
         return self.configuration
@@ -151,11 +155,15 @@ class Choice(BaseContent):
         return self.choice_name
     
 class Menu(BaseContent):
-    menu_category = models.CharField(max_length = 255, null=True, blank =True)
+    name = models.CharField(max_length=255,null=True, blank=True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
-    menu_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
-    entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    category_choice = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='menu_visibility')
+
+    
+    #entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.menu_category
@@ -208,11 +216,13 @@ class FormSection(BaseContent):
 
 class List(BaseContent):
     system_name = models.CharField(max_length=255, blank=True)
+    #category = models.ForeignKey('Menu', on_delete=models.CASCADE, null=True, blank=True,related_name='menu_category')
     description = models.TextField(null=True , blank=True)
     primary_table = models.ForeignKey('Table', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
-    default_view = models.CharField(max_length=255, null=True)
-    visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='visibility')
+    #label = models.CharField(max_length=255, null=True, blank=True)
+    #default_view = models.CharField(max_length=255, null=True)
+    visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_visibility')
     # data_filter = models.CharField(max_length=255, null=True)
     # data_sort = models.CharField(max_length=255, null=True)
     # sequence = models.IntegerField(null=True , blank=True)
@@ -260,3 +270,4 @@ class Icons(BaseContent):
     system_name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     icon_image = models.FileField(upload_to='icon_images/', max_length=255, null=True, blank=True)
+    usage = models.CharField(max_length=255, null=True, blank=True)

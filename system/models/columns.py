@@ -3,12 +3,13 @@ from .common import BaseContent
 from system.utils import ColumnVisibilityChoice
     
 class Column(BaseContent):
-    list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True)
+    clist = models.ForeignKey('List', on_delete=models.CASCADE,null=True, blank=True)
     column = models.CharField(max_length=255, null=True, blank=True)
-    table = models.CharField(max_length=255, null=True, blank=True)
-    field = models.CharField(max_length=255, null=True, blank=True)
-    position = models.IntegerField(null=True, blank=True)
-    visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True)
+    dataset = models.ForeignKey('system.Dataset',on_delete=models.CASCADE,null=True, blank=True)
+    data = models.ForeignKey('system.Data',on_delete=models.CASCADE,null=True, blank=True)
+    description =models.TextField(null=True, blank=True)
+    sequence = models.IntegerField(null=True, blank=True)
+    visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
     
     
     def __str__(self):
