@@ -77,9 +77,7 @@ class RoleViewSet(viewsets.ModelViewSet):
                         if find:
                             permission_id = Permission.objects.get(permission=permission_name)
                             check = RolePermissions.objects.filter(role=role_rec, permissions=permission_id)
-                            if check:
-                                pass
-                            else:
+                            if not check:
                                 create_role_permission=RolePermissions.objects.create(role=role_rec, permissions=permission_id)
                         else:
                             new_permission = PermissionSerializer(data=permission, context={'request':request})

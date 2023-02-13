@@ -48,7 +48,7 @@ class DataViewSet(viewsets.ModelViewSet):
         try:
             file = request.FILES.get('file')
             if file:
-                data_dict = importing_data(file)
+                data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
                     if data_dict[i]:
@@ -59,9 +59,7 @@ class DataViewSet(viewsets.ModelViewSet):
                                 data_dict[i]['table'] = search.values()[0]['id']
                                 table_id = search.values()[0]['id']
                                 find=Data.objects.filter(table=table_id, name=data_dict[i]['name'])
-                                if find:
-                                    pass
-                                else:
+                                if not find:
                                     serializer=DataSerializer(data=data_dict[i], context={'request':request})
                                     if serializer.is_valid(raise_exception=True):
                                         serializer.save()
