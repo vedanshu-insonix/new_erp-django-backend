@@ -6,7 +6,7 @@ class Table(BaseContent):
     description=models.TextField(null=True, blank=True)
 
 class Data(BaseContent):
-    dataset=models.ForeignKey('Dataset', on_delete=models.SET_NULL, null=True, blank=True)
+    dataset=models.ForeignKey('Table', on_delete=models.SET_NULL, null=True, blank=True)
     name= models.CharField(max_length=255)
     description=models.TextField(null=True, blank=True)
     data_type = models.CharField(max_length = 255, null=True, blank=True)
@@ -15,7 +15,7 @@ class Data(BaseContent):
     comment=models.TextField(null=True, blank=True)
     
     
-class Dataset(BaseContent):
-    name = models.CharField(max_length=255, null=True, blank= True)
-    description=models.TextField(null=True, blank=True)
-    entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
+# class Dataset(BaseContent):
+#     name = models.CharField(max_length=255, null=True, blank= True)
+#     description=models.TextField(null=True, blank=True)
+#     #entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)

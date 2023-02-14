@@ -17,7 +17,7 @@ class BaseContent(models.Model):
     created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name="%(class)s_created_by")
     class Meta:
         abstract = True
-
+    
 class Button(BaseContent):
     form = models.ForeignKey('Form', on_delete= models.CASCADE, null = True, blank=True)
     button = models.CharField(max_length=255, null=True, blank=True)
@@ -53,8 +53,8 @@ class Language(BaseContent):
     name = models.CharField(max_length=255, null=True, unique=True)
     native_Translation = models.CharField(max_length=255, null=True, blank=True)
     code = models.CharField(max_length=255, blank=True)
-    direction=models.CharField(max_length=255, null=True, blank=True)
-    dir_choice =models.ForeignKey('Choice', on_delete= models.CASCADE, null = True, blank=True)
+    #direction=models.CharField(max_length=255, null=True, blank=True)
+    direction =models.ForeignKey('Choice', on_delete= models.CASCADE, null = True, blank=True)
     # date_format = models.CharField(max_length=255, choices=DateFormatChoices, null=True, blank=True)
     # time_format = models.CharField(max_length=255, choices=TimeFormatChoice, null=True, blank=True)
     # symbol_position = models.IntegerField(null=True, blank=True)
@@ -116,7 +116,7 @@ class Configuration(BaseContent):
     type = models.CharField(max_length=255, null=True, blank=True)
     current_value = models.CharField(max_length=255, null=True, blank=True)
     default_value = models.CharField(max_length=255, null=True, blank=True)
-    editable = models.BooleanField(null=True, blank=True)
+    editable = models.BooleanField(default= False)
     
     def __str__(self):
         return self.configuration
@@ -216,16 +216,11 @@ class FormSection(BaseContent):
 
 class List(BaseContent):
     system_name = models.CharField(max_length=255, blank=True)
-    #category = models.ForeignKey('Menu', on_delete=models.CASCADE, null=True, blank=True,related_name='menu_category')
     description = models.TextField(null=True , blank=True)
     primary_table = models.ForeignKey('Table', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
-    #label = models.CharField(max_length=255, null=True, blank=True)
     #default_view = models.CharField(max_length=255, null=True)
     visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_visibility')
-    # data_filter = models.CharField(max_length=255, null=True)
-    # data_sort = models.CharField(max_length=255, null=True)
-    # sequence = models.IntegerField(null=True , blank=True)
 
     def __str__(self):
         return self.system_name
