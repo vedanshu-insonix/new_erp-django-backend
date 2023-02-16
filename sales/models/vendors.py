@@ -4,7 +4,8 @@ from system.utils import EntityChoice, StatusChoice
 from system.models.common import *
 # Create your models here.
 
-class Vendors(BaseContent): 
+class Vendors(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     parent_id = models.ForeignKey('Vendors', on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.CharField(max_length=255, choices=EntityChoice)
     vendor = models.CharField(max_length=100,null=True,blank=True)
@@ -41,6 +42,7 @@ class VendorAddress(BaseContent):
         return str(self.id)
 
 class VendorProducts(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     stock_number = models.CharField(max_length=3,null=True,blank=True)
     vendor_product_description = models.CharField(max_length=255,null=True,blank=True)
     list_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
@@ -85,6 +87,7 @@ class NMFC(BaseContent):
     pass
 
 class VendorPrices(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     vendor = models.ForeignKey('Vendors', on_delete=models.CASCADE, null=True)
     vendor_product_id = models.ForeignKey('VendorProducts', on_delete=models.CASCADE, null=True)
     base_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)

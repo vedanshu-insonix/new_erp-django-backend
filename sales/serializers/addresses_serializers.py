@@ -12,6 +12,8 @@ from .customers_serializers import CustomerAddressSerializer
 from .vendors_serializers import VendorAddressSerializer
 from ..models.customers import CustomerAddress
 from ..models.vendors import VendorAddress
+from system.service import get_primary_key
+from system.models.recordid import RecordIdentifiers
 
 
 class AddressTagSerializer(serializers.ModelSerializer):
@@ -92,3 +94,9 @@ class AddressSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Addresses')
+        if record_id:
+            data['id']=get_primary_key('Addresses')
+        return data

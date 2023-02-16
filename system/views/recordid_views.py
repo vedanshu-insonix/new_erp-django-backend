@@ -3,7 +3,6 @@ from ..serializers.recordid_serializers import *
 from ..models.recordid import *
 from django_filters.rest_framework import DjangoFilterBackend
 
-
 class RecordIdentifierViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Record ID to be modified.

@@ -63,6 +63,12 @@ class CustomerSerializer(serializers.ModelSerializer):
         if 'id' in parent_data:
             response['parent_id'] = RelatedCustomerSerializer(instance.parent_id).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Customers')
+        if record_id:
+            data['id']=get_primary_key('Customers')
+        return data
   
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:

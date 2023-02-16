@@ -6,6 +6,7 @@ from system.models.common import *
 
 
 class Addresses(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     address_type = models.CharField(max_length=255, null=True, blank=True) #choice
     address_location_type = models.CharField(max_length=255, null=True, blank=True) #choice
     default = models.BooleanField(default=False)
@@ -15,7 +16,7 @@ class Addresses(BaseContent):
     address1 = models.CharField(max_length=255, null=True, blank=True)
     address2 = models.CharField(max_length=255, null=True, blank=True)
     address3 = models.CharField(max_length=255, null=True, blank=True)
-    city = models.CharField(max_length=255, null=True, blank=True) 
+    city = models.CharField(max_length=255, null=True, blank=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     postal_code = models.CharField(max_length=6, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)

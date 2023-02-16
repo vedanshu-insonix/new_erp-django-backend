@@ -126,7 +126,7 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'latest_erp',
+        'NAME': 'erp',
         'USER': 'postgres',
         'PASSWORD': 'root',
         'HOST': 'localhost',

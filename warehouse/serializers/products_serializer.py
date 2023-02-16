@@ -5,7 +5,7 @@ from system.serializers.common_serializers import RelatedStageSerializer, Relate
 from warehouse.models.general import *
 from warehouse.serializers.general_serializer import *
 from sales.serializers.addresses_serializers import AddressSerializer
-from warehouse.serializers.route_serializer import Route_Serializer
+from warehouse.serializers.route_serializer import RouteSerializer
 
 #******************************* Product Serializer *******************************
 class RelatedProductSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     def get_attribute(self, obj):
-        queryset = Product_Attribute.objects.filter(product=obj.id)
+        queryset = ProductAttribute.objects.filter(product=obj.id)
         serializer = ProductAttributeSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
@@ -27,7 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return result
 
     def get_value(self, obj):
-        queryset = Product_Values.objects.filter(product = obj.id)
+        queryset = ProductValues.objects.filter(product = obj.id)
         serializer = ProductValueSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
@@ -35,7 +35,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return result
 
     def get_image(self, obj):
-        queryset = Product_Images.objects.filter(product = obj.id)
+        queryset = ProductImages.objects.filter(product = obj.id)
         serializer = ProductImagesSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
@@ -71,21 +71,51 @@ class ProductSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Product')
+        if record_id:
+            data['id']=get_primary_key('Product')
+        return data
 
 class BomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bom
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Bom')
+        if record_id:
+            data['id']=get_primary_key('Bom')
+        return data
 
 class ComponentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Components
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Components')
+        if record_id:
+            data['id']=get_primary_key('Components')
+        return data
 
 class CharacteristicsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Characteristics
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Characteristics')
+        if record_id:
+            data['id']=get_primary_key('Characteristics')
+        return data
 
 class RelatedValueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,10 +136,16 @@ class ValueSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Value')
+        if record_id:
+            data['id']=get_primary_key('Value')
+        return data
 
 class ProductValueSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product_Values
+        model = ProductValues
         fields = ('value',)
         depth = 1
 
@@ -117,16 +153,32 @@ class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='ProductCategory')
+        if record_id:
+            data['id']=get_primary_key('ProductCategory')
+        return data
 
 class EquivalentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equivalents
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Equivalents')
+        if record_id:
+            data['id']=get_primary_key('Equivalents')
+        return data
 
 class RelatedLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Locations
-        fields = ("id","locations_name", "code")
+        fields = ("id","locations_name", "code")    
 
 class LocationsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -148,18 +200,48 @@ class LocationsSerializer(serializers.ModelSerializer):
         if 'id' in loc_address:
             response['loc_address'] = AddressSerializer(instance.loc_address).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Locations')
+        if record_id:
+            data['id']=get_primary_key('Locations')
+        return data
 
 class ProductCountsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCounts
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='ProductCounts')
+        if record_id:
+            data['id']=get_primary_key('ProductCounts')
+        return data
 
 class ProductLocationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductLocations
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='ProductLocations')
+        if record_id:
+            data['id']=get_primary_key('ProductLocations')
+        return data
 
 class UOMSerializer(serializers.ModelSerializer):
     class Meta:
         model = UOM
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='UOM')
+        if record_id:
+            data['id']=get_primary_key('UOM')
+        return data

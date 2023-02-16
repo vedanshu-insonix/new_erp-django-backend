@@ -1,16 +1,15 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..serializers.common_serializers import *
 from ..models.columns import Column
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from rest_framework.decorators import action
 from system import utils
 import openpyxl
 from django.db.models import Q
 from openpyxl_image_loader import SheetImageLoader
-from system.models.dataset import Table, Data
+from system.models.dataset import DataTable, Data
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -177,11 +176,9 @@ class StateViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
         try:
-            print("demo")
             file = request.FILES.get('file')
             if file:
                 data_dict = extracting_data(file)
-                print("file >> ", file)
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
@@ -192,7 +189,7 @@ class StateViewSet(viewsets.ModelViewSet):
                             country_rec = Country.objects.get(Q(country__iname=country) | Q(country=country))
                             data_dict[i]['country']=country_rec.id
                             
-                            state_check=State.objects.filter(name=state_name, country=data_dict[i]['country'])
+                            state_check=State.objects.filter(name=state_name, country=country_rec.id)
                             if not state_check:
                                 serializer=StateSerializer(data=data_dict[i], context={'request':request})
                                 if serializer.is_valid(raise_exception=True):
@@ -472,7 +469,7 @@ class FormViewSet(viewsets.ModelViewSet):
                         form_rec = Form.objects.filter(form=form_name)
                         if not form_rec:
                             serializer=FormSerializer(data=data_dict[i],context={'request': request})
-                            if serializer.is_valid():
+                            if serializer.is_valid(raise_exception=True):
                                 serializer.save()
                                 count += 1
                 return Response(utils.success(count))
@@ -515,7 +512,7 @@ class ListViewSet(viewsets.ModelViewSet):
                         data_source = data_dict[i]['primary_table']
                         list_type = data_dict[i]['list_type']
                         visibility = data_dict[i]['visibility']
-                        table_rec = Table.objects.filter(table=data_source)
+                        table_rec = DataTable.objects.filter(system_name=data_source)
                         list_type_rec = Choice.objects.filter(selector=selector_id.id, choice_name=list_type)
                         if visibility:
                             visibility_rec = Choice.objects.filter(choice_name=visibility)

@@ -4,9 +4,9 @@ from ..serializers.manufacturing_serializer import *
 
 
 class ManufacturingOrderViewSet(viewsets.ModelViewSet):
-    queryset = Manufacturing_orders.objects.all()
+    queryset = Manufacturingorders.objects.all()
     serializer_class = ManufacturingOrderSerializer
 
 class ManufacturingOrderLinesViewSet(viewsets.ModelViewSet):
-    queryset = Manufacturing_order_lines.objects.all()
+    queryset = Manufacturingorderlines.objects.all()
     serializer_class = ManufacturingOrderLinesSerializer

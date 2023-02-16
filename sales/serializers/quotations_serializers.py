@@ -67,3 +67,22 @@ class SalesQuotationsSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='SalesQuotations')
+        if record_id:
+            data['id']=get_primary_key('SalesQuotations')
+        return data
+    
+class SalesQuotationLinesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesQuotationLines
+        fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='SalesQuotationLines')
+        if record_id:
+            data['id']=get_primary_key('SalesQuotationLines')
+        return data

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from sales.models.address import Addresses
 
 class Entity(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     parent = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     EntityTypeChoice =(("1","Entity1"),("2","Entity2"),

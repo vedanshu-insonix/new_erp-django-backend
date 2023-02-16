@@ -4,6 +4,7 @@ from sales.models.address import Addresses
 from ..utils import ChannelTypeChoice
 
 class Communication(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     primary = models.BooleanField(default=False)
     communication_channel = models.CharField(max_length=255, null=True, blank=True)
     communication_type = models.CharField(max_length=255, choices=ChannelTypeChoice, null=True, blank=True)
@@ -20,6 +21,7 @@ class Communication(BaseContent):
     
 
 class Channel(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     name = models.CharField(max_length=255,null=True, blank=True)
     
     def __str__(self):

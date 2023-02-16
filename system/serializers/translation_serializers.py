@@ -2,6 +2,8 @@ from rest_framework import serializers
 from ..models.translations import *
 from ..serializers.user_serializers import RelatedUserSerilaizer
 from ..serializers.common_serializers import RelatedLanguageSerializer
+from system.models.recordid import RecordIdentifiers
+from system.service import get_primary_key
 
 
 class TranslationSerializer(serializers.ModelSerializer):
@@ -57,3 +59,9 @@ class TranslationSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Translation')
+        if record_id:
+            data['id']=get_primary_key('Translation')
+        return data

@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .user_serializers import RelatedUserSerilaizer
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from system.service import get_primary_key
+from system.models.recordid import RecordIdentifiers
 
 
 class RelatedChannelSerializer(serializers.ModelSerializer):
@@ -24,6 +26,12 @@ class ChannelSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Channel')
+        if record_id:
+            data['id']=get_primary_key('Channel')
+        return data
 
 
 class RelatedCommunicationSerializer(serializers.ModelSerializer):
@@ -50,6 +58,12 @@ class CommunicationSerializer(serializers.ModelSerializer):
         #if 'id' in channel:
         #    response['channel'] = RelatedChannelSerializer(instance.channel).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='Communication')
+        if record_id:
+            data['id']=get_primary_key('Communication')
+        return data
 
    
 class CommunicationAddressSerializer(serializers.ModelSerializer):

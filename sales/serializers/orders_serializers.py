@@ -66,6 +66,12 @@ class SalesOrdersSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='SalesOrders')
+        if record_id:
+            data['id']=get_primary_key('SalesOrders')
+        return data
 
 class SalesOrderLinesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,3 +79,9 @@ class SalesOrderLinesSerializer(serializers.ModelSerializer):
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='SalesOrderLines')
+        if record_id:
+            data['id']=get_primary_key('SalesOrderLines')
+        return data

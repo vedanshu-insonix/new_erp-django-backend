@@ -3,6 +3,7 @@ from system.models.common import BaseContent
 from system.models.common import *
 
 class SalesCredits(BaseContent):
+    id = models.CharField(max_length=255,primary_key=True)
     invoice = models.ForeignKey('SalesInvoices', on_delete = models.CASCADE, null = True, blank = True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
