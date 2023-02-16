@@ -3,10 +3,6 @@ from sales.models.address import Addresses
 from ..models.common import BaseContent, Language
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
-from django.contrib.auth.base_user import AbstractBaseUser
-
-class User(AbstractBaseUser):
-    id = models.CharField(max_length=255,primary_key=True)
 
 class UserAddress(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserAddress')

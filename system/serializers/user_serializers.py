@@ -13,8 +13,6 @@ from system.utils import send_email
 from system.models.teams import TeamUser
 from system.serializers.team_serializer import TeamUserSerializer
 from system.models.users import UserAddress, UserRoles
-from system.models.recordid import RecordIdentifiers
-from system.service import get_primary_key
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -60,12 +58,6 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request']
 
         return response
-    
-    def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='User')
-        if record_id:
-            data['id']=get_primary_key('User')
-        return data
 
 class RelatedUserSerilaizer(serializers.ModelSerializer):
     class Meta:
