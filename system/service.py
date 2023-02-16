@@ -16,15 +16,15 @@ def get_primary_key(sender):
     else:
         return None
     
-# @receiver(post_save)
-# def update_record_identifier(sender, created, instance, **kwargs):
-#     if created==True:
-#         model_name = str(sender._meta)
-#         text_split = model_name.split('.')
-#         model_name=text_split[1]
-#         record_id = RecordIdentifiers.objects.filter(record=model_name.capitalize())
-#         if record_id:
-#             next_id = record_id.values()[0]['next']
-#             new_id = next_id + 1
-#             record_id.update(next=new_id)
-#     return None
+@receiver(post_save)
+def update_record_identifier(sender, created, instance, **kwargs):
+    if created==True:
+        model_name = str(sender._meta)
+        text_split = model_name.split('.')
+        model_name=text_split[1]
+        record_id = RecordIdentifiers.objects.filter(record=model_name.capitalize())
+        if record_id:
+            next_id = record_id.values()[0]['next']
+            new_id = next_id + 1
+            record_id.update(next=new_id)
+    return None
