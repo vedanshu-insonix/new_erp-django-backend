@@ -557,37 +557,37 @@ class Command(BaseCommand):
             if file.endswith('.xlsx'):
                 data = extract_data(file)
                 
-                # if file == "SelectorsFeb12.xlsx":
-                #     result = create_selector(data)
-                # if file == "ChoicesFeb14.xlsx":
-                #     result = create_choice(data)
+                if file == "SelectorsFeb12.xlsx":
+                    result = create_selector(data)
+                if file == "ChoicesFeb14.xlsx":
+                    result = create_choice(data)
                                     
-                # if file == "DatasetsFeb12.xlsx":
-                #     result = create_dataset(data)
+                if file == "DatasetsFeb12.xlsx":
+                    result = create_dataset(data)
                         
-                # if file == "DataFeb14.xlsx":
-                #     result = create_data(data)
+                if file == "DataFeb14.xlsx":
+                    result = create_data(data)
                         
-                # if file == "IconsFeb13.xlsx":
-                #     result = create_icons(data)
+                if file == "IconsFeb13.xlsx":
+                    result = create_icons(data)
                         
-                # if file == "ConfigurationsFeb12.xlsx":
-                #     result = create_conf(data) 
+                if file == "ConfigurationsFeb12.xlsx":
+                    result = create_conf(data) 
                                
-                # if file == "CurrenciesFeb12.xlsx":
-                #     result = create_currencies(data)
+                if file == "CurrenciesFeb12.xlsx":
+                    result = create_currencies(data)
                       
-                # if file == "CountriesFeb12.xlsx":
-                #     result = create_countries(data)
+                if file == "CountriesFeb12.xlsx":
+                    result = create_countries(data)
                         
-                # if file == "StatesFeb12.xlsx":
-                #     result= create_state(data)
+                if file == "StatesFeb12.xlsx":
+                    result= create_state(data)
                     
-                # if file == "LanguagesFeb12.xlsx":
-                #     result = create_language(data)
+                if file == "LanguagesFeb12.xlsx":
+                    result = create_language(data)
                         
-                # if file == "ListsFeb12.xlsx":
-                #     result = create_list(data)
+                if file == "ListsFeb12.xlsx":
+                    result = create_list(data)
                
                         
                 if file == "MenuItemsFeb12.xlsx":
@@ -600,7 +600,7 @@ class Command(BaseCommand):
                     result = create_forms(data)
                     
                 # if file == "new_Stage.xlsx":
-                #     result = create_formStages(data)
+                #     result = create_Stages(data)
                 
                 if file == "EntitiesFeb14.xlsx":
                     result = create_entities(data)
