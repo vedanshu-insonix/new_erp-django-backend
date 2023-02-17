@@ -160,10 +160,6 @@ class Menu(BaseContent):
     sequence = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     category_choice = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
-    visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='menu_visibility')
-
-    
-    #entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.menu_category
@@ -219,12 +215,10 @@ class List(BaseContent):
     description = models.TextField(null=True , blank=True)
     primary_table = models.ForeignKey('Table', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
-    #default_view = models.CharField(max_length=255, null=True)
+    default_view = models.CharField(max_length=255, null=True)
     visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_visibility')
 
-    def __str__(self):
-        return self.system_name
-    
+   
 class ListFilters(BaseContent):
     list = models.ForeignKey('List', on_delete=models.CASCADE)
     data = models.ForeignKey('Data', on_delete=models.CASCADE)
