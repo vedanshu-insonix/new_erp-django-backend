@@ -13,6 +13,7 @@ class TranslationSerializer(serializers.ModelSerializer):
     button = serializers.SerializerMethodField()
     stage = serializers.SerializerMethodField()
     tag = serializers.SerializerMethodField()
+    
     # tile = serializers.SerializerMethodField()
     
     def get_column(self, obj):

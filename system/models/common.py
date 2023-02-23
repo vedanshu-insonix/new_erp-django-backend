@@ -66,7 +66,7 @@ class Language(BaseContent):
         return self.name
     
 class Country(BaseContent):
-    country = CountryField(max_length=255,unique=True, countries_flag_url="/static/flags/{code}.png")
+    country = CountryField(unique=True, countries_flag_url="/static/flags/{code}.png")
     native_name = models.CharField(max_length=255, null=True, unique= True, blank=True)
     telephone_code = models.CharField(max_length=255, null=True, blank=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)

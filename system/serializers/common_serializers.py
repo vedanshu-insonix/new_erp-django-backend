@@ -39,6 +39,20 @@ class RelatedCurrencySerializer(serializers.ModelSerializer):
         
 class CurrencySerializer(serializers.ModelSerializer):
     country = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+       
+    def get_label(self, obj):
+        data = obj.id
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationCurrency.objects.filter(country = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
 
     def get_country(self, obj):
         queryset = Country.objects.filter(currency=obj.id)
@@ -131,6 +145,19 @@ class RelatedStateSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
   
 class StateSerializer(serializers.ModelSerializer):
+    
+    def get_label(self, obj):
+        data = obj.id
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationState.objects.filter(state = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     
     class Meta:
         model = State
@@ -247,6 +274,20 @@ class RelatedConfigurationSerializer(serializers.ModelSerializer):
         
 class ConfigurationSerializer(serializers.ModelSerializer):
     configuration = serializers.CharField(max_length = 255, required = True)
+    label = serializers.SerializerMethodField()
+       
+    def get_label(self, obj):
+        data = obj.id
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationConfiguration.objects.filter(configuration = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     class Meta:
         model = Configuration
         fields = ("__all__")
@@ -317,6 +358,20 @@ class TerritoriesSerializer(serializers.ModelSerializer):
 # ************************ Selector Serializer ******************************************
 class SelectorSerializer(serializers.ModelSerializer):
     selector = serializers.CharField(max_length = 255, required = True)
+    label = serializers.SerializerMethodField()
+       
+    def get_label(self, obj):
+        data = obj.id
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationSelector.objects.filter(selector = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     class Meta:
         model = Selectors
         fields = ("__all__")
@@ -902,6 +957,19 @@ class RelatedFormSectionSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by", "form")
 
 class IconSerializer(serializers.ModelSerializer):
+     
+    def get_label(self, obj):
+        data = obj.data
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationIcons.objects.filter(icon = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     class Meta:
         model = Icons
         exclude = ("created_time","modified_time","created_by")

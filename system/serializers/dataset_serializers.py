@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from system.models.dataset import Table, Data
 from system.serializers.user_serializers import RelatedUserSerilaizer
+from ..models.users import get_current_user_language
+from ..models.translations import TranslationData
+from system.serializers.common_serializers import  RelatedTranslationSerializer
+from system.models.translations import Translation
 
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
@@ -26,6 +30,21 @@ class TableSerializer(serializers.ModelSerializer):
         return response
 
 class DataSerializer(serializers.ModelSerializer):
+    
+    label = serializers.SerializerMethodField()
+       
+    def get_label(self, obj):
+        data = obj.id
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationData.objects.filter(name = obj.id, translation__language__name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
     class Meta:
         model = Data
         exclude =("created_time", "modified_time", "created_by")
