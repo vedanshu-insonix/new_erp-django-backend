@@ -42,9 +42,9 @@ class VendorSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Vendors')
+        record_id = RecordIdentifiers.objects.filter(record='vendors')
         if record_id:
-            data['id']=get_primary_key('Vendors')
+            data['id']=get_rid_pkey('vendors')
         return data
 
 class VendorProductsSerializer(serializers.ModelSerializer):
@@ -55,9 +55,9 @@ class VendorProductsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='VendorProducts')
+        record_id = RecordIdentifiers.objects.filter(record='vendorproducts')
         if record_id:
-            data['id']=get_primary_key('VendorProducts')
+            data['id']=get_rid_pkey('vendorproducts')
         return data
     
 class VendorPriceSerializer(serializers.ModelSerializer):
@@ -68,7 +68,7 @@ class VendorPriceSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='VendorPrices')
+        record_id = RecordIdentifiers.objects.filter(record='vendorprices')
         if record_id:
-            data['id']=get_primary_key('VendorPrices')
+            data['id']=get_rid_pkey('vendorprices')
         return data

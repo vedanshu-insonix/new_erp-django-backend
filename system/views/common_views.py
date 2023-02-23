@@ -126,14 +126,14 @@ class CountryViewSet(viewsets.ModelViewSet):
                 for i in range(len(data_dict)):
                     currency=data_dict[i].get('currency')
                     country=data_dict[i].get('country')
-                    currency_id = data_dict[i].get('currency_id')
+                    currency_id = data_dict[i].pop('currency_id')
                     symbol_position = data_dict[i].pop('currency_symbol_position')
                     money_format = data_dict[i].pop('money_format')
                     data_format = data_dict[i].pop('date_format')
                     time_format = data_dict[i].pop('time_format')
                     if currency and country:
                         try:
-                            currency_rec = Currency.objects.get(code=currency, id = currency_id)
+                            currency_rec = Currency.objects.get(code=currency, id=currency_id)
                             symbol_rec = Choice.objects.filter(choice_name=symbol_position, selector=symbol_selector.id)
                             money_rec = Choice.objects.filter(choice_name=money_format, selector=money_selector.id)
                             date_rec = Choice.objects.filter(choice_name=data_format, selector=date_selector.id)
@@ -197,7 +197,7 @@ class StateViewSet(viewsets.ModelViewSet):
                                     count += 1
                         except Exception as e:
                             defective_data.append(country)
-                            print(str(e))
+                            print(str(e), data_dict[i])
                             pass
                 if defective_data:
                     defective_data = {
@@ -236,6 +236,7 @@ class StageViewSet(viewsets.ModelViewSet):
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
+                    print(data_dict[i])
                     if data_dict[i] != None:
                         stage_name = data_dict[i]['stage']
                         if stage_name:
@@ -368,6 +369,7 @@ class SelectorViewSet(viewsets.ModelViewSet):
                                 serializer.save()
                                 count += 1
                         except Exception as e:
+                            print("Selectors error >>> ", str(e))
                             pass          
                 return Response(utils.success(count))
             else:
@@ -390,14 +392,10 @@ class ChoiceViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            # have_trans = False
             if file:
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    # if 'label (us english)' in data_dict[i]:
-                    #     label=data_dict[i].pop('label (us english)')
-                    #     have_trans = True
                     selector = data_dict[i]['selector']
                     choice = data_dict[i]["choice_name"]
                     default = data_dict[i]["default"]
@@ -425,19 +423,18 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                                         serializer.save()
                                         count += 1
                                     # choice_id = Choice.objects.get(id=serializer.data.get('id'))
-                                    # if have_trans == True:
-                                    #     language = get_current_user_language(request.user)
-                                    #     lang = Language.objects.get(name=language)
-                                    #     if label:
-                                    #         check=Translation.objects.filter(label=label,language_id=lang.id)
-                                    #         if not check:
-                                    #             new_label = Translation.objects.create(label=label,language_id=lang.id)
-                                    #     label_rec = Translation.objects.get(label=label,language_id=lang.id)
-                                    #     trans = TranslationChoice.objects.filter(choice_id=choice_id, translation_id=label_rec.id)
-                                    #     if not trans:
-                                    #         TranslationChoice.objects.create(choice_id=choice_id, translation_id=label_rec.id)
+                                    # language = get_current_user_language(request.user)
+                                    # lang = Language.objects.get(name=language)
+                                    # check=Translation.objects.filter(label=choice,language_id=lang.id)
+                                    # if not check:
+                                    #     trans_id = get_rid_pkey('translation')
+                                    #     new_label = Translation.objects.create(id=trans_id,label=choice,language_id=lang.id)
+                                    # label_rec = Translation.objects.get(label=choice,language_id=lang.id)
+                                    # trans = TranslationChoice.objects.filter(choice_id=choice_id.id, translation_id=label_rec.id)
+                                    # if not trans:
+                                    #     TranslationChoice.objects.create(choice_id=choice_id.id, translation_id=label_rec.id)
                                 except Exception as e:
-                                    print(str(e))
+                                    #print(str(e), data_dict[i])
                                     pass
                 return Response(utils.success(count))
             else:

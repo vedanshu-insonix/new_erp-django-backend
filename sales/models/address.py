@@ -6,7 +6,7 @@ from system.models.common import *
 
 
 class Addresses(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     address_type = models.CharField(max_length=255, null=True, blank=True) #choice
     address_location_type = models.CharField(max_length=255, null=True, blank=True) #choice
     default = models.BooleanField(default=False)

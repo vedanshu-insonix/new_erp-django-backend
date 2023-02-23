@@ -2,7 +2,7 @@ from django.db import models
 from .common import BaseContent
 
 class Translation(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     label = models.CharField(max_length = 255, null=True, blank = True)
     description = models.CharField(max_length = 255, null=True, blank = True)
     default_label = models.CharField(max_length = 255, null=True, blank = True)

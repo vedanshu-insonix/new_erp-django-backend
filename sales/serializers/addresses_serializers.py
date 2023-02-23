@@ -12,7 +12,7 @@ from .customers_serializers import CustomerAddressSerializer
 from .vendors_serializers import VendorAddressSerializer
 from ..models.customers import CustomerAddress
 from ..models.vendors import VendorAddress
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 
@@ -96,7 +96,7 @@ class AddressSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Addresses')
+        record_id = RecordIdentifiers.objects.filter(record='addresses')
         if record_id:
-            data['id']=get_primary_key('Addresses')
+            data['id']=get_rid_pkey('addresses')
         return data

@@ -21,20 +21,19 @@ class TableViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    if data_dict[i] != None:
-                        try:
-                            serializer=TableSerializer(data=data_dict[i], context={'request':request})
-                            if serializer.is_valid(raise_exception=True):
-                                serializer.save()
-                                count += 1
-                        except Exception as e:
-                            pass          
-                return Response(utils.success(self,count))
+                    dataset_id = data_dict[i]['id']
+                    system_name = data_dict[i]['system_name']
+                    if system_name:
+                        serializer=TableSerializer(data=data_dict[i], context={'request':request})
+                        if serializer.is_valid(raise_exception=True):
+                            serializer.save(id=dataset_id)
+                            count += 1
+                return Response(utils.success(count))
             else:
                 msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(self,msg))
+                return Response(utils.error(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
 class DataViewSet(viewsets.ModelViewSet):
     """
@@ -51,27 +50,25 @@ class DataViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    if data_dict[i]:
-                        table_name = data_dict[i]['table']
-                        if table_name:
-                            search = DataTable.objects.filter(table=table_name)
-                            if search:
-                                data_dict[i]['table'] = search.values()[0]['id']
-                                table_id = search.values()[0]['id']
-                                find=Data.objects.filter(table=table_id, name=data_dict[i]['name'])
-                                if find:
-                                    pass
-                                else:
-                                    serializer=DataSerializer(data=data_dict[i], context={'request':request})
-                                    if serializer.is_valid(raise_exception=True):
-                                        serializer.save()
-                                        count += 1    
-                return Response(utils.success(self,count))
+                    table_name = data_dict[i]['data_source']
+                    data = data_dict[i]['name']
+                    if table_name:
+                        search = DataTable.objects.filter(table=table_name)
+                        if search:
+                            data_dict[i]['table'] = search.values()[0]['id']
+                            table_id = search.values()[0]['id']
+                            find=Data.objects.filter(table=table_id, name=data_dict[i]['name'])
+                            if not find:
+                                serializer=DataSerializer(data=data_dict[i], context={'request':request})
+                                if serializer.is_valid(raise_exception=True):
+                                    serializer.save()
+                                    count += 1    
+                return Response(utils.success(count))
             else:
                 msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(self,msg))
+                return Response(utils.error(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
         
     # def destroy(self, pk):
     #     print(pk)

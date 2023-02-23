@@ -12,7 +12,7 @@ from ..models.translations import TranslationFromData
 from ..models.users import get_current_user_language
 from system import utils
 from django.db.models import Q
-from system.service import get_primary_key
+from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
 
 
@@ -34,9 +34,9 @@ class ButtonSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Button')
+        record_id = RecordIdentifiers.objects.filter(record='button')
         if record_id:
-            data['id']=get_primary_key('Button')
+            data['id']=get_rid_pkey('button')
         return data
         
 # ************************ Button Serializer ******************************************
@@ -61,9 +61,9 @@ class CurrencySerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Currency')
+        record_id = RecordIdentifiers.objects.filter(record='currency')
         if record_id:
-            data['id']=get_primary_key('Currency')
+            data['id']=get_rid_pkey('currency')
         return data
        
 # ************************ Tag Serializer ******************************************             
@@ -88,9 +88,9 @@ class TagSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Tag')
+        record_id = RecordIdentifiers.objects.filter(record='tag')
         if record_id:
-            data['id']=get_primary_key('Tag')
+            data['id']=get_rid_pkey('tag')
         return data 
 
 # ************************ Language Serializer ******************************************
@@ -115,9 +115,9 @@ class LanguageSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Language')
+        record_id = RecordIdentifiers.objects.filter(record='language')
         if record_id:
-            data['id']=get_primary_key('Language')
+            data['id']=get_rid_pkey('language')
         return data  
 
 # ************************ Country Serializer ******************************************
@@ -144,9 +144,9 @@ class CountrySerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Country')
+        record_id = RecordIdentifiers.objects.filter(record='country')
         if record_id:
-            data['id']=get_primary_key('Country')
+            data['id']=get_rid_pkey('country')
         return data
 
 # ************************ State Serializer ******************************************
@@ -177,9 +177,10 @@ class StateSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='State')
-        if record_id:
-            data['id']=get_primary_key('State')
+        country = data['country']
+        country_id=Country.objects.get(country__name=country)
+        sequence = data['sequence']
+        data['id']=get_related_pkey('state', country_id.id, sequence)
         return data
 
 #******************************* Stage Action Serializer *******************************
@@ -268,9 +269,9 @@ class StageSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Stage')
+        record_id = RecordIdentifiers.objects.filter(record='stage')
         if record_id:
-            data['id']=get_primary_key('Stage')
+            data['id']=get_rid_pkey('stage')
         return data
      
 # ************************ Configuration Serializer ******************************************    
@@ -297,9 +298,9 @@ class ConfigurationSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Configuration')
+        record_id = RecordIdentifiers.objects.filter(record='configuration')
         if record_id:
-            data['id']=get_primary_key('Configuration')
+            data['id']=get_rid_pkey('configuration')
         return data
     
 # ************************ Territories Serializer ******************************************  
@@ -324,9 +325,9 @@ class TerritoriesSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Territories')
+        record_id = RecordIdentifiers.objects.filter(record='territories')
         if record_id:
-            data['id']=get_primary_key('Territories')
+            data['id']=get_rid_pkey('territories')
         return data
 
 # ********************** Fields Serilaizer ***********************************************
@@ -380,9 +381,9 @@ class SelectorSerializer(serializers.ModelSerializer):
     def validate(self, data):
         selector = data.get('selector')
         data['selector'] = utils.encode_api_name(selector)
-        record_id = RecordIdentifiers.objects.filter(record='Selectors')
+        record_id = RecordIdentifiers.objects.filter(record='selectors')
         if record_id:
-            data['id']=get_primary_key('Selectors')
+            data['id']=get_rid_pkey('selectors')
         return data
     
 # ************************ Choice Serializer ******************************************
@@ -451,9 +452,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
     def validate(self, data):
         choice_name = data.get('choice_name')
         data['choice_name'] = utils.encode_api_name(choice_name)
-        record_id = RecordIdentifiers.objects.filter(record='Choice')
+        record_id = RecordIdentifiers.objects.filter(record='choice')
         if record_id:
-            data['id']=get_primary_key('Choice')
+            data['id']=get_rid_pkey('choice')
         return data
     
 # ************************ List Serializer ****************************************** 
@@ -543,9 +544,9 @@ class ListSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='List')
+        record_id = RecordIdentifiers.objects.filter(record='list')
         if record_id:
-            data['id']=get_primary_key('List')
+            data['id']=get_rid_pkey('list')
         return data
 
 class ListFilterSerializer(serializers.ModelSerializer):
@@ -558,7 +559,7 @@ class ListFilterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         record_id = RecordIdentifiers.objects.filter(record='ListFilters')
         if record_id:
-            data['id']=get_primary_key('ListFilters')
+            data['id']=get_rid_pkey('ListFilters')
         return data
 
 class ListIconSerializer(serializers.ModelSerializer):
@@ -632,9 +633,9 @@ class ColumnsSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Column')
+        record_id = RecordIdentifiers.objects.filter(record='column')
         if record_id:
-            data['id']=get_primary_key('Column')
+            data['id']=get_rid_pkey('column')
         return data
 
 # ************************ Menu Serializer ******************************************
@@ -677,9 +678,9 @@ class MenuSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Menu')
+        record_id = RecordIdentifiers.objects.filter(record='menu')
         if record_id:
-            data['id']=get_primary_key('Menu')
+            data['id']=get_rid_pkey('menu')
         return data
 
 
@@ -711,13 +712,13 @@ class FormSerializer(serializers.ModelSerializer):
 
     def get_form_list(self,obj):
         request = self.context['request']
-        form_list = FormList.objects.filter(form = obj.form_id).order_by('position')
+        form_list = FormList.objects.filter(form = obj.id).order_by('position')
         serializer = RelatedFormListSerializer(form_list, many = True, context={'request': request})  
         return serializer.data
     
     def get_form_data(self,obj):
         request = self.context['request']
-        form_data = FormData.objects.filter(form = obj.form_id).order_by('position')
+        form_data = FormData.objects.filter(form = obj.id).order_by('position')
         serializer = RelatedFormDataSerializer(form_data, many = True, context={'request': request})  
         return serializer.data
     
@@ -725,7 +726,7 @@ class FormSerializer(serializers.ModelSerializer):
         data = obj.form
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationForm.objects.filter(form = obj.form_id, translation__language__name = language).first()
+        queryset = TranslationForm.objects.filter(form = obj.id, translation__language__name = language).first()
         if queryset:
             translation_id = queryset.translation.id
             translation= Translation.objects.filter(id = translation_id, language__name = language).first()
@@ -736,13 +737,13 @@ class FormSerializer(serializers.ModelSerializer):
     
     def get_section(self,obj):
         request = self.context['request']
-        form_section = FormSection.objects.filter(form = obj.form_id).order_by('section_sequence')
+        form_section = FormSection.objects.filter(form = obj.id).order_by('section_sequence')
         serializer = RelatedFormSectionSerializer(form_section, many = True, context={'request': request})  
         return serializer.data
     
     def get_icons(self,obj):
         request = self.context['request']
-        form_icons = FormIcon.objects.filter(form = obj.form_id)
+        form_icons = FormIcon.objects.filter(form = obj.id)
         serializer = FormIconSerializer(form_icons, many = True, context={'request': request})  
         return serializer.data
 
@@ -761,9 +762,9 @@ class FormSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Form')
+        record_id = RecordIdentifiers.objects.filter(record='form')
         if record_id:
-            data['id']=get_primary_key('Form')
+            data['id']=get_rid_pkey('form')
         return data
     
 class FormIconSerializer(serializers.ModelSerializer):
@@ -829,9 +830,9 @@ class FormListSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='FormList')
+        record_id = RecordIdentifiers.objects.filter(record='formlist')
         if record_id:
-            data['id']=get_primary_key('FormList')
+            data['id']=get_rid_pkey('formlist')
         return data
 
 class RelatedTranslationSerializer(serializers.ModelSerializer):
@@ -959,9 +960,9 @@ class FormDataSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='FormData')
+        record_id = RecordIdentifiers.objects.filter(record='formdata')
         if record_id:
-            data['id']=get_primary_key('FormData')
+            data['id']=get_rid_pkey('formdata')
         return data
     
 # ************************ Help Serializer ****************************************** 
@@ -993,9 +994,9 @@ class HelpSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Help')
+        record_id = RecordIdentifiers.objects.filter(record='help')
         if record_id:
-            data['id']=get_primary_key('Help')
+            data['id']=get_rid_pkey('help')
         return data
 
 class RelatedFormSectionSerializer(serializers.ModelSerializer):
@@ -1012,7 +1013,7 @@ class IconSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Icons')
+        record_id = RecordIdentifiers.objects.filter(record='icons')
         if record_id:
-            data['id']=get_primary_key('Icons')
+            data['id']=get_rid_pkey('icons')
         return data

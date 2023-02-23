@@ -73,9 +73,9 @@ class ProductSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Product')
+        record_id = RecordIdentifiers.objects.filter(record='product')
         if record_id:
-            data['id']=get_primary_key('Product')
+            data['id']=get_rid_pkey('product')
         return data
 
 class BomSerializer(serializers.ModelSerializer):
@@ -86,9 +86,9 @@ class BomSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Bom')
+        record_id = RecordIdentifiers.objects.filter(record='bom')
         if record_id:
-            data['id']=get_primary_key('Bom')
+            data['id']=get_rid_pkey('bom')
         return data
 
 class ComponentsSerializer(serializers.ModelSerializer):
@@ -99,9 +99,9 @@ class ComponentsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Components')
+        record_id = RecordIdentifiers.objects.filter(record='components')
         if record_id:
-            data['id']=get_primary_key('Components')
+            data['id']=get_rid_pkey('components')
         return data
 
 class CharacteristicsSerializer(serializers.ModelSerializer):
@@ -112,9 +112,9 @@ class CharacteristicsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Characteristics')
+        record_id = RecordIdentifiers.objects.filter(record='characteristics')
         if record_id:
-            data['id']=get_primary_key('Characteristics')
+            data['id']=get_rid_pkey('characteristics')
         return data
 
 class RelatedValueSerializer(serializers.ModelSerializer):
@@ -138,9 +138,9 @@ class ValueSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Value')
+        record_id = RecordIdentifiers.objects.filter(record='value')
         if record_id:
-            data['id']=get_primary_key('Value')
+            data['id']=get_rid_pkey('value')
         return data
 
 class ProductValueSerializer(serializers.ModelSerializer):
@@ -157,9 +157,9 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='ProductCategory')
+        record_id = RecordIdentifiers.objects.filter(record='productcategory')
         if record_id:
-            data['id']=get_primary_key('ProductCategory')
+            data['id']=get_rid_pkey('productcategory')
         return data
 
 class EquivalentsSerializer(serializers.ModelSerializer):
@@ -170,9 +170,9 @@ class EquivalentsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Equivalents')
+        record_id = RecordIdentifiers.objects.filter(record='equivalents')
         if record_id:
-            data['id']=get_primary_key('Equivalents')
+            data['id']=get_rid_pkey('equivalents')
         return data
 
 class RelatedLocationSerializer(serializers.ModelSerializer):
@@ -202,9 +202,9 @@ class LocationsSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Locations')
+        record_id = RecordIdentifiers.objects.filter(record='locations')
         if record_id:
-            data['id']=get_primary_key('Locations')
+            data['id']=get_rid_pkey('locations')
         return data
 
 class ProductCountsSerializer(serializers.ModelSerializer):
@@ -215,9 +215,9 @@ class ProductCountsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='ProductCounts')
+        record_id = RecordIdentifiers.objects.filter(record='productcounts')
         if record_id:
-            data['id']=get_primary_key('ProductCounts')
+            data['id']=get_rid_pkey('productcounts')
         return data
 
 class ProductLocationsSerializer(serializers.ModelSerializer):
@@ -228,9 +228,9 @@ class ProductLocationsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='ProductLocations')
+        record_id = RecordIdentifiers.objects.filter(record='productlocations')
         if record_id:
-            data['id']=get_primary_key('ProductLocations')
+            data['id']=get_rid_pkey('productlocations')
         return data
 
 class UOMSerializer(serializers.ModelSerializer):
@@ -241,7 +241,7 @@ class UOMSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='UOM')
+        record_id = RecordIdentifiers.objects.filter(record='uom')
         if record_id:
-            data['id']=get_primary_key('UOM')
+            data['id']=get_rid_pkey('uom')
         return data

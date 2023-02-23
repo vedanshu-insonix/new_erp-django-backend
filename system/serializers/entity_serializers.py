@@ -2,7 +2,7 @@ from ..models.entity import *
 from rest_framework import serializers
 from ..serializers.user_serializers import RelatedUserSerilaizer
 from system.serializers.common_serializers import RelatedStageSerializer
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 
@@ -69,9 +69,9 @@ class EntitySerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Entity')
+        record_id = RecordIdentifiers.objects.filter(record='entity')
         if record_id:
-            data['id']=get_primary_key('Entity')
+            data['id']=get_rid_pkey('entity')
         return data
         
 class EntityAddressSerializer(serializers.ModelSerializer):

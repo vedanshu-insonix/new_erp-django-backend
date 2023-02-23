@@ -65,9 +65,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Customers')
+        record_id = RecordIdentifiers.objects.filter(record='customers')
         if record_id:
-            data['id']=get_primary_key('Customers')
+            data['id']=get_rid_pkey('customers')
         return data
   
 class CustomerAddressSerializer(serializers.ModelSerializer):

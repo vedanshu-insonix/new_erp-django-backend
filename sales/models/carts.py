@@ -2,7 +2,7 @@ from django.db import models
 from system.models.common import BaseContent
 
 class Carts(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
     billing_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_billing_address")
@@ -21,7 +21,7 @@ class Carts(BaseContent):
     status = models.CharField(max_length=255, null=True, blank=True)
 
 class Cartlines(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     cart = models.ForeignKey('Carts', on_delete = models.CASCADE, null = True, blank = True)
     stock_id = models.CharField(max_length = 255, null = True, blank = True)#FKEY
     stock_number = models.CharField(max_length=255, null=True, blank=True)

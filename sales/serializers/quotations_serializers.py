@@ -69,9 +69,9 @@ class SalesQuotationsSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='SalesQuotations')
+        record_id = RecordIdentifiers.objects.filter(record='salesquotations')
         if record_id:
-            data['id']=get_primary_key('SalesQuotations')
+            data['id']=get_rid_pkey('salesquotations')
         return data
     
 class SalesQuotationLinesSerializer(serializers.ModelSerializer):
@@ -82,7 +82,7 @@ class SalesQuotationLinesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='SalesQuotationLines')
+        record_id = RecordIdentifiers.objects.filter(record='salesquotationlines')
         if record_id:
-            data['id']=get_primary_key('SalesQuotationLines')
+            data['id']=get_rid_pkey('salesquotationlines')
         return data

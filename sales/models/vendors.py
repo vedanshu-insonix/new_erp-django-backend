@@ -5,7 +5,7 @@ from system.models.common import *
 # Create your models here.
 
 class Vendors(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_id = models.ForeignKey('Vendors', on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.CharField(max_length=255, choices=EntityChoice)
     vendor = models.CharField(max_length=100,null=True,blank=True)
@@ -42,7 +42,7 @@ class VendorAddress(BaseContent):
         return str(self.id)
 
 class VendorProducts(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     stock_number = models.CharField(max_length=3,null=True,blank=True)
     vendor_product_description = models.CharField(max_length=255,null=True,blank=True)
     list_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
@@ -79,15 +79,17 @@ class VendorProducts(BaseContent):
     status = models.CharField(max_length=1, null=True, blank=True)
 
 class CustomsClassifications(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     hts_code = models.CharField(max_length = 255, null = True, blank = True)
     hts_code_description = models.TextField(null = True, blank = True)
     hts_duty = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     
 class NMFC(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     pass
 
 class VendorPrices(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     vendor = models.ForeignKey('Vendors', on_delete=models.CASCADE, null=True)
     vendor_product_id = models.ForeignKey('VendorProducts', on_delete=models.CASCADE, null=True)
     base_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)

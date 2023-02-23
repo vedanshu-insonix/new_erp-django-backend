@@ -2,7 +2,7 @@ from django.db import models
 from system.models.common import BaseContent
 
 class SalesReturns(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     invoice = models.ForeignKey('SalesInvoices', on_delete = models.CASCADE, null = True, blank = True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
@@ -50,7 +50,7 @@ class SalesReturns(BaseContent):
     status = models.CharField(max_length=255, null=True, blank=True)
 
 class SalesReturnLines(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     stock_id = models.CharField(max_length = 255, null = True, blank = True)#FKEY
     stock_number = models.CharField(max_length=255, null=True, blank=True)
     product_name = models.CharField(max_length=255, null=True, blank=True)

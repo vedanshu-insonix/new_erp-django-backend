@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from warehouse.models.general import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class JournalSerializer(serializers.ModelSerializer):
@@ -12,9 +12,9 @@ class JournalSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Journal')
+        record_id = RecordIdentifiers.objects.filter(record='journal')
         if record_id:
-            data['id']=get_primary_key('Journal')
+            data['id']=get_rid_pkey('journal')
         return data
 
 class RelatedJournalTemplateSerializer(serializers.ModelSerializer):
@@ -39,9 +39,9 @@ class JournalTemplateSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='JournalTemplate')
+        record_id = RecordIdentifiers.objects.filter(record='journaltemplate')
         if record_id:
-            data['id']=get_primary_key('JournalTemplate')
+            data['id']=get_rid_pkey('journaltemplate')
         return data
 
 class RelatedAttributesSerializer(serializers.ModelSerializer):
@@ -65,9 +65,9 @@ class AttributesSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Attributes')
+        record_id = RecordIdentifiers.objects.filter(record='attributes')
         if record_id:
-            data['id']=get_primary_key('Attributes')
+            data['id']=get_rid_pkey('attributes')
         return data
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
@@ -99,9 +99,9 @@ class ImagesSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Images')
+        record_id = RecordIdentifiers.objects.filter(record='images')
         if record_id:
-            data['id']=get_primary_key('Images')
+            data['id']=get_rid_pkey('images')
         return data
 
 class ProductImagesSerializer(serializers.ModelSerializer):

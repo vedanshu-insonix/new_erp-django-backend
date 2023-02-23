@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from sales.models.invoices import *
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class SalesInvoicesSerializer(serializers.ModelSerializer):
@@ -11,7 +11,7 @@ class SalesInvoicesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='SalesInvoices')
+        record_id = RecordIdentifiers.objects.filter(record='salesinvoices')
         if record_id:
-            data['id']=get_primary_key('SalesInvoices')
+            data['id']=get_rid_pkey('salesinvoices')
         return data

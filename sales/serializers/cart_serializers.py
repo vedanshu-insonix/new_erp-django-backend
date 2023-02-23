@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from sales.models.carts import *
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 
@@ -12,9 +12,9 @@ class CartsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Carts')
+        record_id = RecordIdentifiers.objects.filter(record='carts')
         if record_id:
-            data['id']=get_primary_key('Carts')
+            data['id']=get_rid_pkey('carts')
         return data
 
 class CartlinesSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class CartlinesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Cartlines')
+        record_id = RecordIdentifiers.objects.filter(record='cartlines')
         if record_id:
-            data['id']=get_primary_key('Cartlines')
+            data['id']=get_rid_pkey('cartlines')
         return data

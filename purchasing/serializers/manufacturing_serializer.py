@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from purchasing.models.manufacturing import *
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class ManufacturingOrderSerializer(serializers.ModelSerializer):
@@ -11,9 +11,9 @@ class ManufacturingOrderSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Manufacturingorders')
+        record_id = RecordIdentifiers.objects.filter(record='manufacturingorders')
         if record_id:
-            data['id']=get_primary_key('Manufacturingorders')
+            data['id']=get_rid_pkey('manufacturingorders')
         return data
 
 class ManufacturingOrderLinesSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class ManufacturingOrderLinesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Manufacturingorderlines')
+        record_id = RecordIdentifiers.objects.filter(record='manufacturingorderlines')
         if record_id:
-            data['id']=get_primary_key('Manufacturingorderlines')
+            data['id']=get_rid_pkey('manufacturingorderlines')
         return data

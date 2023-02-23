@@ -4,7 +4,7 @@ from system.models.common import *
 from django.contrib.auth.models import User
 
 class Team(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     name = models.CharField(max_length=255, null=True, unique=True)
     description = models.CharField(max_length=255, null=True)
     team_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)

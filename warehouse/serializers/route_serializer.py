@@ -2,7 +2,7 @@ from rest_framework import serializers
 from warehouse.models.routes import *
 from warehouse.models.operation import Operations
 from warehouse.serializers.operation_serializer import Operation_Serializer
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class RouteSerializer(serializers.ModelSerializer):
@@ -20,9 +20,9 @@ class RouteSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Routes')
+        record_id = RecordIdentifiers.objects.filter(record='routes')
         if record_id:
-            data['id']=get_primary_key('Routes')
+            data['id']=get_rid_pkey('routes')
         return data
 
 class RouteTypeSerializer(serializers.ModelSerializer):
@@ -33,9 +33,9 @@ class RouteTypeSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='RouteTypes')
+        record_id = RecordIdentifiers.objects.filter(record='routetypes')
         if record_id:
-            data['id']=get_primary_key('RouteTypes')
+            data['id']=get_rid_pkey('routetypes')
         return data
 
 class RouteTypeRulesSerializer(serializers.ModelSerializer):
@@ -46,7 +46,7 @@ class RouteTypeRulesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='RouteTypeRules')
+        record_id = RecordIdentifiers.objects.filter(record='routetyperules')
         if record_id:
-            data['id']=get_primary_key('RouteTypeRules')
+            data['id']=get_rid_pkey('routetyperules')
         return data

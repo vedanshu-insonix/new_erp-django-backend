@@ -2,7 +2,7 @@ from django.db import models
 from system.models.common import *
 
 class Routes(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     route_application=models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
     route_type=models.ForeignKey('RouteTypes', on_delete=models.SET_NULL, null=True, blank=True)
     #code=models.CharField(max_length=255, null=True, blank=True)
@@ -12,7 +12,7 @@ class Routes(BaseContent):
     status=models.CharField(max_length = 255, null=True, blank=True)
 
 class RouteTypes(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     route_usage=models.CharField(max_length = 255, null=True, blank=True)
     name=models.CharField(max_length = 255, null=True, blank=True)
     code=models.CharField(max_length = 255, null=True, blank=True)

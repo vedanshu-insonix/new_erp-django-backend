@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from system.models.dataset import DataTable, Data
 from system.serializers.user_serializers import RelatedUserSerilaizer
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class TableSerializer(serializers.ModelSerializer):
@@ -28,9 +28,9 @@ class TableSerializer(serializers.ModelSerializer):
         return response
     
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='DataTable')
+        record_id = RecordIdentifiers.objects.filter(record='datatable')
         if record_id:
-            data['id']=get_primary_key('DataTable')
+            data['id']=get_rid_pkey('datatable')
         return data
 
 class DataSerializer(serializers.ModelSerializer):
@@ -41,7 +41,7 @@ class DataSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='Data')
+        record_id = RecordIdentifiers.objects.filter(record='data')
         if record_id:
-            data['id']=get_primary_key('Data')
+            data['id']=get_rid_pkey('data')
         return data

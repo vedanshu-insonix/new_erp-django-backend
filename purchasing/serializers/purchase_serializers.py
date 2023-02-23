@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from purchasing.models.purchase import *
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
@@ -11,9 +11,9 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='PurchaseOrder')
+        record_id = RecordIdentifiers.objects.filter(record='purchaseorder')
         if record_id:
-            data['id']=get_primary_key('PurchaseOrder')
+            data['id']=get_rid_pkey('purchaseorder')
         return data
 
 class PurchaseOrderLinesSerializer(serializers.ModelSerializer):
@@ -24,9 +24,9 @@ class PurchaseOrderLinesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='PurchaseOrderLines')
+        record_id = RecordIdentifiers.objects.filter(record='purchaseorderlines')
         if record_id:
-            data['id']=get_primary_key('PurchaseOrderLines')
+            data['id']=get_rid_pkey('purchaseorderlines')
         return data
 
 class DisbursementSerializer(serializers.ModelSerializer):
@@ -35,3 +35,9 @@ class DisbursementSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='disbursment')
+        if record_id:
+            data['id']=get_rid_pkey('disbursment')
+        return data

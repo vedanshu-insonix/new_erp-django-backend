@@ -2,7 +2,7 @@ from django.db import models
 from system.models.common import BaseContent
 
 class SalesOrders(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     order_id = models.CharField(max_length = 255, unique=True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
     contact_address = models.ForeignKey('Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
@@ -58,7 +58,7 @@ class SalesOrders(BaseContent):
         return self.order_id
     
 class SalesOrderLines(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     order = models.ForeignKey('SalesOrders', on_delete=models.SET_NULL, null=True, blank=True)
     stock_id = models.CharField(max_length = 255, null = True, blank = True)#Fkey
     stock_number = models.CharField(max_length = 255, null = True, blank = True)

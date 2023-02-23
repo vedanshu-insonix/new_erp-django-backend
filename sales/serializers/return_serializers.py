@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from sales.models.returns import *
-from system.service import get_primary_key
+from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
 class SalesReturnsSerializer(serializers.ModelSerializer):
@@ -11,9 +11,9 @@ class SalesReturnsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='SalesReturns')
+        record_id = RecordIdentifiers.objects.filter(record='salesreturns')
         if record_id:
-            data['id']=get_primary_key('SalesReturns')
+            data['id']=get_rid_pkey('salesreturns')
         return data
 
 class SalesReturnLinesSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class SalesReturnLinesSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='SalesReturnLines')
+        record_id = RecordIdentifiers.objects.filter(record='salesreturnlines')
         if record_id:
-            data['id']=get_primary_key('SalesReturnLines')
+            data['id']=get_rid_pkey('salesreturnlines')
         return data

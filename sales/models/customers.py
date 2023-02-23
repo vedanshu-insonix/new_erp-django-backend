@@ -5,7 +5,7 @@ from system.models.common import *
 # Create your models here.
 
 class Customers(BaseContent):
-    id = models.CharField(max_length=255,primary_key=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_id = models.ForeignKey('Customers', on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.CharField(max_length=255, choices=EntityChoice)
     customer = models.CharField(max_length=100,null=True,blank=True)
