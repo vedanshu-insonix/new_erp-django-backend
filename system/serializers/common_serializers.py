@@ -450,11 +450,10 @@ class ChoiceSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        choice_name = data.get('choice_name')
-        data['choice_name'] = utils.encode_api_name(choice_name)
-        record_id = RecordIdentifiers.objects.filter(record='choice')
-        if record_id:
-            data['id']=get_rid_pkey('choice')
+        selector = data['selector']
+        sel_id=Selectors.objects.get(selector=selector)
+        sequence = data['sequence']
+        data['id']=get_related_pkey('choice', sel_id.id, sequence)
         return data
     
 # ************************ List Serializer ****************************************** 
@@ -501,7 +500,7 @@ class RelatedListSerializer(serializers.ModelSerializer):
         return response
     
 class ListSerializer(serializers.ModelSerializer):
-    data_source = serializers.CharField(read_only=True, source="DataTable.system_name")
+    #data_source = serializers.CharField(read_only=True, source="DataTable.system_name")
     #data_source = serializers.SlugRelatedField(read_only=True, slug_field='system_name')
     system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
@@ -671,9 +670,9 @@ class MenuSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         request = self.context['request']
-        list_data = RelatedListSerializer(instance.list, context={'request': request}).data
-        if 'id' in list_data:
-            response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
+        # list_data = RelatedListSerializer(instance.list, context={'request': request}).data
+        # if 'id' in list_data:
+        #     response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
             
         return response
     

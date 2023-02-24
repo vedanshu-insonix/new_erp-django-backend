@@ -17,7 +17,10 @@ def get_rid_pkey(sender):
     if not new_id:
         start_id = record_id.starting
         new_id=start_id+1
-    primary_id = f'{code}{new_id}'
+    if code:
+        primary_id = f'{code}{new_id}'
+    else:
+        primary_id = f'{new_id}'
     next_id=new_id+1
     record_id.next=next_id
     record_id.save()

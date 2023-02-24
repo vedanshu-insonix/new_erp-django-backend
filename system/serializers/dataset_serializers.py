@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from system.models.dataset import DataTable, Data
 from system.serializers.user_serializers import RelatedUserSerilaizer
-from system.service import get_rid_pkey
+from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
 
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
 
     def get_data(self, obj):
-        table_id = obj.table_id
+        table_id = obj.id
         data_queryset = Data.objects.filter(data_source = table_id)
         serializer = DataSerializer(data_queryset, many = True)         
         return serializer.data
@@ -41,7 +41,8 @@ class DataSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def validate(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='data')
-        if record_id:
-            data['id']=get_rid_pkey('data')
+        datasource = data['data_source']
+        dataSource_id=DataTable.objects.get(id=datasource.id)
+        sequence = data['sequence']
+        data['id']=get_related_pkey('data', dataSource_id.id, sequence)
         return data
