@@ -12,6 +12,8 @@ from ..models.translations import TranslationFromData
 from ..models.users import get_current_user_language
 from system import utils
 from django.db.models import Q
+from system.service import get_rid_pkey, get_related_pkey
+from system.models.recordid import RecordIdentifiers
 
 
 # ************************ Button Serializer ******************************************
@@ -30,6 +32,12 @@ class ButtonSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='button')
+        if record_id:
+            data['id']=get_rid_pkey('button')
+        return data
         
 # ************************ Button Serializer ******************************************
 class RelatedCurrencySerializer(serializers.ModelSerializer):
@@ -38,9 +46,6 @@ class RelatedCurrencySerializer(serializers.ModelSerializer):
         exclude = ("created_time", "modified_time", "created_by")
         
 class CurrencySerializer(serializers.ModelSerializer):
-    country = serializers.SerializerMethodField()
-    label = serializers.SerializerMethodField()
-       
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
@@ -53,12 +58,6 @@ class CurrencySerializer(serializers.ModelSerializer):
             return serializers.data['label']
         else:
             return data
-
-    def get_country(self, obj):
-        queryset = Country.objects.filter(currency=obj.id)
-        serializer = CountrySerializer(queryset, many=True)
-        return serializer.data
-
     class Meta:
         model = Currency
         fields = ("__all__")
@@ -72,6 +71,12 @@ class CurrencySerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='currency')
+        if record_id:
+            data['id']=get_rid_pkey('currency')
+        return data
        
 # ************************ Tag Serializer ******************************************             
 class RelatedTagSerializer(serializers.ModelSerializer):
@@ -92,7 +97,13 @@ class TagSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response    
+        return response
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='tag')
+        if record_id:
+            data['id']=get_rid_pkey('tag')
+        return data 
 
 # ************************ Language Serializer ******************************************
 class RelatedLanguageSerializer(serializers.ModelSerializer):
@@ -113,7 +124,13 @@ class LanguageSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response    
+        return response
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='language')
+        if record_id:
+            data['id']=get_rid_pkey('language')
+        return data  
 
 # ************************ Country Serializer ******************************************
 class RelatedCountrySerializer(serializers.ModelSerializer):
@@ -137,6 +154,12 @@ class CountrySerializer(serializers.ModelSerializer):
         response['name']=instance.country.name
         response['flag']=instance.country.flag
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='country')
+        if record_id:
+            data['id']=get_rid_pkey('country')
+        return data
 
 # ************************ State Serializer ******************************************
 class RelatedStateSerializer(serializers.ModelSerializer):
@@ -145,7 +168,6 @@ class RelatedStateSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
   
 class StateSerializer(serializers.ModelSerializer):
-    
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
@@ -158,7 +180,6 @@ class StateSerializer(serializers.ModelSerializer):
             return serializers.data['label']
         else:
             return data
-    
     class Meta:
         model = State
         fields = ("__all__")
@@ -177,6 +198,13 @@ class StateSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
         return response
+    
+    def validate(self, data):
+        country = data['country']
+        country_id=Country.objects.get(country__name=country)
+        sequence = data['sequence']
+        data['id']=get_related_pkey('state', country_id.id, sequence)
+        return data
 
 #******************************* Stage Action Serializer *******************************
 
@@ -206,8 +234,6 @@ class StageActionSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}} 
 
-
-
 # ************************ Stage Serializer ******************************************    
 class RelatedStageSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
@@ -227,7 +253,6 @@ class RelatedStageSerializer(serializers.ModelSerializer):
         model = Stage
         exclude = ("created_time","modified_time","created_by")
 
-       
 class StageSerializer(serializers.ModelSerializer):
     stage = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
@@ -265,6 +290,12 @@ class StageSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='stage')
+        if record_id:
+            data['id']=get_rid_pkey('stage')
+        return data
      
 # ************************ Configuration Serializer ******************************************    
 class RelatedConfigurationSerializer(serializers.ModelSerializer):
@@ -274,8 +305,6 @@ class RelatedConfigurationSerializer(serializers.ModelSerializer):
         
 class ConfigurationSerializer(serializers.ModelSerializer):
     configuration = serializers.CharField(max_length = 255, required = True)
-    label = serializers.SerializerMethodField()
-       
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
@@ -303,7 +332,12 @@ class ConfigurationSerializer(serializers.ModelSerializer):
                     
         return response
     
-
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='configuration')
+        if record_id:
+            data['id']=get_rid_pkey('configuration')
+        return data
+    
 # ************************ Territories Serializer ******************************************  
 class RelatedTerritoriesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -324,6 +358,12 @@ class TerritoriesSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='territories')
+        if record_id:
+            data['id']=get_rid_pkey('territories')
+        return data
 
 # ********************** Fields Serilaizer ***********************************************
 # class RelatedFieldSerializer(serializers.ModelSerializer):
@@ -359,7 +399,6 @@ class TerritoriesSerializer(serializers.ModelSerializer):
 class SelectorSerializer(serializers.ModelSerializer):
     selector = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
-       
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
@@ -390,6 +429,9 @@ class SelectorSerializer(serializers.ModelSerializer):
     def validate(self, data):
         selector = data.get('selector')
         data['selector'] = utils.encode_api_name(selector)
+        record_id = RecordIdentifiers.objects.filter(record='selectors')
+        if record_id:
+            data['id']=get_rid_pkey('selectors')
         return data
     
 # ************************ Choice Serializer ******************************************
@@ -456,12 +498,15 @@ class ChoiceSerializer(serializers.ModelSerializer):
         return response
 
     def validate(self, data):
-        choice_name = data.get('choice_name')
-        data['choice_name'] = utils.encode_api_name(choice_name)
+        selector = data['selector']
+        sel_id=Selectors.objects.get(selector=selector)
+        sequence = data['sequence']
+        data['id']=get_related_pkey('choice', sel_id.id, sequence)
         return data
     
 # ************************ List Serializer ****************************************** 
 class RelatedListSerializer(serializers.ModelSerializer):
+    data_source = serializers.SlugRelatedField(read_only=True, slug_field='system_name')
     columns = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
@@ -479,10 +524,9 @@ class RelatedListSerializer(serializers.ModelSerializer):
             return data
     
     def get_columns(self, obj):
-        request = self.context['request']
         list_id = obj.id
         list_queryset = Column.objects.filter(list = list_id).order_by('position')
-        serializer = RelatedColumnsSerializer(list_queryset, many = True, context={'request': request})         
+        serializer = RelatedColumnsSerializer(list_queryset, many = True)         
         return serializer.data
     
     def get_icon(self,obj):
@@ -500,10 +544,12 @@ class RelatedListSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        request = self.context['request']            
+        # request = self.context['request']            
         return response
     
 class ListSerializer(serializers.ModelSerializer):
+    #data_source = serializers.CharField(read_only=True, source="DataTable.system_name")
+    #data_source = serializers.SlugRelatedField(read_only=True, slug_field='system_name')
     system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
     columns = serializers.SerializerMethodField()
@@ -543,6 +589,12 @@ class ListSerializer(serializers.ModelSerializer):
         
         request = self.context['request']        
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='list')
+        if record_id:
+            data['id']=get_rid_pkey('list')
+        return data
 
 class ListFilterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -550,6 +602,12 @@ class ListFilterSerializer(serializers.ModelSerializer):
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='ListFilters')
+        if record_id:
+            data['id']=get_rid_pkey('ListFilters')
+        return data
 
 class ListIconSerializer(serializers.ModelSerializer):
     icon = serializers.CharField(max_length = 255, required = True)
@@ -569,6 +627,7 @@ class ListIconSerializer(serializers.ModelSerializer):
 
 # ************************ Columns Serializer ****************************************** 
 class RelatedColumnsSerializer(serializers.ModelSerializer):
+    visibility = serializers.SlugRelatedField(read_only=True, slug_field='choice_name')
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.column
@@ -588,6 +647,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by","list")
 
 class ColumnsSerializer(serializers.ModelSerializer):
+    visibility = serializers.SlugRelatedField(read_only=True, slug_field='choice_name')
     column = serializers.CharField(max_length = 255, required = True)
     field = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
@@ -618,7 +678,12 @@ class ColumnsSerializer(serializers.ModelSerializer):
             list = data.pop('columns')
             response['list'] = data
         return response
-
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='column')
+        if record_id:
+            data['id']=get_rid_pkey('column')
+        return data
 
 # ************************ Menu Serializer ******************************************
 class RelatedMenuSerializer(serializers.ModelSerializer):
@@ -653,11 +718,17 @@ class MenuSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         request = self.context['request']
-        list_data = RelatedListSerializer(instance.list, context={'request': request}).data
-        if 'id' in list_data:
-            response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
+        # list_data = RelatedListSerializer(instance.list, context={'request': request}).data
+        # if 'id' in list_data:
+        #     response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
             
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='menu')
+        if record_id:
+            data['id']=get_rid_pkey('menu')
+        return data
 
 
 # ************************ Form Serializer ******************************************  
@@ -734,7 +805,14 @@ class FormSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        request = self.context['request']
         return response
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='form')
+        if record_id:
+            data['id']=get_rid_pkey('form')
+        return data
     
 class FormIconSerializer(serializers.ModelSerializer):
     class Meta:
@@ -746,18 +824,19 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
     display_records = serializers.SerializerMethodField()
     def get_icon(self,obj):
         list = obj.list
+        request = self.context['request']
         if list:
             queryset = ListIcon.objects.filter(list = obj.list.id).first()
-            serializers = ListIconSerializer(queryset, many=False)
+            serializers = ListIconSerializer(queryset, many=False, context={'request':request})
             return serializers.data['icon'] 
         return None  
         
     def get_display_records(self,obj):
-        list = obj.list.list
+        list = obj.list
+        request = self.context['request']
         if list:
-            queryset = Configuration.objects.filter(Q(category = "Lists") | Q(category = "lists"),
-                                                    configuration = list)
-            serializers = RelatedConfigurationSerializer(queryset , many = False)
+            queryset = Configuration.objects.filter(configuration = list)
+            serializers = RelatedConfigurationSerializer(queryset , many = False, context={'request':request})
             return {"current_value": serializers.data['current_value'],
                     "default_value": serializers.data['default_value']}
         return None
@@ -769,13 +848,12 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        list = RelatedListSerializer(instance.list).data
+        list = RelatedListSerializer(instance.list, context={'request':request}).data
         if 'id' in list:
             response['list'] = RelatedListSerializer(instance.list, context={'request': request}).data
         return response
 
 class FormListSerializer(serializers.ModelSerializer):
-    list = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormList
         fields = ("__all__")
@@ -797,6 +875,12 @@ class FormListSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='formlist')
+        if record_id:
+            data['id']=get_rid_pkey('formlist')
+        return data
 
 class RelatedTranslationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -922,6 +1006,12 @@ class FormDataSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='formdata')
+        if record_id:
+            data['id']=get_rid_pkey('formdata')
+        return data
+    
 # ************************ Help Serializer ****************************************** 
 class RelatedHelpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -948,7 +1038,13 @@ class HelpSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response 
+        return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='help')
+        if record_id:
+            data['id']=get_rid_pkey('help')
+        return data
 
 class RelatedFormSectionSerializer(serializers.ModelSerializer):
     section_title = serializers.CharField(required = True, max_length = 255)
@@ -957,7 +1053,6 @@ class RelatedFormSectionSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by", "form")
 
 class IconSerializer(serializers.ModelSerializer):
-     
     def get_label(self, obj):
         data = obj.data
         user = self.context['request'].user
@@ -972,4 +1067,12 @@ class IconSerializer(serializers.ModelSerializer):
             return data
     class Meta:
         model = Icons
-        exclude = ("created_time","modified_time","created_by")
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='icons')
+        if record_id:
+            data['id']=get_rid_pkey('icons')
+        return data
