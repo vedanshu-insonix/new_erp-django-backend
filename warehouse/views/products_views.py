@@ -29,10 +29,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         prod_create = product_services.create_product(self,request)
         if 'success' in prod_create:
             ret = prod_create['success']
-            return Response(utils.success_msg(self,ret))
+            return Response(utils.success_msg(ret))
         else:
             ret = prod_create['error']
-            return Response(utils.error(self,ret))
+            return Response(utils.error(ret))
 
     @action(detail=True, methods=['post'],url_path = "add_attributes")
     def add_attributes(self,request,pk=None):

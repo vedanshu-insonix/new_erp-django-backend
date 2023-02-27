@@ -85,9 +85,7 @@ class TeamViewSet(viewsets.ModelViewSet):
                         role = role.get('id')
                         role=Role.objects.get(id=role)
                         find = TeamRole.objects.filter(role=role, team=team_rec)
-                        if find:
-                            pass
-                        else:
+                        if not find:
                             add_role=TeamRole.objects.create(role=role, team=team_rec)
                 if RemoveRoles == True:
                     for role in remove_roles:
@@ -101,9 +99,7 @@ class TeamViewSet(viewsets.ModelViewSet):
                         user = user.get('id')
                         user=User.objects.get(id=user)
                         find = TeamUser.objects.filter(user=user, team=team_rec)
-                        if find:
-                            pass
-                        else:
+                        if not find:
                             add_user=TeamUser.objects.create(user=user, team=team_rec)
                 if RemoveUser == True:
                     for user in remove_users:
