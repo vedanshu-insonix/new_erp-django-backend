@@ -116,10 +116,10 @@ class CountryViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            symbol_selector = Selectors.objects.get(selector__icontains='country_symbol_position')
-            money_selector = Selectors.objects.get(selector__icontains='country_money_format')
-            date_selector = Selectors.objects.get(selector__icontains='country_date_format')
-            time_selector = Selectors.objects.get(selector__icontains='country_time_format')
+            symbol_selector = Selectors.objects.get(system_name__icontains='country_symbol_position')
+            money_selector = Selectors.objects.get(system_name__icontains='country_money_format')
+            date_selector = Selectors.objects.get(system_name__icontains='country_date_format')
+            time_selector = Selectors.objects.get(system_name__icontains='country_time_format')
             if file:
                 data_dict = extracting_data(file)
                 count = 0
@@ -134,10 +134,10 @@ class CountryViewSet(viewsets.ModelViewSet):
                     if currency and country:
                         try:
                             currency_rec = Currency.objects.get(code=currency, id=currency_id)
-                            symbol_rec = Choice.objects.filter(choice_name=symbol_position, selector=symbol_selector.id)
-                            money_rec = Choice.objects.filter(choice_name=money_format, selector=money_selector.id)
-                            date_rec = Choice.objects.filter(choice_name=data_format, selector=date_selector.id)
-                            time_rec = Choice.objects.filter(choice_name=time_format, selector=time_selector.id)
+                            symbol_rec = Choice.objects.filter(system_name=symbol_position, selector=symbol_selector.id)
+                            money_rec = Choice.objects.filter(system_name=money_format, selector=money_selector.id)
+                            date_rec = Choice.objects.filter(system_name=data_format, selector=date_selector.id)
+                            time_rec = Choice.objects.filter(system_name=time_format, selector=time_selector.id)
 
                             data_dict[i]['currency']=currency_rec.id
                             if symbol_rec:
@@ -189,7 +189,7 @@ class StateViewSet(viewsets.ModelViewSet):
                             country_rec = Country.objects.get(Q(country__iname=country) | Q(country=country))
                             data_dict[i]['country']=country_rec.id
                             
-                            state_check=State.objects.filter(name=state_name, country=country_rec.id)
+                            state_check=State.objects.filter(system_name=state_name, country=country_rec.id)
                             if not state_check:
                                 serializer=StateSerializer(data=data_dict[i], context={'request':request})
                                 if serializer.is_valid(raise_exception=True):
@@ -236,40 +236,38 @@ class StageViewSet(viewsets.ModelViewSet):
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
-                    print(data_dict[i])
-                    if data_dict[i] != None:
-                        stage_name = data_dict[i]['stage']
-                        if stage_name:
-                            form_name = data_dict[i]['form']
-                            form_rec = Form.objects.filter(form=form_name)
-                            if form_rec:
-                                req_action = data_dict[i].pop('required action buttons')
-                                opt_action = data_dict[i].pop('optional action buttons')
-                                data_dict[i]['form']=form_rec.values()[0]['id']
-                                stage_rec = Stage.objects.filter(stage = stage_name,form_id=form_rec.values()[0]['id'])
-                                if stage_rec:
-                                    stage_id = stage_rec.values()[0]['id']
-                                else:
-                                    serializer=StageSerializer(data=data_dict[i],context={'request': request})
-                                    if serializer.is_valid():
-                                        serializer.save()
-                                        count += 1
-                                    stage_rec = Stage.objects.get(stage = stage_name,form_id=form_rec.values()[0]['id'])
-                                    stage_id=stage_rec.id
-                                if req_action:
-                                    text_split = req_action.split(',')
-                                    for i in range (len(text_split)):
-                                        check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
-                                        if not check:
-                                            StageAction.objects.create(stage_id=stage_id,action=text_split[i],required=True)
-                                if opt_action:
-                                    text_split = opt_action.split(',')
-                                    for i in range (len(text_split)):
-                                        check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
-                                        if not check:
-                                            StageAction.objects.create(stage_id=stage_id,action=text_split[i],optional=True)
+                    stage_name = data_dict[i]['stage']
+                    if stage_name:
+                        form_name = data_dict[i]['form']
+                        form_rec = Form.objects.filter(form=form_name)
+                        if form_rec:
+                            req_action = data_dict[i].pop('required action buttons')
+                            opt_action = data_dict[i].pop('optional action buttons')
+                            data_dict[i]['form']=form_rec.values()[0]['id']
+                            stage_rec = Stage.objects.filter(system_name = stage_name,form_id=form_rec.values()[0]['id'])
+                            if stage_rec:
+                                stage_id = stage_rec.values()[0]['id']
                             else:
-                                defective_data.append(form_name)
+                                serializer=StageSerializer(data=data_dict[i],context={'request': request})
+                                if serializer.is_valid():
+                                    serializer.save()
+                                    count += 1
+                                stage_rec = Stage.objects.get(system_name = stage_name,form_id=form_rec.values()[0]['id'])
+                                stage_id=stage_rec.id
+                            if req_action:
+                                text_split = req_action.split(',')
+                                for i in range (len(text_split)):
+                                    check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
+                                    if not check:
+                                        StageAction.objects.create(stage_id=stage_id,action=text_split[i],required=True)
+                            if opt_action:
+                                text_split = opt_action.split(',')
+                                for i in range (len(text_split)):
+                                    check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
+                                    if not check:
+                                        StageAction.objects.create(stage_id=stage_id,action=text_split[i],optional=True)
+                        else:
+                            defective_data.append(form_name)
                 if defective_data:
                     defective_data = {
                         "missing_form" : f"These {set(defective_data)} are the invalid form names."
@@ -316,7 +314,7 @@ class ConfigurationViewSet(viewsets.ModelViewSet):
                     conf_name = data_dict[i]["configuration"]
                     editable = data_dict[i]["editable"]
                     if conf_name:
-                        conf = Configuration.objects.filter(configuration=conf_name)
+                        conf = Configuration.objects.filter(system_name=conf_name)
                         if not conf:
                             if editable == 'yes' or 'Yes':
                                 data_dict[i]["editable"]=True
@@ -361,7 +359,7 @@ class SelectorViewSet(viewsets.ModelViewSet):
                 data_dict = extracting_data(file)
                 count = 0
                 for i in range(len(data_dict)):
-                    selector = data_dict[i].get('selector')
+                    selector = data_dict[i].get('system_name')
                     if selector:
                         try:
                             serializer=SelectorSerializer(data=data_dict[i], context={'request':request})
@@ -397,21 +395,21 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                 count = 0
                 for i in range(len(data_dict)):
                     selector = data_dict[i]['selector']
-                    choice = data_dict[i]["choice_name"]
+                    choice = data_dict[i]["system_name"]
                     default = data_dict[i]["default"]
                     if selector:
                         selector = utils.encode_api_name(selector)
-                        check = Selectors.objects.filter(selector=selector)
+                        check = Selectors.objects.filter(system_name=selector)
                         if check:
                             data_dict[i]['selector'] = check.values()[0]['id']
                             selector = check.values()[0]['id']
                         else:
-                            new_selector = Selectors.objects.create(selector=selector, type='user')
+                            new_selector = Selectors.objects.create(system_name=selector, type='user')
                             selector = new_selector.id
                             data_dict[i]['selector'] = new_selector.id
                         if choice:
-                            choice_name=utils.encode_api_name(data_dict[i]["choice_name"])
-                            choice_rec = Choice.objects.filter(choice_name=choice_name, selector = selector)
+                            choice_name=utils.encode_api_name(choice)
+                            choice_rec = Choice.objects.filter(system_name=choice_name, selector = selector)
                             if not choice_rec:
                                 if default == 'yes' or 'Yes':
                                     data_dict[i]['default'] = True
@@ -463,7 +461,7 @@ class FormViewSet(viewsets.ModelViewSet):
                 for i in range(len(data_dict)):
                     form_name = data_dict[i]['form']
                     if form_name:
-                        form_rec = Form.objects.filter(form=form_name)
+                        form_rec = Form.objects.filter(system_name=form_name)
                         if not form_rec:
                             try:
                                 serializer=FormSerializer(data=data_dict[i],context={'request': request})
@@ -516,7 +514,7 @@ class ListViewSet(viewsets.ModelViewSet):
                         #visibility = data_dict[i]['visibility']
                         lst_id = data_dict[i]['id']
                         table_rec = DataTable.objects.filter(Q(system_name=data_source, id=data_source_id)| Q(system_name=data_source))
-                        list_type_rec = Choice.objects.filter(selector=selector_id.id, choice_name=list_type)
+                        list_type_rec = Choice.objects.filter(selector=selector_id.id, system_name=list_type)
                         # if visibility:
                         #     visibility_rec = Choice.objects.filter(choice_name=visibility)
                         if list_data and table_rec and list_type_rec:
@@ -596,16 +594,16 @@ class ColumnsViewSet(viewsets.ModelViewSet):
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
-                    column = data_dict[i]['column']
+                    column = data_dict[i]['system_name']
                     field = data_dict[i]['field']
                     list = data_dict[i]['list']
                     visibility = data_dict[i]['visibility']
                     list_rec = List.objects.filter(system_name=list)
-                    visibility_rec = Choice.objects.filter(choice_name=visibility)
+                    visibility_rec = Choice.objects.filter(system_name=visibility)
                     if column and field and list_rec and visibility_rec:
                         list_id = list_rec.values()[0]['id']
                         data_dict[i]['list'] = list_id
-                        columnrec = Column.objects.filter(column= column,list_id=list_id)
+                        columnrec = Column.objects.filter(system_name = column,list_id=list_id)
                         if not columnrec:
                             serializer = ColumnsSerializer(data=data_dict[i],context={'request': request})
                             if serializer.is_valid(raise_exception=True):
@@ -635,7 +633,7 @@ class MenuViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("__all__")
     filterset_fields = {
-        'menu_category': ['exact', 'contains'],
+        'system_name': ['exact', 'contains'],
         'list': ['exact'],
         'sequence': ['exact']
     }
@@ -650,42 +648,43 @@ class MenuViewSet(viewsets.ModelViewSet):
     def import_data(self, request):
         try:
             file = request.FILES.get('file')
-            menu_rec=None
             if file:
                 data_dict = extracting_data(file)
                 count = 0
                 defective_data = []
                 for i in range(len(data_dict)):
-                    menu_category = data_dict[i]['menu_category']
-                    if menu_category:
+                    menu_name = data_dict[i]['menu_category']
+                    if menu_name:
                         list = data_dict[i]['list']
                         lst_id = data_dict[i].pop('list_id')
-                        menu_type=data_dict[i]['menu_type']
+                        category=data_dict[i]['menu_type']
+                        category_id=data_dict[i].pop('menu_type_id')
                         #sequence = data_dict[i]['sequence']
                         #print(data_dict[i])
                         if list:
-                            listrec = List.objects.filter(Q(system_name=list, id=lst_id)|Q(id=lst_id))
+                            listrec = List.objects.filter(Q(system_name__contains=list, id=lst_id)|Q(id=lst_id))
                             if listrec:
                                 data_dict[i]['list'] = listrec.values()[0]['id']
                                 list_id = listrec.values()[0]['id']
-                                menu_rec = Menu.objects.filter(menu_category=menu_category, list_id = list_id)
+                                menu_rec = Menu.objects.filter(menu_category__contains=menu_name, list_id = list_id)
                             else:
                                 defective_data.append(list)   
                         else:
                             data_dict[i]['list'] = None
-                            menu_rec = Menu.objects.filter(menu_category=menu_category)
-                        if menu_type:
-                            choice_id=Choice.objects.filter(choice_name=menu_type)
+                            menu_rec = Menu.objects.filter(menu_category__contains=menu_name)
+                        if category:
+                            choice_id=Choice.objects.filter(system_name__contains=category, id=category_id)
                             if choice_id:
                                 data_dict[i]['menu_type']=choice_id.values()[0]['id']
-                        label = data_dict[i]['menu_category']
+                        #label = data_dict[i]['menu_category']
                         language = get_current_user_language(request.user)
-                        lang = Language.objects.get(name=language)
-                        check=Translation.objects.filter(label=label, language_id=lang.id)
+                        print(language)
+                        lang = Language.objects.get(system_name__contains=language)
+                        check=Translation.objects.filter(label__contains=menu_name, language_id=lang.id)
                         if not check:
                             trans_id = get_rid_pkey('translation')
-                            new_label = Translation.objects.create(id=trans_id, label=label, language_id=lang.id)
-                        label_rec = Translation.objects.get(label=label, language_id=lang.id)
+                            new_label = Translation.objects.create(id=trans_id, label=menu_name, language_id=lang.id)
+                        label_rec = Translation.objects.get(label=menu_name, language_id=lang.id)
                         if not menu_rec:
                             try:
                                 menu_serializer = MenuSerializer(data=data_dict[i], context={'request': request})
@@ -739,7 +738,7 @@ class FormListViewSet(viewsets.ModelViewSet):
                     form = data_dict[i]['form']
                     if list and form:
                         try:
-                            formrec = Form.objects.get(form=form)
+                            formrec = Form.objects.get(system_name=form)
                             listrec = List.objects.get(system_name__contains=list)
                             if formrec and listrec:
                                 formlistrec = FormList.objects.filter(list=listrec.id,form=formrec.id)
@@ -773,43 +772,82 @@ class FormDataViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
+    # @action(detail=False, methods=['post'], name='import_data', url_path = "import")
+    # def import_data(self, request):
+    #     try:
+    #         file = request.FILES.get('file')
+    #         if file:
+    #             data_dict = extracting_data(file)
+    #             count = 0
+    #             defective_data=[]
+    #             for i in range(len(data_dict)):
+    #                 data=data_dict[i]['data']
+    #                 field = data_dict[i]['field']
+    #                 if data and field:
+    #                     form_name=data_dict[i]['form']
+    #                     formrec = Form.objects.filter(system_name=form_name)
+    #                     if formrec:
+    #                         columnrec = FormData.objects.filter(data=data,form_id=formrec.values()[0]['id'])
+    #                         if not columnrec:
+    #                             data_dict[i]['form']=formrec.values()[0]['id']
+    #                             data_dict[i]['type']=(data_dict[i]['type']).lower()
+    #                             serializer=FormDataSerializer(data=data_dict[i], context={'request':request})
+    #                             if serializer.is_valid(raise_exception=True):
+    #                                 serializer.save()
+    #                                 count += 1
+    #                     else:
+    #                         defective_data.append(form_name)
+    #             if defective_data:
+    #                 defective_data = {
+    #                     "missing_forms" : f"These {set(defective_data)} are the invalid form names."
+    #                 } 
+    #                 return Response(utils.success_def(count,defective_data))
+    #             else:
+    #                 return Response(utils.success(count))
+    #         else:
+    #             msg="Please Upload A Suitable Excel File."
+    #             return Response(utils.error(msg))
+    #     except Exception as e:
+    #         return Response(utils.error(str(e)))
+
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
-        try:
-            file = request.FILES.get('file')
-            if file:
-                data_dict = extracting_data(file)
-                count = 0
-                defective_data=[]
-                for i in range(len(data_dict)):
-                    data=data_dict[i]['data']
-                    field = data_dict[i]['field']
-                    if data and field:
-                        form_name=data_dict[i]['form']
-                        formrec = Form.objects.filter(form=form_name)
-                        if formrec:
-                            columnrec = FormData.objects.filter(data=data,form_id=formrec.values()[0]['id'])
-                            if not columnrec:
-                                data_dict[i]['form']=formrec.values()[0]['id']
-                                data_dict[i]['type']=(data_dict[i]['type']).lower()
-                                serializer=FormDataSerializer(data=data_dict[i], context={'request':request})
-                                if serializer.is_valid(raise_exception=True):
-                                    serializer.save()
-                                    count += 1
-                        else:
-                            defective_data.append(form_name)
-                if defective_data:
-                    defective_data = {
-                        "missing_forms" : f"These {set(defective_data)} are the invalid form names."
-                    } 
-                    return Response(utils.success_def(count,defective_data))
-                else:
-                    return Response(utils.success(count))
-            else:
-                msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(msg))
-        except Exception as e:
-            return Response(utils.error(str(e)))
+        file = request.FILES.get('file')
+        if file:
+            data_dict = extracting_data(file)
+            count = 0
+            for i in range(len(data_dict)):
+                data=data_dict[i]['data']
+                data=Data.objects.filter(system_name=data)
+                field = data_dict[i]['field']
+                table = data_dict[i]['table']
+                table = DataTable.objects.filter(system_name= table)
+                form = data_dict[i]['form']
+                form = Form.objects.filter(system_name=form)
+                try:
+                    if data and field and table and form:
+                        table_id = table.values()[0]['id']
+                        form_id = form.values()[0]['id']
+                        data_id = data.values()[0]['id']
+                        fd_rec = FormData.objects.filter(table=table_id, data=data_id, form=form_id)
+                        if not fd_rec:
+                            data_dict[i]['form']=form_id
+                            data_dict[i]['data']=data_id
+                            data_dict[i]['table']=table_id
+                            data_dict[i]['type']=(data_dict[i]['type']).lower()
+                            serializer=FormDataSerializer(data=data_dict[i], context={'request':request})
+                            if serializer.is_valid(raise_exception=True):
+                                serializer.save()
+                                count += 1
+                    else:
+                        print("data_dict >> ", data_dict[i], "data >> ", data, "form > ", form, "table > ", table, "field > ", field)
+                except Exception as e:
+                    print("Form Data Error >>> ", str(e))
+                    pass
+            return Response(utils.success(count))
+        else:
+            msg="Please Upload A Suitable Excel File."
+            return Response(utils.error(msg))
 
 class FormSectionViewSet(viewsets.ModelViewSet):
     queryset = FormSection.objects.all()
@@ -843,8 +881,6 @@ class IconViewSet(viewsets.ModelViewSet):
                         row_data = []
                         for cell in row:
                             row_data.append(cell.value)
-                        print(row_data)
-                    print(data_dict)
                 msg="file received."
                 return Response(utils.success(msg))
             else:

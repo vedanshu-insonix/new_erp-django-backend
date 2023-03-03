@@ -3,7 +3,7 @@ from sales.models.address import Addresses
 from ..models.common import BaseContent, Language
 from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
-  
+
 class UserAddress(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserAddress')
     address = models.OneToOneField(Addresses, on_delete=models.SET_NULL, null=True, blank=True)
@@ -19,8 +19,7 @@ class UserOthers(BaseContent):
     
     def __str__(self):
         return self.user
-
-
+    
 class UserRoles(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserRoles')
     role = models.ForeignKey('Role', on_delete= models.CASCADE, null=True)
@@ -35,7 +34,7 @@ def get_current_user_language(user):
         if get_address:
             address_details = Addresses.objects.filter(id = get_address.address.id).first()
             if address_details:
-                language = address_details.language.name
+                language = address_details.language.system_name
                 
         return language
     except Exception as e:

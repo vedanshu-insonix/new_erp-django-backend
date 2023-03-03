@@ -3,6 +3,7 @@ from system.utils import ShippingTermsChoice, StatusChoice
 from system.models.common import *
 
 class PurchaseOrder(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     purchase_order_id = models.CharField(max_length = 10, unique=True)
     vendor = models.ForeignKey('sales.Vendors', on_delete=models.CASCADE, null=True)
     contact_address = models.ForeignKey('sales.Addresses', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_contact_address")
@@ -49,6 +50,7 @@ class PurchaseOrder(BaseContent):
     status_choices_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
 
 class PurchaseOrderLines(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     purchase_order = models.ForeignKey('PurchaseOrder', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_product = models.ForeignKey('sales.VendorProducts', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_stock_number = models.CharField(max_length = 255, null=True, blank=True)
@@ -74,6 +76,7 @@ class PurchaseOrderLines(BaseContent):
 
 
 class Disbursment(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     amount = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
     currency_id = models.ForeignKey('system.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     disbursment_for = models.CharField(max_length=100, null=True, blank=True)

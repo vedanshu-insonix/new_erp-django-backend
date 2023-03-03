@@ -2,6 +2,8 @@ from ..models.entity import *
 from rest_framework import serializers
 from system.models.teams import *
 from system.serializers.role_permission_serializer import RoleSerializer
+from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
 
 class TeamSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
@@ -32,8 +34,14 @@ class TeamSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-
-        return response  
+        request = self.context['request']
+        return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='team')
+        if record_id:
+            data['id']=get_rid_pkey('team')
+        return data
 
 class TeamRoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,11 +53,10 @@ class TeamRoleSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        #request = self.context['request']
-        role = RoleSerializer(instance.role).data
+        request = self.context['request']
+        role = RoleSerializer(instance.role, context={'request':request}).data
         if 'id' in role:
-            response['role'] = RoleSerializer(instance.role).data
-
+            response['role'] = RoleSerializer(instance.role, context={'request':request}).data
         return response  
 
 class TeamUserSerializer(serializers.ModelSerializer):

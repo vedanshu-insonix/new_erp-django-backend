@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from system.models.dataset import DataTable, Data
-
 from ..models.users import get_current_user_language
 from ..models.translations import TranslationData
+from system.models import Translation
+from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
@@ -38,7 +39,6 @@ class TableSerializer(serializers.ModelSerializer):
 
 class DataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
-       
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
@@ -51,6 +51,7 @@ class DataSerializer(serializers.ModelSerializer):
             return serializers.data['label']
         else:
             return data
+        
     class Meta:
         model = Data
         exclude =("created_time", "modified_time", "created_by")

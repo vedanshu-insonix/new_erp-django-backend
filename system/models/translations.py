@@ -13,7 +13,6 @@ class Translation(BaseContent):
     
     # def __str__(self):
     #     return self.label 
-    
 class TranslationSelector(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     selector = models.ForeignKey('Selectors', on_delete = models.SET_NULL, null = True)
@@ -38,9 +37,9 @@ class TranslationConfiguration(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     Configuration = models.ForeignKey('Configuration', on_delete = models.SET_NULL, null = True)
     
-class TranslationState(BaseContent):
-    translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
-    state = models.ForeignKey('State', on_delete = models.SET_NULL, null = True)
+# class TranslationState(BaseContent):
+#     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
+#     state = models.ForeignKey('State', on_delete = models.SET_NULL, null = True)
     
 # class TranslationEntity(BaseContent):
 #     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
@@ -91,7 +90,7 @@ class TranslationList(BaseContent):
     list = models.OneToOneField('List', on_delete=models.CASCADE, null = True)
 
 class TranslationForm(BaseContent):
-    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
+    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null = True)
     
 class TranslationStageAction(BaseContent):
@@ -99,5 +98,5 @@ class TranslationStageAction(BaseContent):
     stage_action = models.ForeignKey('StageAction', on_delete=models.CASCADE, null = True)
 
 class TranslationFormSection(BaseContent):
-    translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)
+    translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
     form = models.ForeignKey('FormSection', on_delete=models.CASCADE, null = True)

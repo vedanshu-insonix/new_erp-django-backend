@@ -4,6 +4,7 @@ from system.models.common import BaseContent
 from django.contrib.auth.models import User
 
 class Permission(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     permission = models.CharField(max_length = 255, null= True, blank=True, unique=True)
     description = models.TextField(null= True, blank=True)
     visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
@@ -14,6 +15,7 @@ class Permission(BaseContent):
     
     
 class Role(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True, unique=True)
     editable = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)

@@ -1,6 +1,8 @@
 from ..models.entity import *
 from rest_framework import serializers
 from system.models.roles_permissions import *
+from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
 
 class PermissionSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField()
@@ -25,6 +27,12 @@ class PermissionSerializer(serializers.ModelSerializer):
         
         return response 
 
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='permission')
+        if record_id:
+            data['id']=get_rid_pkey('permission')
+        return data
+    
 class RoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
 
@@ -47,6 +55,12 @@ class RoleSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
 
         return response 
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='role')
+        if record_id:
+            data['id']=get_rid_pkey('role')
+        return data
 
 class RolePermissionSerializer(serializers.ModelSerializer):
     class Meta:

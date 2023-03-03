@@ -9,3 +9,4 @@ from .roles_permissions import *
 from .translations import *
 from .rules import *
 from .dataset import *
+from .recordid import *

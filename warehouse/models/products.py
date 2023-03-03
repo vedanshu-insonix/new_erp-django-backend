@@ -2,6 +2,7 @@ from django.db import models
 from system.models.common import *
 
 class Product(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     template = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
     template_name = models.CharField(max_length = 255, null=True, blank=True)
     template_subname = models.CharField(max_length = 255, null=True, blank=True)
@@ -58,8 +59,9 @@ class Product(BaseContent):
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class Bom(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
-    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey('JournalTemplate', on_delete = models.SET_NULL, null=True, blank=True)
     resulting_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     bom_description = models.TextField(null=True, blank=True)
     label = models.CharField(max_length=255, null=True, blank=True)
@@ -70,24 +72,27 @@ class Bom(BaseContent):
     version = models.IntegerField(null=True, blank=True)
 
 class Components(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     bom = models.ForeignKey('Bom', on_delete=models.SET_NULL, null=True, blank=True)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     uom = models.ForeignKey('UOM', on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey('JournalTemplate', on_delete = models.SET_NULL, null=True, blank=True)
 
 class Characteristics(BaseContent):
-    template = models.ForeignKey('Journal_Template', on_delete = models.SET_NULL, null=True, blank=True)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
+    template = models.ForeignKey('JournalTemplate', on_delete = models.SET_NULL, null=True, blank=True)
     Characteristics = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
     before = models.CharField(max_length=255, null=True, blank=True)
     after = models.CharField(max_length=255, null=True, blank=True)
 
 class Value(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     value = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
     attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True)
 
-class Product_Values(BaseContent):
+class ProductValues(BaseContent):
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     value = models.ForeignKey('Value', on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -99,6 +104,7 @@ class ProductCategory(BaseContent):
     sequence = models.CharField(max_length=255, null=True, blank=True)
 
 class Equivalents(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     company = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
     company_product = models.ForeignKey('system.EntityProducts', on_delete=models.SET_NULL, null=True, blank=True)
     company_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
@@ -109,6 +115,7 @@ class Equivalents(BaseContent):
     #vendor_uom = data type not defined
 
 class Locations(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_location = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
     locations_name = models.CharField(max_length=100,null=True,blank=True)
     code = models.CharField(max_length=100,null=True,blank=True)
@@ -129,9 +136,10 @@ class Locations(BaseContent):
     status=models.CharField(max_length = 255, null=True, blank=True)
 
 class ProductCounts(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     locations = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
-    date = models.DateTimeField()
+    date = models.DateTimeField(null=True,blank=True)
     counted = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     discrepancy = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
@@ -139,6 +147,7 @@ class ProductCounts(BaseContent):
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class ProductLocations(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     locations = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
     current_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
@@ -149,7 +158,8 @@ class ProductLocations(BaseContent):
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class UOM(BaseContent):
-    uom_category = models.CharField(max_length=100,null=True,blank=True)#choice field
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
+    uom_category = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100,null=True,blank=True)
     abbreviation = models.CharField(max_length=100,null=True,blank=True)
     unit = models.TextField(null=True,blank=True)
@@ -157,6 +167,7 @@ class UOM(BaseContent):
     rounding = models.TextField(null=True,blank=True)
 
 class ProductLine(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     order = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     reserve = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
