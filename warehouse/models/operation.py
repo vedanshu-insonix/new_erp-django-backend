@@ -2,6 +2,7 @@ from django.db import models
 from system.models.common import *
 
 class Operations(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     route=models.ForeignKey('warehouse.Routes', on_delete = models.SET_NULL, null=True, blank=True)
     name=models.CharField(max_length = 255, null=True, blank=True)
     origin_description=models.CharField(max_length=255, null=True, blank=True)
@@ -10,6 +11,7 @@ class Operations(BaseContent):
     status=models.CharField(max_length = 255, null=True, blank=True)
 
 class Transfers(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     transfer_type = models.CharField(max_length = 255, null=True, blank=True)
     transfer_id = models.CharField(max_length = 255, null=True, blank=True)
     order_id = models.CharField(max_length = 255, null=True, blank=True)

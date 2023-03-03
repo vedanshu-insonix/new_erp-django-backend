@@ -1,6 +1,6 @@
 from warehouse.models.products import Product
 from warehouse.serializers.products_serializer import ProductSerializer
-from warehouse.models.general import Images, Product_Images
+from warehouse.models.general import Images, ProductImages
 from .product_common_services import create_attribute
 from system.views.common_views import extracting_data
 
@@ -44,7 +44,7 @@ def create_product(self, req):
                     if have_images == True:
                         for image in image_data:
                             image_rec = Images.objects.create(image=image, title=template_name, file=image)
-                            Product_Images.objects.create(product= product_id, image=image_rec)
+                            ProductImages.objects.create(product= product_id, image=image_rec)
                     create_attribute(variant_values,product_id.id)
                     template = Product.objects.get(id=product_id.id)
                     response=ProductSerializer(template, context={'request': req})

@@ -1,4 +1,4 @@
-from warehouse.serializers.route_serializer import Route_Type_Serializer
+from warehouse.serializers.route_serializer import RouteTypeSerializer
 
 def create_route(self, req):
     ret = {}
@@ -18,7 +18,7 @@ def create_route(self, req):
                     else:
                         string += str(text[0])
         data['code']=string.upper()
-        serializer = Route_Type_Serializer(data=data,context={'request':req})
+        serializer = RouteTypeSerializer(data=data,context={'request':req})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         ret['success'] = serializer.data

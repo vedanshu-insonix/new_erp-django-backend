@@ -7,11 +7,11 @@ from warehouse.services.route_services import route_services
 
 class Route_ViewSet(viewsets.ModelViewSet):
     queryset = Routes.objects.all()
-    serializer_class = Route_Serializer
+    serializer_class = RouteSerializer
 
 class Route_Type_ViewSet(viewsets.ModelViewSet):
-    queryset = Route_Types.objects.all()
-    serializer_class = Route_Type_Serializer
+    queryset = RouteTypes.objects.all()
+    serializer_class = RouteTypeSerializer
 
     def create(self,request):
         route_create = route_services.create_route(self,request)
@@ -23,5 +23,5 @@ class Route_Type_ViewSet(viewsets.ModelViewSet):
             return Response(utils.error(self,ret))
 
 class Route_Type_Rules_ViewSet(viewsets.ModelViewSet):
-    queryset = Route_Type_Rules.objects.all()
-    serializer_class = Route_Type_Rules_Serializer
+    queryset = RouteTypeRules.objects.all()
+    serializer_class = RouteTypeRulesSerializer

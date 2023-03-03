@@ -1,5 +1,5 @@
-from warehouse.models.products import Product, Value, Product_Values
-from warehouse.models.general import Attributes, Product_Attribute
+from warehouse.models.products import Product, Value, ProductValues
+from warehouse.models.general import Attributes, ProductAttribute
 
 
 def create_attribute(variant_values,temp_id):
@@ -10,15 +10,15 @@ def create_attribute(variant_values,temp_id):
             attr_id = Attributes.objects.get(attribute=attr)
         else:
             attr_id = Attributes.objects.create(attribute=attr)
-        check = Product_Attribute.objects.filter(product=product_id, attribute=attr_id)
+        check = ProductAttribute.objects.filter(product=product_id, attribute=attr_id)
         if not check:
-            Product_Attribute.objects.create(product=product_id, attribute=attr_id)
+            ProductAttribute.objects.create(product=product_id, attribute=attr_id)
         check = Value.objects.filter(value=variant_values[attr], attribute=attr_id)
         if check:
             value_id = Value.objects.get(value=variant_values[attr], attribute=attr_id)
         else:
             value_id = Value.objects.create(value=variant_values[attr], attribute=attr_id)
-        check = Product_Values.objects.filter(product=product_id, value=value_id)
+        check = ProductValues.objects.filter(product=product_id, value=value_id)
         if not check:
-            Product_Values.objects.create(product=product_id, value=value_id)
+            ProductValues.objects.create(product=product_id, value=value_id)
     return True

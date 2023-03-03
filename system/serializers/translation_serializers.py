@@ -2,6 +2,8 @@ from rest_framework import serializers
 from ..models.translations import *
 from ..serializers.user_serializers import RelatedUserSerilaizer
 from ..serializers.common_serializers import RelatedLanguageSerializer
+from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
 
 
 class TranslationSerializer(serializers.ModelSerializer):
@@ -13,7 +15,6 @@ class TranslationSerializer(serializers.ModelSerializer):
     button = serializers.SerializerMethodField()
     stage = serializers.SerializerMethodField()
     tag = serializers.SerializerMethodField()
-    
     # tile = serializers.SerializerMethodField()
     
     def get_column(self, obj):
@@ -58,3 +59,9 @@ class TranslationSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
+    
+    def validate(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='translation')
+        if record_id:
+            data['id']=get_rid_pkey('translation')
+        return data

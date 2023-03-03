@@ -7,7 +7,7 @@ class JournalViewSet(viewsets.ModelViewSet):
     serializer_class = JournalSerializer
 
 class JournalTemplateViewSet(viewsets.ModelViewSet):
-    queryset = Journal_Template.objects.all()
+    queryset = JournalTemplate.objects.all()
     serializer_class = JournalTemplateSerializer
 
 class AttributeViewSet(viewsets.ModelViewSet):
