@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from system.models.common import *
 from ..models.customers import Customers, CustomerAddress
-from ..serializers.addresses_serializers import AddressSerializer, AddressTagSerializer
+from ..serializers.addresses_serializers import AddressSerializer, AddressTagSerializer, RelatedAddressSerializer
 from system.serializers.communication_serializers import CommunicationSerializer
 from ..models.address import Addresses
 from system.models.communication import Communication, CommunicationAddress
@@ -127,7 +127,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                 HaveCommunication = True
 
             address_obj = Addresses.objects.get(id = pk)
-            serializer = AddressSerializer(address_obj, data=data, context={'request': request})
+            serializer = RelatedAddressSerializer(address_obj, data=data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
             address_id = address_obj.id
@@ -187,7 +187,7 @@ class AddressViewSet(viewsets.ModelViewSet):
             serializer = AddressSerializer(address_obj, context={'request': request})
             return Response(serializer.data)
         except Exception as e:
-           return Response(utils.error(self,str(e)))
+           return Response(utils.error(str(e)))
     
     
     # To add tags on addresses
@@ -306,7 +306,7 @@ def update_comm(created, sender,instance,**kwargs):
                         if communication_channel != None:
                             get_choice = Choice.objects.filter(id = communication_channel).first()
                             if get_choice:
-                                choice = get_choice.choice
+                                choice = get_choice.system_name
                                 if choice == 'email' or choice == 'Email':
                                     update_comm = Communication.objects.filter(id = communication_detail.id).update(value = email)
                                     
@@ -320,7 +320,7 @@ def update_comm(created, sender,instance,**kwargs):
                             get_choice = Choice.objects.filter(id = communication_channel).first()
                             type_choice = Choice.objects.filter(id = communication_type).first()
                             if get_choice:
-                                choice = get_choice.choice
+                                choice = get_choice.system_name
                                 if choice == 'telephone' or choice == 'Telephone':
                                     Communication.objects.filter(id = communication_detail.id).update(value = telephone,
                                                                                                     communication_type = type_choice.id)                        
@@ -335,23 +335,23 @@ def update_comm(created, sender,instance,**kwargs):
                             get_choice = Choice.objects.filter(id = communication_channel).first()
                             type_choice = Choice.objects.filter(id = communication_type).first()
                             if get_choice:
-                                choice = get_choice.choice
+                                choice = get_choice.system_name
                                 if choice == 'telephone' or choice == 'Telephone':
                                     Communication.objects.filter(id = communication_detail.id).update(value = telephone)
                     
         else:
             if email != None:
-                get_choice = Choice.objects.filter(Q(selector = "communication_channel") | Q(selector = "communication channel"), 
-                                                Q(choice = "email") | Q(selector = "Email")).first()
+                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
+                                                Q(system_name = "email") | Q(selector__system_name = "Email")).first()
                 if get_choice:
                     create_comm = Communication.objects.create(value = email, communication_channel = get_choice.id, primary = True)
                     CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
             
             if telephone != None and telephone_type != None:
-                get_choice = Choice.objects.filter(Q(selector = "communication_channel") | Q(selector = "communication channel"), 
-                                                Q(choice = "telephone") | Q(selector = "Telephone")).first()
-                type_choice = Choice.objects.filter(Q(selector = "communication_type") | Q(selector = "communication type"), 
-                                                Q(choice = telephone_type) | Q(selector = telephone_type)).first()
+                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
+                                                Q(system_name = "telephone") | Q(selector__system_name = "Telephone")).first()
+                type_choice = Choice.objects.filter(Q(selector__system_name = "communication_type") | Q(selector__system_name = "communication type"), 
+                                                Q(system_name = telephone_type) | Q(selector__system_name = telephone_type)).first()
                 if get_choice and type_choice:
                     create_comm = Communication.objects.create(value = telephone,
                                                             communication_channel = get_choice.id,
@@ -360,8 +360,8 @@ def update_comm(created, sender,instance,**kwargs):
                     CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
                 
             elif telephone != None:
-                get_choice = Choice.objects.filter(Q(selector = "communication_channel") | Q(selector = "communication channel"), 
-                                                Q(choice = "telephone") | Q(selector = "Telephone")).first()
+                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
+                                                Q(system_name = "telephone") | Q(selector__system_name = "Telephone")).first()
                 if get_choice:
                     create_comm = Communication.objects.create(value = telephone,
                                                         communication_channel = get_choice.id,

@@ -7,7 +7,7 @@ from system.models.common import *
 class Customers(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_id = models.ForeignKey('Customers', on_delete=models.SET_NULL, null=True, blank=True)
-    entity = models.CharField(max_length=255, choices=EntityChoice)
+    entity = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="customer_entity")
     customer = models.CharField(max_length=100,null=True,blank=True)
     shipping_terms = models.CharField(max_length=255, null=True, blank=True) #choice
     ship_via = models.CharField(max_length=255, null=True, blank=True) #choice

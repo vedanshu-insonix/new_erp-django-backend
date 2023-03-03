@@ -21,13 +21,19 @@ class AddressTagSerializer(serializers.ModelSerializer):
         model = AddressTag
         fields = ("tag",)
         depth = 1
-    
+
+class RelatedAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Addresses
+        fields = ("__all__")
+        
 class AddressSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     vendor = serializers.SerializerMethodField()
     entity = serializers.SerializerMethodField()
     communication = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    
     def get_customer(self, obj):
         queryset = CustomerAddress.objects.filter(address = obj.id)
         serializer = CustomerAddressSerializer(queryset, many=True)

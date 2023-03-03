@@ -35,7 +35,7 @@ def get_current_user_language(user):
         if get_address:
             address_details = Addresses.objects.filter(id = get_address.address.id).first()
             if address_details:
-                language = address_details.language.name
+                language = address_details.language.system_name
                 
         return language
     except Exception as e:
