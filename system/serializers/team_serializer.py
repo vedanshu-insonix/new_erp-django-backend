@@ -37,11 +37,11 @@ class TeamSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='team')
         if record_id:
             data['id']=get_rid_pkey('team')
-        return data
+        return super().create(data)
 
 class TeamRoleSerializer(serializers.ModelSerializer):
     class Meta:

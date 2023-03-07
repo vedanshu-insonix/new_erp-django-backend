@@ -10,11 +10,11 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='purchaseorder')
         if record_id:
             data['id']=get_rid_pkey('purchaseorder')
-        return data
+        return super().create(data)
 
 class PurchaseOrderLinesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,11 +23,11 @@ class PurchaseOrderLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='purchaseorderlines')
         if record_id:
             data['id']=get_rid_pkey('purchaseorderlines')
-        return data
+        return super().create(data)
 
 class DisbursementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,8 +36,8 @@ class DisbursementSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='disbursment')
         if record_id:
             data['id']=get_rid_pkey('disbursment')
-        return data
+        return super().create(data)

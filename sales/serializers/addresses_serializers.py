@@ -101,8 +101,8 @@ class AddressSerializer(serializers.ModelSerializer):
             
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='addresses')
         if record_id:
             data['id']=get_rid_pkey('addresses')
-        return data
+        return super().create(data)

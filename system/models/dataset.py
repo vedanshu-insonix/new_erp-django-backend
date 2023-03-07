@@ -1,5 +1,5 @@
 from django.db import models
-from .common import BaseContent
+from .common import BaseContent, Selectors
 
 class DataTable(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -12,3 +12,5 @@ class Data(BaseContent):
     system_name= models.CharField(max_length=255)
     description=models.TextField(null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
+    selector = models.ManyToManyField(Selectors)
+    display_data = models.CharField(max_length=225, null=True, blank=True)

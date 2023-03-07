@@ -10,11 +10,11 @@ class SalesReturnsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='salesreturns')
         if record_id:
             data['id']=get_rid_pkey('salesreturns')
-        return data
+        return super().create(data)
 
 class SalesReturnLinesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,8 +23,8 @@ class SalesReturnLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='salesreturnlines')
         if record_id:
             data['id']=get_rid_pkey('salesreturnlines')
-        return data
+        return super().create(data)

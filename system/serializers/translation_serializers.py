@@ -60,8 +60,8 @@ class TranslationSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='translation')
         if record_id:
             data['id']=get_rid_pkey('translation')
-        return data
+        return super().create(data)

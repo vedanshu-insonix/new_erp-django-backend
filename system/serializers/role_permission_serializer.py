@@ -21,17 +21,11 @@ class PermissionSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}} 
 
-    # To return forign key values in detail
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        
-        return response 
-
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='permission')
         if record_id:
             data['id']=get_rid_pkey('permission')
-        return data
+        return super().create(data)
     
 class RoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
@@ -50,17 +44,11 @@ class RoleSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}} 
     
-    # To return forign key values in detail
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-
-        return response 
-    
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='role')
         if record_id:
             data['id']=get_rid_pkey('role')
-        return data
+        return super().create(data)
 
 class RolePermissionSerializer(serializers.ModelSerializer):
     class Meta:

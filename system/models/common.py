@@ -151,8 +151,6 @@ class Choice(BaseContent):
     system_name = models.CharField(max_length=255, null=True)
     description = models.TextField(null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
-    # EDIT_CHOICES = (('Custom','Editable'),('System','Non-Editable'))
-    # editable = models.CharField(max_length=50, null=True, blank=True, choices=EDIT_CHOICES)
     deafult = models.BooleanField(default=False)
     
     def __str__(self):
@@ -174,7 +172,6 @@ class Form(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     system_name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True , blank=True)
-    # form_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.system_name

@@ -41,11 +41,11 @@ class VendorSerializer(serializers.ModelSerializer):
             response['parent_id'] = RelatedVendorSerializer(instance.parent_id).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='vendors')
         if record_id:
             data['id']=get_rid_pkey('vendors')
-        return data
+        return super().create(data)
 
 class VendorProductsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,11 +54,11 @@ class VendorProductsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='vendorproducts')
         if record_id:
             data['id']=get_rid_pkey('vendorproducts')
-        return data
+        return super().create(data)
     
 class VendorPriceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,8 +67,8 @@ class VendorPriceSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='vendorprices')
         if record_id:
             data['id']=get_rid_pkey('vendorprices')
-        return data
+        return super().create(data)

@@ -10,11 +10,11 @@ class DeliveriesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliveries')
         if record_id:
             data['id']=get_rid_pkey('deliveries')
-        return data
+        return super().create(data)
 
 class DeliveryLinesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,11 +23,11 @@ class DeliveryLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliverylines')
         if record_id:
             data['id']=get_rid_pkey('deliverylines')
-        return data
+        return super().create(data)
 
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,11 +36,11 @@ class ShipmentSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='shipments')
         if record_id:
             data['id']=get_rid_pkey('shipments')
-        return data
+        return super().create(data)
 
 class ContainerTypesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,11 +49,11 @@ class ContainerTypesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containertypes')
         if record_id:
             data['id']=get_rid_pkey('containertypes')
-        return data
+        return super().create(data)
 
 class ContainersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,11 +62,11 @@ class ContainersSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containers')
         if record_id:
             data['id']=get_rid_pkey('containers')
-        return data
+        return super().create(data)
 
 class ContentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,8 +75,8 @@ class ContentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='contents')
         if record_id:
             data['id']=get_rid_pkey('contents')
-        return data
+        return super().create(data)

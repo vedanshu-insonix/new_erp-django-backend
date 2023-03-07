@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from warehouse.models.operation import *
-from warehouse.serializers.operation_serializer import *
+from warehouse.serializers.operation_serializer import OperationSerializer
 
-class Operation_ViewSet(viewsets.ModelViewSet):
+class OperationViewSet(viewsets.ModelViewSet):
     queryset = Operations.objects.all()
-    serializer_class = Operation_Serializer
+    serializer_class = OperationSerializer

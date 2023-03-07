@@ -86,11 +86,11 @@ class AddressViewSet(viewsets.ModelViewSet):
                             updateCommunication = CommunicationSerializer(CommunicationInstance,data=comm, context={'request': request})
                             if updateCommunication.is_valid(raise_exception=True):
                                 updateCommunication.save()
-                        else:  
+                        else:
                             comm_serializers = CommunicationSerializer(data=comm, context={'request': request})
                             if comm_serializers.is_valid(raise_exception=True):
                                 comm_serializers.save()
-                            # Create Relation between Customer and Address
+                            # Create Relation between Communication and Address
                             CommunicationInstance = Communication.objects.get(id = comm_serializers.data.get("id"))
                             CreateCommunicationAddress = CommunicationAddress.objects.create(address = AddressInstance, communication = CommunicationInstance)
             

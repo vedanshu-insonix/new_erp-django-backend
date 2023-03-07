@@ -59,13 +59,12 @@ class CommunicationSerializer(serializers.ModelSerializer):
         #    response['channel'] = RelatedChannelSerializer(instance.channel).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='communication')
         if record_id:
             data['id']=get_rid_pkey('communication')
-        return data
-
-   
+        return super().create(data)
+  
 class CommunicationAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunicationAddress
@@ -74,9 +73,7 @@ class CommunicationAddressSerializer(serializers.ModelSerializer):
 
 @receiver(post_save, sender=Communication)
 def update_comm(created,instance,**kwargs):
-    if created==True:
-        pass
-    else:
+    if not created:
         if instance.id is not None:
             addr_rec = CommunicationAddress.objects.filter(communication_id=instance.id)
             if addr_rec:

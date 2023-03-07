@@ -10,8 +10,8 @@ class ReceiptsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='receipts')
         if record_id:
             data['id']=get_rid_pkey('receipts')
-        return data
+        return super().create(data)

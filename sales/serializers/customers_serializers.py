@@ -64,11 +64,11 @@ class CustomerSerializer(serializers.ModelSerializer):
             response['parent_id'] = RelatedCustomerSerializer(instance.parent_id).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='customers')
         if record_id:
             data['id']=get_rid_pkey('customers')
-        return data
+        return super().create(data)
   
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:

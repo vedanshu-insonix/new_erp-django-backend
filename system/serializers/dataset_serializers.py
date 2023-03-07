@@ -27,22 +27,23 @@ class TableSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='datatable')
         if record_id:
             data['id']=get_rid_pkey('datatable')
-        return data
+        return super().create(data)
 
 class DataSerializer(serializers.ModelSerializer):
+    selector = serializers.StringRelatedField(many=True, read_only=True)
     class Meta:
         model = Data
         exclude =("created_time", "modified_time", "created_by")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         datasource = data['data_source']
         dataSource_id=DataTable.objects.get(id=datasource.id)
         sequence = data['sequence']
         data['id']=get_related_pkey('data', dataSource_id.id, sequence)
-        return data
+        return super().create(data)

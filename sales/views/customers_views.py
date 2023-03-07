@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from system import utils
 from ..models.customers import Customers, CustomerAddress
 from ..models.address import Addresses
-from ..serializers.customers_serializers import CustomerSerializer, RelatedAddressSerializer
+from ..serializers.customers_serializers import CustomerSerializer, RelatedAddressSerializer, RelatedCustomerSerializer
 from ..serializers.addresses_serializers import AddressSerializer
 from rest_framework.response import Response
 from rest_framework import status
@@ -25,13 +25,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("__all__")
     filterset_fields = {
-            'customer': ['exact', 'contains'],'entity': ['exact', 'contains'],'shipping_terms': ['exact', 'contains'],
-            'ship_via': ['exact', 'contains'],'customer_source': ['exact', 'contains'],'payment_terms': ['exact', 'contains'],'payment_method': ['exact', 'contains'],
+            'customer': ['exact', 'contains'],'entity': ['exact'],'shipping_terms': ['exact'],
+            'ship_via': ['exact'],'customer_source': ['exact'],'payment_terms': ['exact'],'payment_method': ['exact'],
             'currency' : ['exact'],'free_freight_minimum' : ['exact', 'contains'],'issue_statements' : ['exact'],
             'require_pos': ['exact'],'credit_limit': ['exact', 'contains'],'account_balance': ['exact', 'contains'],
             'current_orders': ['exact', 'contains'], 'authorised_card': ['exact', 'contains'], 'credit_available': ['exact', 'contains'],
             'overdue': ['exact'],'average_pay_days': ['exact'],'last_credit_review': ['exact'],'credit_hold': ['exact'],
-            'customer_receivable_account': ['exact'],'customer_stage': ['exact'],'stage_started': ['exact'],'status': ['exact'], 'used': ['exact']
+            'customer_receivable_account': ['exact'],'stage': ['exact'],'stage_started': ['exact'],'status': ['exact'], 'used': ['exact']
         }
     ordering_fields = ("__all__")
         
