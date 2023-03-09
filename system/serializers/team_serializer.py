@@ -57,10 +57,7 @@ class TeamRoleSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         request = self.context['request']
         role = RoleSerializer(instance.role, context={'request':request}).data
-        request = self.context['request']
-        role = RoleSerializer(instance.role, context={'request':request}).data
         if 'id' in role:
-            response['role'] = RoleSerializer(instance.role, context={'request':request}).data
             response['role'] = RoleSerializer(instance.role, context={'request':request}).data
         return response  
 

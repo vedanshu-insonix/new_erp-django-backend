@@ -1,5 +1,5 @@
 from django.db import models
-from system.models.common import *
+from system.models.common import BaseContent
 
 class Operations(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

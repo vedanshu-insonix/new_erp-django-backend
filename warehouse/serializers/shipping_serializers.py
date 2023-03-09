@@ -6,12 +6,6 @@ from system.models.users import get_current_user_language
 from system.models.translations import TranslationContainerType
 from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.models import Translation
-from system.service import get_rid_pkey
-from system.models.recordid import RecordIdentifiers
-from system.models.users import get_current_user_language
-from system.models.translations import TranslationContainerType
-from system.serializers.common_serializers import RelatedTranslationSerializer
-from system.models import Translation
 
 class DeliveriesSerializer(serializers.ModelSerializer):
     class meta:
@@ -58,10 +52,10 @@ class ContainerTypesSerializer(serializers.ModelSerializer):
         data = obj.id
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationContainerType.objects.filter(containerType = obj.id, translation__language__name = language).first()
+        queryset = TranslationContainerType.objects.filter(containerType = obj.id, translation__language__system_name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:

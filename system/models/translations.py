@@ -3,13 +3,11 @@ from .common import BaseContent
 
 class Translation(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    id = models.CharField(max_length=255, primary_key=True, editable=False)
     label = models.CharField(max_length = 255, null=True, blank = True)
     description = models.CharField(max_length = 255, null=True, blank = True)
     default_label = models.CharField(max_length = 255, null=True, blank = True)
     default_description = models.CharField(max_length = 255, null=True, blank = True)
     language = models.ForeignKey('Language', on_delete = models.SET_NULL, null = True, blank = True)
-    table = models.ForeignKey('DataTable', on_delete = models.SET_NULL, null = True, blank = True)
     table = models.ForeignKey('DataTable', on_delete = models.SET_NULL, null = True, blank = True)
     table_record = models.IntegerField(null=True, blank = True)
     

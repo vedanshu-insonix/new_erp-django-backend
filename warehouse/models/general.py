@@ -1,6 +1,5 @@
 from django.db import models
 from system.models.common import BaseContent
-from system.models.common import *
 from system.utils import LocationChoice, StatusChoice
 
 class Journal(BaseContent):
@@ -31,7 +30,7 @@ class Images(BaseContent):
     image = models.FileField(upload_to='products', max_length=255)
     title = models.CharField(max_length=255, null=True, blank=True)
     file = models.CharField(max_length=255, null=True, blank=True)
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)
 
     def __str__(self):

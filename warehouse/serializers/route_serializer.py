@@ -28,7 +28,6 @@ class RouteSerializer(serializers.ModelSerializer):
 class RouteTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RouteTypes
-        model = RouteTypes
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
@@ -41,7 +40,6 @@ class RouteTypeSerializer(serializers.ModelSerializer):
     
 class RouteTypeRulesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RouteTypeRules
         model = RouteTypeRules
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")

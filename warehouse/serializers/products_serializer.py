@@ -21,7 +21,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_attribute(self, obj):
         queryset = ProductAttribute.objects.filter(product=obj.id)
-        queryset = ProductAttribute.objects.filter(product=obj.id)
         serializer = ProductAttributeSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
@@ -30,7 +29,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_value(self, obj):
         queryset = ProductValues.objects.filter(product = obj.id)
-        queryset = ProductValues.objects.filter(product = obj.id)
         serializer = ProductValueSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
@@ -38,7 +36,6 @@ class ProductSerializer(serializers.ModelSerializer):
         return result
 
     def get_image(self, obj):
-        queryset = ProductImages.objects.filter(product = obj.id)
         queryset = ProductImages.objects.filter(product = obj.id)
         serializer = ProductImagesSerializer(queryset, many=True)
         result=[]
@@ -153,7 +150,6 @@ class ValueSerializer(serializers.ModelSerializer):
 class ProductValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductValues
-        model = ProductValues
         fields = ('value',)
         depth = 1
 
@@ -189,8 +185,7 @@ class EquivalentsSerializer(serializers.ModelSerializer):
 class RelatedLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Locations
-        fields = ("id","locations_name", "code")    
-        fields = ("id","locations_name", "code")    
+        fields = ("id","locations_name", "code")   
 
 class LocationsSerializer(serializers.ModelSerializer):
     class Meta:
