@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from system.serializers.common_serializers import *
-from ..models.vendors import Vendors, VendorAddress, VendorProducts
+from ..models.vendors import Vendors, VendorAddress, VendorProducts, VendorPrices
 from system.serializers.user_serializers import RelatedUserSerilaizer
 
 
@@ -40,8 +40,35 @@ class VendorSerializer(serializers.ModelSerializer):
         if 'id' in parent_data:
             response['parent_id'] = RelatedVendorSerializer(instance.parent_id).data
         return response
+    
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='vendors')
+        if record_id:
+            data['id']=get_rid_pkey('vendors')
+        return super().create(data)
 
 class VendorProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorProducts
         fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='vendorproducts')
+        if record_id:
+            data['id']=get_rid_pkey('vendorproducts')
+        return super().create(data)
+    
+class VendorPriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorPrices
+        fields = ('__all__')
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='vendorprices')
+        if record_id:
+            data['id']=get_rid_pkey('vendorprices')
+        return super().create(data)

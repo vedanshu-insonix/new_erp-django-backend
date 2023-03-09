@@ -51,9 +51,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         if 'id' in currency_data:
             response['currency'] = RelatedCurrencySerializer(instance.currency).data
             
-        stage_data = RelatedStageSerializer(instance.customer_stage, context={'request': request}).data
+        stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in stage_data:
-            response['customer_stage'] = RelatedStageSerializer(instance.customer_stage, context={'request': request}).data
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
             
         created_data = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_data:
@@ -62,7 +62,38 @@ class CustomerSerializer(serializers.ModelSerializer):
         parent_data = RelatedCustomerSerializer(instance.parent_id).data
         if 'id' in parent_data:
             response['parent_id'] = RelatedCustomerSerializer(instance.parent_id).data
+
+        shipping_terms = instance.shipping_terms
+        if shipping_terms:
+            response['shipping_terms'] = instance.shipping_terms.system_name
+
+        entity = instance.entity
+        if entity:
+            response['entity'] = instance.entity.system_name
+
+        ship_via = instance.ship_via
+        if ship_via:
+            response['ship_via'] = instance.ship_via.system_name
+
+        payment_terms = instance.payment_terms
+        if payment_terms:
+            response['payment_terms'] = instance.payment_terms.system_name
+
+        payment_method = instance.payment_method
+        if payment_method:
+            response['payment_method'] = instance.payment_method.system_name
+
+        customer_source = instance.customer_source
+        if customer_source:
+            response['customer_source'] = instance.shipping_terms.system_name
+
         return response
+    
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='customers')
+        if record_id:
+            data['id']=get_rid_pkey('customers')
+        return super().create(data)
   
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:

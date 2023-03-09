@@ -74,6 +74,9 @@ class DataViewSet(viewsets.ModelViewSet):
                 msg="Please Upload A Suitable Excel File."
                 return Response(utils.error(msg))
         except Exception as e:
+<<<<<<< HEAD
+            return Response(utils.error(str(e)))
+=======
             return Response(utils.error(str(e)))
         
     # def destroy(self, pk):
@@ -81,3 +84,4 @@ class DataViewSet(viewsets.ModelViewSet):
     #     queryset = Data.objects.filter(data_id=pk)
     #     queryset.delete()
     #     return "Deletion Successful."
+>>>>>>> e770fcc3c25b467b62f54c42a4eda9dad20cc3e3

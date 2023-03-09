@@ -3,16 +3,19 @@ from .common import BaseContent
 
 class Translation(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     label = models.CharField(max_length = 255, null=True, blank = True)
     description = models.CharField(max_length = 255, null=True, blank = True)
     default_label = models.CharField(max_length = 255, null=True, blank = True)
     default_description = models.CharField(max_length = 255, null=True, blank = True)
     language = models.ForeignKey('Language', on_delete = models.SET_NULL, null = True, blank = True)
     table = models.ForeignKey('DataTable', on_delete = models.SET_NULL, null = True, blank = True)
+    table = models.ForeignKey('DataTable', on_delete = models.SET_NULL, null = True, blank = True)
     table_record = models.IntegerField(null=True, blank = True)
     
     # def __str__(self):
     #     return self.label 
+
 class TranslationSelector(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     selector = models.ForeignKey('Selectors', on_delete = models.SET_NULL, null = True)
@@ -29,13 +32,13 @@ class TranslationIcons(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     icon = models.ForeignKey('Icons', on_delete = models.SET_NULL, null = True)
     
-class TranslationCurrency(BaseContent):
-    translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
-    currency = models.ForeignKey('Currency', on_delete = models.SET_NULL, null = True)
+# class TranslationCurrency(BaseContent):
+#     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
+#     currency = models.ForeignKey('Currency', on_delete = models.SET_NULL, null = True)
     
 class TranslationConfiguration(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
-    Configuration = models.ForeignKey('Configuration', on_delete = models.SET_NULL, null = True)
+    configuration = models.ForeignKey('Configuration', on_delete = models.SET_NULL, null = True)
     
 # class TranslationState(BaseContent):
 #     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
@@ -83,7 +86,7 @@ class TranslationTag(BaseContent):
     
 class TranslationTile(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
-    tag = models.ForeignKey('Tile', on_delete=models.CASCADE, null = True)
+    tile = models.ForeignKey('Tile', on_delete=models.CASCADE, null = True)
     
 class TranslationList(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)

@@ -4,6 +4,8 @@ from ..serializers.user_serializers import RelatedUserSerilaizer
 from system.serializers.common_serializers import RelatedStageSerializer
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
+from system.models.recordid import RecordIdentifiers
 
 
 class RelatedEntitySerializer(serializers.ModelSerializer):
@@ -68,11 +70,11 @@ class EntitySerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='entity')
         if record_id:
             data['id']=get_rid_pkey('entity')
-        return data
+        return super().create(data)
         
 class EntityAddressSerializer(serializers.ModelSerializer):
     class Meta:
