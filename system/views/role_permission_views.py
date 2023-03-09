@@ -51,9 +51,9 @@ class RoleViewSet(viewsets.ModelViewSet):
                                 create_role_permission=RolePermissions.objects.create(role=new_role, permissions=permission_id)
                 new_role = Role.objects.get(id=role_id)
                 result = RoleSerializer(new_role, context={'request':request})
-            return Response(utils.success_msg(self,result.data))
+            return Response(utils.success_msg(result.data))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
     def update(self, request, pk):
         try:
@@ -98,9 +98,9 @@ class RoleViewSet(viewsets.ModelViewSet):
                             else:
                                 pass
                 msg = "Role Updation Successful."
-            return Response(utils.success_msg(self,msg))
+            return Response(utils.success_msg(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
 class RolePermissionViewSet(viewsets.ModelViewSet):
     """

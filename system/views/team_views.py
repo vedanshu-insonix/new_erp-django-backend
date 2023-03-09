@@ -51,9 +51,9 @@ class TeamViewSet(viewsets.ModelViewSet):
                         #        create_permission=RolePermissions.objects.create(permissions=permission, role=role_id)
                 new_team = Team.objects.get(id=team_id)
                 result = TeamSerializer(new_team, context={'request':request})
-                return Response(utils.success_msg(self,result.data))
+                return Response(utils.success_msg(result.data))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
     def update(self, request, pk):
         try:
@@ -109,9 +109,9 @@ class TeamViewSet(viewsets.ModelViewSet):
                         if find:
                             remove_user=(TeamUser.objects.filter(user=user, team=team_rec)).delete()
                 msg = "Team Updation Successful."
-            return Response(utils.success_msg(self,msg))
+            return Response(utils.success_msg(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
 class TeamRoleViewSet(viewsets.ModelViewSet):
     """

@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .user_serializers import RelatedUserSerilaizer
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from system.service import get_rid_pkey, get_related_pkey
+from system.models.recordid import RecordIdentifiers
 
 
 class RelatedChannelSerializer(serializers.ModelSerializer):
@@ -25,11 +27,11 @@ class ChannelSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='channel')
         if record_id:
             data['id']=get_rid_pkey('channel')
-        return data
+        return super().create(data)
 
 
 class RelatedCommunicationSerializer(serializers.ModelSerializer):
