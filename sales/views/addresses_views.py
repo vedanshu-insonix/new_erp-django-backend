@@ -127,7 +127,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                 HaveCommunication = True
 
             address_obj = Addresses.objects.get(id = pk)
-            serializer = RelatedAddressSerializer(address_obj, data=data, context={'request': request})
+            serializer = AddressSerializer(address_obj, data=data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
             address_id = address_obj.id
