@@ -628,7 +628,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         if visibility:
             response['visibility'] = instance.visibility.system_name
         return response
-
+## column serializer
 class ColumnsSerializer(serializers.ModelSerializer):
     column = serializers.CharField(max_length = 255, required = True)
     field = serializers.CharField(max_length = 255, required = True)
