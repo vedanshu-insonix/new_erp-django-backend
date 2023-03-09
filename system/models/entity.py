@@ -5,7 +5,7 @@ from sales.models.address import Addresses
 
 class Entity(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    parent = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete = models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     EntityTypeChoice =(("1","Entity1"),("2","Entity2"),
                     ("3","Entity3"),("4","Entity4")

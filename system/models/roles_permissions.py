@@ -1,7 +1,5 @@
-from unittest.util import _MAX_LENGTH
 from django.db import models
 from system.models.common import BaseContent
-from django.contrib.auth.models import User
 
 class Permission(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

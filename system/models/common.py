@@ -1,7 +1,4 @@
-from email.policy import default
-from enum import unique
 from django.db import models
-from system.utils import DateFormatChoices, TimeFormatChoice, ColumnVisibilityChoice
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 
@@ -66,7 +63,7 @@ class Country(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     country = CountryField(unique=True, countries_flag_url="/static/flags/{code}.png")
     native_name = models.CharField(max_length=255, null=True, unique= True, blank=True)
-    telephone_code = models.CharField(max_length=15, null=True, blank=True)
+    telephone_code = models.CharField(max_length=50, null=True, blank=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
     symbol_position = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_symbol_position")
     money_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_money_format")
@@ -112,7 +109,7 @@ class StageAction(BaseContent):
    
 class Configuration(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    #category = models.CharField(max_length=255, null=True, blank=True)
+    # category = models.CharField(max_length=255, null=True, blank=True)
     system_name = models.CharField(max_length=255, null=True)
     type = models.CharField(max_length=255, null=True, blank=True)
     current_value = models.CharField(max_length=255, null=True, blank=True)
@@ -162,7 +159,6 @@ class Menu(BaseContent):
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
     menu_category = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
-    entity = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True , blank=True)
     
     def __str__(self):

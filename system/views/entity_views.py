@@ -69,9 +69,9 @@ class EntityViewSet(viewsets.ModelViewSet):
                         create_Team=EntityTeam.objects.create(team=team, entity=new_entity)     
             company_rec=Entity.objects.get(id=entity_id)
             result=EntitySerializer(company_rec, context={'request':request})
-            return Response(utils.success_msg(self,result.data))
+            return Response(utils.success_msg(result.data))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
     def update(self, request, pk):
         try:
@@ -171,6 +171,6 @@ class EntityViewSet(viewsets.ModelViewSet):
                         if find:
                             remove_Team=(EntityTeam.objects.filter(team=team, entuty=entity_rec)).delete()
             msg = "Entity Updation Successful."
-            return Response(utils.success_msg(self,msg))
+            return Response(utils.success_msg(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))

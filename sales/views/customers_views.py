@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from system import utils
 from ..models.customers import Customers, CustomerAddress
 from ..models.address import Addresses
-from ..serializers.customers_serializers import CustomerSerializer, RelatedAddressSerializer, RelatedCustomerSerializer
+from ..serializers.customers_serializers import CustomerSerializer
 from ..serializers.addresses_serializers import AddressSerializer
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,6 +15,7 @@ from django.db.models import Q
 from rest_framework import filters
 import openpyxl
 from system.utils import *
+from system.models.common import Choice
 
 class CustomerViewSet(viewsets.ModelViewSet):
     """
@@ -250,21 +251,41 @@ class CustomerViewSet(viewsets.ModelViewSet):
                         row_data.append(cell.value)
                     for key in sequences:
                         data_dict[key] = row_data[sequences[key]-1]
-                    data_dict['entity'] = '1'
-                    data_dict['require_pos'] = True
-                    data_dict['average_pay_days'] = 10
-                    data_dict['last_credit_review'] = '2022-12-11'
-                    data_dict['used'] = '2022-12-11'
-                    data_dict['created_by']=request.user.id
-                    
-                    serializers = CustomerSerializer(data = data_dict, context={'request': request})
-                    if serializers.is_valid(raise_exception=True):
-                        serializers.save()
-                        count += 1
+                    try:
+                        sp_term = Choice.objects.filter(selector__system_name='shipping_terms', system_name=data_dict['shipping_terms'])
+                        sp_method = Choice.objects.filter(selector__system_name='shipping_method', system_name=data_dict['ship_via'])
+                        pay_terms = Choice.objects.filter(selector__system_name='payment_terms', system_name=data_dict['payment_terms'])
+                        pay_method = Choice.objects.filter(selector__system_name='payment_method', system_name=data_dict['payment_method'])
+                        #cust_source = Choice.objects.filter(selector__system_name='customer_source', system_name=data_dict['customer_source'])
+
+                        if sp_term:
+                            data_dict['shipping_terms'] = sp_term.values()[0]['id']
+                        if sp_method:
+                            data_dict['ship_via'] = sp_method.values()[0]['id']
+                        if pay_terms:
+                            data_dict['payment_terms'] = pay_terms.values()[0]['id']
+                        if pay_method:
+                            data_dict['payment_method'] = pay_method.values()[0]['id']
+                        # if cust_source:
+                        #     data_dict['customer_source'] = cust_source.values()[0]['id']
+                        
+                        data_dict['entity'] = '94001'
+                        data_dict['require_pos'] = True
+                        data_dict['average_pay_days'] = 10
+                        data_dict['last_credit_review'] = '2022-12-11'
+                        data_dict['used'] = '2022-12-11'
+                        data_dict['created_by']=request.user.id
+                        
+                        serializers = CustomerSerializer(data = data_dict, context={'request': request})
+                        if serializers.is_valid(raise_exception=True):
+                            serializers.save()
+                            count += 1
+                    except Exception as e:
+                         print("Error > ", str(e))
+                         pass
             else:
                 msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(self,msg))
-            return Response(utils.success(self,count))
+                return Response(utils.error(msg))
+            return Response(utils.success(count))
         except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+            return Response(utils.error(str(e)))
