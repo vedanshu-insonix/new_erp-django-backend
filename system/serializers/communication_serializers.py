@@ -3,8 +3,6 @@ from rest_framework import serializers
 from .user_serializers import RelatedUserSerilaizer
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from system.service import get_rid_pkey
-from system.models.recordid import RecordIdentifiers
 
 
 class RelatedChannelSerializer(serializers.ModelSerializer):

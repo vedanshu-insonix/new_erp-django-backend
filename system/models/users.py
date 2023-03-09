@@ -19,8 +19,7 @@ class UserOthers(BaseContent):
     
     def __str__(self):
         return self.user
-
-
+    
 class UserRoles(BaseContent):
     user = models.ForeignKey(User, on_delete= models.CASCADE, null=True, related_name='UserRoles')
     role = models.ForeignKey('Role', on_delete= models.CASCADE, null=True)

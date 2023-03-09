@@ -6,6 +6,7 @@ from system.models.recordid import RecordIdentifiers
 class ManufacturingOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Manufacturingorders
+        model = Manufacturingorders
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
@@ -18,6 +19,7 @@ class ManufacturingOrderSerializer(serializers.ModelSerializer):
 
 class ManufacturingOrderLinesSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Manufacturingorderlines
         model = Manufacturingorderlines
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")

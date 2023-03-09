@@ -3,6 +3,8 @@ from rest_framework import serializers
 from system.models.roles_permissions import *
 from system.models.recordid import RecordIdentifiers
 from system.service import get_rid_pkey
+from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
 
 class PermissionSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField()

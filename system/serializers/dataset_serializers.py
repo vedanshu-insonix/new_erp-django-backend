@@ -7,6 +7,8 @@ from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey, get_related_pkey
+from system.models.recordid import RecordIdentifiers
 
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
@@ -14,13 +16,16 @@ class TableSerializer(serializers.ModelSerializer):
     def get_data(self, obj):
         table_id = obj.id
         data_queryset = Data.objects.filter(data_source = table_id)
+        data_queryset = Data.objects.filter(data_source = table_id)
         serializer = DataSerializer(data_queryset, many = True)         
         return serializer.data
         
     class Meta:
         model = DataTable
+        model = DataTable
         fields =("__all__")
         read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def to_representation(self, instance):
