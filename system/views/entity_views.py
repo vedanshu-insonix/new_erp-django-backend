@@ -38,6 +38,10 @@ class EntityViewSet(viewsets.ModelViewSet):
             if "teams" in data:
                 team_detail = data.pop('teams')
                 haveTeam = True
+            en_type=data.get('entity_type')
+            find_type = Choice.objects.filter(selector__system_name='entity_type', system_name=en_type)
+            if find_type:
+                data['entity_type']=find_type.values()[0]['id']
             serializer=EntitySerializer(data=data, context={'request':request})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()

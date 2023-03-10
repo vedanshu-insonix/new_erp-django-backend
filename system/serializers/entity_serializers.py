@@ -62,6 +62,9 @@ class EntitySerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         request = self.context['request']
 
+        entity_type = instance.entity_type
+        if entity_type:
+            response['entity_type'] = instance.entity_type.system_name
         stage = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in stage:
             response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data

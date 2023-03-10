@@ -240,7 +240,6 @@ class StageSerializer(serializers.ModelSerializer):
     
     def get_label(self, obj):
         data = obj.system_name
-        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__system_name = language).first()
@@ -402,9 +401,12 @@ class SelectorSerializer(serializers.ModelSerializer):
                     
         return response
     
-    def create(self, data):
+    def validate(self, data):
         selector = data.get('system_name')
         data['system_name'] = utils.encode_api_name(selector)
+        return data
+    
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='selectors')
         if record_id:
             data['id']=get_rid_pkey('selectors')
