@@ -623,7 +623,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
             return data
     class Meta:
         model = Column
-        exclude = ("created_time","modified_time","created_by","list")
+        exclude = ("created_time","modified_time","created_by","col_list")
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
@@ -657,11 +657,11 @@ class ColumnsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        list_data = RelatedListSerializer(instance.list, context={'request': request}).data        
+        list_data = RelatedListSerializer(instance.col_list, context={'request': request}).data        
         if 'id' in list_data:
-            data = RelatedListSerializer(instance.list, context={'request': request}).data
+            data = RelatedListSerializer(instance.col_list, context={'request': request}).data
             list = data.pop('columns')
-            response['list'] = data
+            response['col_list'] = data
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
