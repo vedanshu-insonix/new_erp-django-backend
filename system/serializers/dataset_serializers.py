@@ -7,16 +7,15 @@ from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
-from system.service import get_rid_pkey, get_related_pkey
-from system.models.recordid import RecordIdentifiers
 
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
 
     def get_data(self, obj):
         table_id = obj.id
+        request = self.context['request']
         data_queryset = Data.objects.filter(data_source = table_id)
-        serializer = DataSerializer(data_queryset, many = True)         
+        serializer = DataSerializer(data_queryset, many = True, context={'request':request})         
         return serializer.data
         
     class Meta:
