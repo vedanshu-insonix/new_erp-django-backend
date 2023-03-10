@@ -30,9 +30,9 @@ class TranslationIcons(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     icon = models.ForeignKey('Icons', on_delete = models.SET_NULL, null = True)
     
-# class TranslationCurrency(BaseContent):
-#     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
-#     currency = models.ForeignKey('Currency', on_delete = models.SET_NULL, null = True)
+class TranslationCurrency(BaseContent):
+    translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
+    currency = models.ForeignKey('Currency', on_delete = models.SET_NULL, null = True)
     
 class TranslationConfiguration(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)

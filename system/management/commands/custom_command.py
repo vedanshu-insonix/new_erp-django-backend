@@ -4,10 +4,10 @@ from system.models import Choice, RecordIdentifiers,Selectors,Currency,Country,S
 import pandas as pd
 import os
 from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
-from system.service import get_rid_pkey
+from system.service import get_rid_pkey, updatenextid
 from django.contrib.auth.models import User
 
-folder = r'./manamentCommandsFiles/'
+folder = r'./managementCommandsFiles/'
 files = os.listdir(folder)
 data_dict={}
 global_data = {}
@@ -64,6 +64,7 @@ def create_selectors():
             if not sel_rec:
                 Selectors.objects.create(id = sel_id,system_name = sName,type = typ,description = desc,created_by_id = user)
             sel = Selectors.objects.get(id = sel_id)
+            updatenextid('selectors',sel.id)
             trans = TranslationSelector.objects.filter(selector=sel, translation_id=label_rec.id)
             if not trans:
                 TranslationSelector.objects.create(selector=sel, translation = label_rec)
@@ -97,6 +98,7 @@ def create_choice():
             if not choice_rec:
                 Choice.objects.create(id = choice_id,selector=gSel,system_name=nName,sequence=sequence,description = desc,created_by_id = user)
             ch = Choice.objects.get(id = choice_id)
+            updatenextid('choice',ch.id)
             trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
             if not trans:
                 TranslationChoice.objects.create(choice=ch, translation = label_rec)
@@ -117,6 +119,7 @@ def create_dataset():
             dataset_rec = DataTable.objects.filter(id= tbl_id,system_name=dName)
             if not dataset_rec:
                 DataTable.objects.create(id= tbl_id,system_name=dName,description=desc,created_by_id = user)
+                updatenextid('datatable',tbl_id)
     except Exception as e:
         print(e)
 
@@ -163,6 +166,7 @@ def create_data():
             if not data_rec:
                 Data.objects.create(id = data_id,system_name=dName,description=desc,data_source=sdset,created_by_id = user,sequence=sequence)#data_type=dtype,field= f,field_type=ftype,comment=cmnt,)
             dt_id = Data.objects.get(id = data_id)
+            updatenextid('data',dt_id.id)
             trans = TranslationData.objects.filter(name=dt_id, translation_id=label_rec.id)
             if not trans:
                 TranslationData.objects.create(name=dt_id, translation = label_rec)
@@ -193,6 +197,7 @@ def create_icons():
             if not icon_rec:
                 Icons.objects.create(id =icon_id,system_name=sName,icon_image=iImage,created_by_id = user)
             ic_id = Icons.objects.get(id = icon_id)
+            updatenextid('icons',ic_id.id)
             trans = TranslationIcons.objects.filter(icon=ic_id, translation_id=label_rec.id)
             if not trans:
                 TranslationIcons.objects.create(icon=ic_id, translation = label_rec)
@@ -232,9 +237,10 @@ def create_conf():
             if  not conf_rec:
                 Configuration.objects.create(id = conf_id,system_name=conf,type = typ,default_value =vdef,created_by_id = user)
             config_id = Configuration.objects.get(id = conf_id)
-            trans = TranslationConfiguration.objects.filter(Configuration=config_id, translation_id=label_rec.id)
+            updatenextid('data',config_id.id)
+            trans = TranslationConfiguration.objects.filter(configuration=config_id, translation_id=label_rec.id)
             if not trans:
-                TranslationConfiguration.objects.create(Configuration=config_id, translation = label_rec)
+                TranslationConfiguration.objects.create(configuration=config_id, translation = label_rec)
     except Exception as e:
         print(e)
         
@@ -265,6 +271,7 @@ def create_currencies():
             if not cur_rec:
                 Currency.objects.create(id = cur_id,system_name=xName,code=xCode,symbol=xSym,created_by_id = user)
             curr_id = Currency.objects.get(id = cur_id)
+            updatenextid('currency',curr_id.id)
             trans = TranslationCurrency.objects.filter(currency=curr_id, translation_id=label_rec.id)
             if not trans:
                 TranslationCurrency.objects.create(currency=curr_id, translation = label_rec)
@@ -309,7 +316,9 @@ def create_countries():
             sTime = Choice.objects.filter(id  = t_id).first()
             con_rec = Country.objects.filter(id = con_id,country = country_code)
             if not con_rec:
-                Country.objects.create(id = con_id,native_name=nName,telephone_code=xtel,currency=sCur,symbol_position=sSym,money_format=sMon,date_format=sDate,time_format = sTime,country = country_code,created_by_id = user)
+                Country.objects.create(id = con_id,native_name=nName,telephone_code=xtel,currency=sCur,symbol_position=sSym,
+                                       money_format=sMon,date_format=sDate,time_format = sTime,country = country_code,created_by_id = user)
+                updatenextid('country',con_id)
     except Exception as e:
         print(e)
         
@@ -333,6 +342,7 @@ def create_state():
             state_rec = State.objects.filter(id = s_id,system_name= sName)
             if not state_rec:
                 State.objects.create(id = s_id,abbreviation = abb,country=scon,system_name = sName,sequence = sequence, created_by_id = user)
+                updatenextid('state',s_id)
     except Exception as e:
         print(e)
         
@@ -357,6 +367,7 @@ def create_language():
             lang_rec =Language.objects.filter(id =l_id,system_name=xName)
             if not lang_rec:
                 Language.objects.create(id =l_id,system_name=xName,created_by_id = user)
+                updatenextid('language',l_id)
     except Exception as e:
         print(e)
         
@@ -407,6 +418,7 @@ def create_list():
             if not list_rec:
                 List.objects.create(id = l_id,system_name=lName, data_source=sptble,list_type =sltp,description = desc,default_view = def_view,created_by_id = user)
             list_id = List.objects.get(id = l_id)
+            updatenextid('list',list_id.id)
             trans = TranslationList.objects.filter(list=list_id, translation_id=label_rec.id)
             if not trans:
                 TranslationList.objects.create(list=list_id, translation = label_rec)
@@ -463,6 +475,7 @@ def create_menu():
             if not menu_rec:
                 Menu.objects.create(id = menu_id,list= sclist,system_name=mName,menu_category=sCat,sequence = sequence,created_by_id = user)
             m_id = Menu.objects.get(id = menu_id)
+            updatenextid('menu',m_id.id)
             trans = TranslationMenu.objects.filter(menu=m_id, translation_id=label_rec.id)
             if not trans:
                 TranslationMenu.objects.create(menu=m_id, translation = label_rec)
@@ -515,6 +528,7 @@ def create_columns():
             if not col_rec:
                 Column.objects.create(id = col_id,col_list = gclist,column = col,visibility = gcvsb,created_by_id = user)
             column_id = Column.objects.get(id = col_id)
+            updatenextid('column',column_id.id)
             trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
             if not trans:
                 TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
@@ -549,6 +563,7 @@ def create_forms():
             if len(form_rec) < 1:
                 Form.objects.create(id = formId,system_name=nName,description = desc,created_by_id = user)
             form_id = Form.objects.get(id = formId)
+            updatenextid('form',form_id.id)
             trans = TranslationForm.objects.filter(form=form_id, translation_id=label_rec.id)
             if not trans:
                 TranslationForm.objects.create(form=form_id, translation_id = label_rec.id)
@@ -603,6 +618,7 @@ def create_stages():
             if len(stage_rec)<1:
                 Stage.objects.create(id = s_id,system_name = sName,form = gfrm,form_id = fm_id,created_by_id = user,sequence=sequence)
             stage_id = Stage.objects.get(id = s_id)
+            updatenextid('stage',stage_id.id)
             trans = TranslationStage.objects.filter(stage=stage_id, translation_id=label_rec.id)
             if not trans:
                 TranslationStage.objects.create(stage=stage_id, translation_id = label_rec.id)    
@@ -626,7 +642,7 @@ def create_entities():
             entity_rec = Entity.objects.filter(name = eName,id = ent_id)
             if len(entity_rec) < 1:
                 Entity.objects.create(id = ent_id,name = eName,parent = gcprnt,created_by_id = user)
-            
+                updatenextid('entity',ent_id)
     except Exception as e:
         print(e)
 
@@ -666,6 +682,7 @@ def create_container():
             if not cont_rec:
                 ContainerTypes.objects.create(id = cont_id,container = cont,dimension_1 = dim_1,dimension_2 = dim_2,dimension_3 = dim_3,weight = wt,created_by_id = user,description = desc)
             con_id = ContainerTypes.objects.get(id = cont_id)
+            updatenextid('containertypes',con_id.id)
             trans = TranslationContainerType.objects.filter(containerType=con_id, translation_id=label_rec.id)
             if not trans:
                 TranslationContainerType.objects.create(containerType=con_id, translation_id = label_rec.id)  
@@ -676,7 +693,7 @@ class Command(BaseCommand):
     help = "load data from import excel sheet"
     def handle(self, *args, **kwargs):
         global global_data
-        file1 = open('./manamentCommandsFiles/managementSequence.txt', 'r') 
+        file1 = open('./managementCommandsFiles/managementSequence.txt', 'r') 
         Lines = file1.readlines() 
         for line in Lines:
             line=line.strip('\n')

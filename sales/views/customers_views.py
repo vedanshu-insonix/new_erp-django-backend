@@ -26,7 +26,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("__all__")
     filterset_fields = {
-            'customer': ['exact', 'contains'],'entity': ['exact'],'shipping_terms': ['exact'],
+            'customer': ['exact', 'icontains'],'entity': ['exact'],'shipping_terms': ['exact'],
             'ship_via': ['exact'],'customer_source': ['exact'],'payment_terms': ['exact'],'payment_method': ['exact'],
             'currency' : ['exact'],'free_freight_minimum' : ['exact', 'contains'],'issue_statements' : ['exact'],
             'require_pos': ['exact'],'credit_limit': ['exact', 'contains'],'account_balance': ['exact', 'contains'],
