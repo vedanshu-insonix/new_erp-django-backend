@@ -9,6 +9,10 @@ from django.contrib.auth.models import User
 
 folder = r'./managementCommandsFiles/'
 files = os.listdir(folder)
+
+icons = r'icon_images/'
+imag_file= os.listdir(icons)
+
 data_dict={}
 global_data = {}
 
@@ -195,7 +199,8 @@ def create_icons():
             except Exception as e:
                 print(e)
             if not icon_rec:
-                Icons.objects.create(id =icon_id,system_name=sName,icon_image=iImage,created_by_id = user)
+                if iImage in imag_file:
+                    Icons.objects.create(id =icon_id,system_name=sName,icon_image='image_file/'+(iImage),created_by_id = user)
             ic_id = Icons.objects.get(id = icon_id)
             updatenextid('icons',ic_id.id)
             trans = TranslationIcons.objects.filter(icon=ic_id, translation_id=label_rec.id)
