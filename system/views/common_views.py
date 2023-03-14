@@ -8,7 +8,6 @@ from rest_framework.decorators import action
 from system import utils
 import openpyxl
 from django.db.models import Q
-from openpyxl_image_loader import SheetImageLoader
 from system.models.dataset import DataTable, Data
 
 # Generate Token Manually

@@ -281,7 +281,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
                             serializers.save()
                             count += 1
                     except Exception as e:
-                         print("Error > ", str(e))
+                         print("Error > ", str(e), data_dict)
                          pass
             else:
                 msg="Please Upload A Suitable Excel File."

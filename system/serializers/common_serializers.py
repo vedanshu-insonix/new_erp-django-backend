@@ -881,72 +881,8 @@ class RelatedTranslationSerializer(serializers.ModelSerializer):
         fields = ("id","label")
     
 class RelatedFormDataSerializer(serializers.ModelSerializer):
-    choices = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     default = serializers.SerializerMethodField()
-    
-    def get_choices(self, obj):
-        field = obj.field
-        # if field:
-        #     field = field.replace("_", " ")
-        request = self.context['request']
-        return_data = None
-        return_data = None
-        
-        if field == 'State' or field == 'state':
-            get_state = State.objects.filter().all()
-            serializers = RelatedStateSerializer(get_state,many=True)
-            return_data =[{"id":value['id'], "label": value['system_name'], "parent_id": value['country']}
-                           for value in serializers.data]
-        
-        elif field == 'Country' or field == 'country':
-            get_country = Country.objects.filter().all()
-            serializers = CountrySerializer(get_country,many=True)
-            return_data =[{"id":value['id'], "label": value['country']}
-                           for value in serializers.data]
-        
-        elif field == 'Language' or field == 'language':
-            get_language = Language.objects.filter().all()
-            serializers = RelatedLanguageSerializer(get_language,many=True)
-            return_data =[{"id":value['id'], "label": value['system_name']}
-                           for value in serializers.data]
-            
-        elif 'Stage' in field or 'stage' in field :
-            get_stage = Stage.objects.filter().all()
-            serializers = RelatedStageSerializer(get_stage,many=True, context={'request': request})
-            return_data =[{"id":value['id'], "label": value['system_name']}
-                           for value in serializers.data]
-            
-        elif 'currency'in field or 'Currency' in field:
-            get_currency = Currency.objects.filter().all()
-            serializers = RelatedCurrencySerializer(get_currency,many=True)
-            return_data =[{"id":value['id'], "label": value['code']}
-                           for value in serializers.data]
-        
-        elif 'list' in field or 'List' in field:
-            get_list = List.objects.filter().all()
-            serializers = RelatedListSerializer(get_list,many=True, context={'request': request})
-            return_data =[{"id":value['id'], "label": value['label']}
-                           for value in serializers.data]
-        
-        elif 'form' in field or 'Form' in field:
-            get_form = Form.objects.filter().all()
-            serializers = RelatedFormSerializer(get_form,many=True, context={'request': request})
-            return_data =[{"id":value['id'], "label": value['label']}
-                           for value in serializers.data]
-        
-        elif 'column' in field or 'Column' in field:
-            get_column = Column.objects.filter().all().order_by('position')
-            serializers =RelatedColumnsSerializer(get_column,many=True, context={'request': request})
-            return_data =[{"id":value['id'], "label": value['label']}
-                           for value in serializers.data]
-        
-        else:
-            choice_queryset = Choice.objects.filter(selector__system_name = field)
-            serializers = RelatedChoiceSerializer(choice_queryset, many=True,context={'request': request})
-            return_data = [{"id":value['id'], "label": value['label']}
-                        for value in serializers.data]
-        return return_data
     
     def get_label(self, obj):
         data = obj.data.system_name
@@ -973,17 +909,64 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        request = self.context['request']
+        base = request.build_absolute_uri('/') + 'api/'
         data = instance.data
+        add_link = ''
+
         section = RelatedFormSectionSerializer(instance.section).data
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section).data
+
         data = instance.data
         if data:
             response['data'] = instance.data.system_name
+
+        field = instance.field
+        field_type = instance.type
+        if field and field_type=='dropdown':
+            if field == 'State' or field == 'state':
+                add_link = 'states/?country='
+                link = base+add_link
+                response['link'] = link
+            elif field == 'Country' or field == 'country':
+                add_link = 'countries/'
+                link = base+add_link
+                response['link'] = link
+                response['child_field'] = 'state'
+            elif field == 'Language' or field == 'language':
+                add_link = 'languages/'
+                link = base+add_link
+                response['link'] = link
+            elif field == 'Stage' or field == 'stage':
+                add_link = 'stages/?form='
+                link = base+add_link
+                response['link'] = link
+            elif 'currency'in field or 'Currency' in field:
+                add_link = 'currencies/'
+                link = base+add_link
+                response['link'] = link
+            elif 'list' in field or 'List' in field:
+                add_link = 'lists/'
+                link = base+add_link
+                response['link'] = link
+            elif 'form' in field or 'Form' in field:
+                add_link = 'forms/'
+                link = base+add_link
+                response['link'] = link
+            elif 'column' in field or 'Column' in field:
+                add_link = 'columns/'
+                link = base+add_link
+                response['link'] = link
+            else:
+                sel_id = Selectors.objects.filter(system_name=field)
+                if sel_id:
+                    add_link = 'choices/?selector='+sel_id.values()[0]['id']
+                    link = base+add_link
+                    response['link'] = link
         table = instance.table
         if table:
-            response['table'] = instance.table.system_name          
-                      
+            response['table'] = instance.table.system_name                        
         return response 
 
 class FormDataSerializer(serializers.ModelSerializer):
@@ -1011,6 +994,19 @@ class FormDataSerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+
+        validations = {'datatype': response['data_type'], 'required': response['is_required']}
+        if response['data_type']:
+            if (''.join(e.lower() for e in response['data_type'] if e.isalnum())) == 'email':
+                validations['format'] = response['format']
+            elif ''.join(e.lower() for e in response['data_type'] if e.isalnum()) == 'string':
+                validations['min_length'] = response['minimum']
+                validations['max_length'] = response['maximum']
+            elif ''.join(e.lower() for e in response['data_type'] if e.isalnum()) == 'number':
+                validations['min'] = response['minimum']
+                validations['max'] = response['maximum']
+
+        response['validations'] = validations
         return response
     
     def create(self, data):

@@ -202,9 +202,17 @@ class FormData(BaseContent):
     position = models.IntegerField(null=True, blank=True)
     visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
+    display_label = models.CharField(max_length=255, null = True, blank = True)
+    is_heading = models.BooleanField(default = False)
+    is_required = models.BooleanField(null=True, blank=True)
+    maximum = models.BigIntegerField(null=True, blank=True)
+    minimum = models.BigIntegerField(null=True, blank=True)
+    child_field = models.CharField(max_length=255, null=True, blank=True)
+    format = models.CharField(max_length=255, null=True, blank=True )
+    data_type = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return self.data
+        return self.data.system_name
 
 class FormSection(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
