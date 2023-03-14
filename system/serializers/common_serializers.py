@@ -748,7 +748,7 @@ class FormSerializer(serializers.ModelSerializer):
     form_data = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     section = serializers.SerializerMethodField()
-    icons = serializers.SerializerMethodField()
+    # icons = serializers.SerializerMethodField()
 
     def get_form_list(self,obj):
         request = self.context['request']
@@ -781,11 +781,11 @@ class FormSerializer(serializers.ModelSerializer):
         serializer = RelatedFormSectionSerializer(form_section, many = True, context={'request': request})  
         return serializer.data
     
-    def get_icons(self,obj):
-        request = self.context['request']
-        form_icons = FormIcon.objects.filter(form = obj.id)
-        serializer = FormIconSerializer(form_icons, many = True, context={'request': request})  
-        return serializer.data
+    # def get_icons(self,obj):
+    #     request = self.context['request']
+    #     form_icons = FormIcon.objects.filter(form = obj.id)
+    #     serializer = FormIconSerializer(form_icons, many = True, context={'request': request})  
+    #     return serializer.data
 
     class Meta:
         model = Form
@@ -796,8 +796,13 @@ class FormSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
+        request = self.context['request']
+        base = request.build_absolute_uri('/')
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        icons = instance.icon
+        if icons:
+            response['icon']=base+str(instance.icon.icon_image)
         request = self.context['request']
         return response
 
@@ -806,11 +811,6 @@ class FormSerializer(serializers.ModelSerializer):
         if record_id:
             data['id']=get_rid_pkey('form')
         return super().create(data)
-    
-class FormIconSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=FormIcon
-        fields = ("__all__")
 
 class RelatedFormListSerializer(serializers.ModelSerializer):  
     icon = serializers.SerializerMethodField()
@@ -964,6 +964,20 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     add_link = 'choices/?selector='+sel_id.values()[0]['id']
                     link = base+add_link
                     response['link'] = link
+        validations = {'datatype': response['data_type'], 'required': response['is_required']}
+        if response['data_type']:
+            datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
+
+            if datatype == 'email' or 'website':
+                validations['format'] = response['format']
+            elif datatype == 'string':
+                validations['min_length'] = response['minimum']
+                validations['max_length'] = response['maximum']
+            elif datatype == 'number':
+                validations['min'] = response['minimum']
+                validations['max'] = response['maximum']
+
+        response['validations'] = validations
         table = instance.table
         if table:
             response['table'] = instance.table.system_name                        
@@ -995,18 +1009,6 @@ class FormDataSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
-        validations = {'datatype': response['data_type'], 'required': response['is_required']}
-        if response['data_type']:
-            if (''.join(e.lower() for e in response['data_type'] if e.isalnum())) == 'email':
-                validations['format'] = response['format']
-            elif ''.join(e.lower() for e in response['data_type'] if e.isalnum()) == 'string':
-                validations['min_length'] = response['minimum']
-                validations['max_length'] = response['maximum']
-            elif ''.join(e.lower() for e in response['data_type'] if e.isalnum()) == 'number':
-                validations['min'] = response['minimum']
-                validations['max'] = response['maximum']
-
-        response['validations'] = validations
         return response
     
     def create(self, data):
