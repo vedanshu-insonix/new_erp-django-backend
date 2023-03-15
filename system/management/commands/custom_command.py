@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from warehouse.models import ContainerTypes
-from system.models import Choice, RecordIdentifiers,Selectors,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,FormIcon,Stage,Entity,FormList,ListIcon
+from system.models import Choice, RecordIdentifiers,Selectors,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon
 import pandas as pd
 import os
 from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
@@ -12,6 +12,9 @@ files = os.listdir(folder)
 
 icons = r'icon_images/'
 imag_file= os.listdir(icons)
+
+flag_path = r'country_flag/'
+flag_file= os.listdir(flag_path)
 
 data_dict={}
 global_data = {}
@@ -285,12 +288,15 @@ def create_currencies():
         
 def create_countries():
     try:
+        loop_count =0
         id = global_data.get("Country ID")
         native_name = global_data.get('Native Name')
         telephone_code = global_data.get("Telephone Code")
         currency = global_data.get('Currency Name')
-        country = global_data.get("Country Code")
+        country_code = global_data.get("Country Code")
+        system_name = global_data.get('System Name')
         cur_code = global_data.get("Currency Code")
+        flag = global_data.get('Flag')
         #cur_id = data.get("Currency ID")
         symbol_position = global_data.get("Currency Symbol Position")
         money_format = global_data.get('Money Format',"")
@@ -298,31 +304,38 @@ def create_countries():
         #time_format = data.get("Time Format","")
         time_id = global_data.get("Time Choice ID")
         #symbol_id = data.get("Symbol Choice ID")
-        conList = list(country.keys())
+        conList = list(country_code.keys())
         for x in conList:
+            loop_count+= 1
             con_id = id.get(x)
             t_id = time_id.get(x)
-            country_code = country.get(x)
+            ccode = country_code.get(x)
             #s_id = symbol_id.get(x)
             cu_code =cur_code.get(x)
             #cu_id = cur_id.get(x)
             nName = native_name.get(x)
+            sname = system_name.get(x)
             xtel= telephone_code.get(x)
             xCurr = currency.get(x)
             sym = symbol_position.get(x)
             Mon= money_format.get(x)
             Date = date_format.get(x)
             #Time = time_format.get(x)
+            sflag = flag.get(x)
+            
             user= User.objects.filter(username = 'admin').values()[0]["id"]
             sCur = Currency.objects.filter(code=cu_code,system_name =xCurr).first()
             sSym = Choice.objects.filter(system_name=sym).first()
             sMon = Choice.objects.filter(system_name=Mon).first()
             sDate = Choice.objects.filter(system_name=Date).first()
             sTime = Choice.objects.filter(id  = t_id).first()
-            con_rec = Country.objects.filter(id = con_id,country = country_code)
+            con_rec = Country.objects.filter(id = con_id,country_code = ccode)
             if not con_rec:
-                Country.objects.create(id = con_id,native_name=nName,telephone_code=xtel,currency=sCur,symbol_position=sSym,
-                                       money_format=sMon,date_format=sDate,time_format = sTime,country = country_code,created_by_id = user)
+                if sflag in flag_file:
+                    flag_p= f'{flag_path}{sflag}'
+                    Country.objects.create(id = con_id,native_name=nName,telephone_code=xtel,currency=sCur,symbol_position=sSym,
+                                        money_format=sMon,date_format=sDate,time_format = sTime,country_code = ccode,
+                                        system_name=sname, flag = flag_p, created_by_id = user)
                 updatenextid('country',con_id)
     except Exception as e:
         print(e)
@@ -331,18 +344,18 @@ def create_state():
     try:
         id = global_data.get("State ID")
         abbreviation = global_data.get('Code')
-        country = global_data.get("Country Code")
+        country_code = global_data.get("Country Code")
         con_id = global_data.get("Country ID")
         system_name = global_data.get('System Name')
         seq = global_data.get("Sequence")
         sList = list(system_name.keys())
         for x in sList:
             s_id = id.get(x)
-            c_code = country.get(x)
+            c_code = country_code.get(x)
             abb = abbreviation.get(x)
             sName=system_name.get(x)
             user= User.objects.filter(username = 'admin').values()[0]["id"]
-            scon = Country.objects.filter(country=c_code).first()
+            scon = Country.objects.filter(country_code=c_code).first()
             sequence = int(seq.get(x))
             state_rec = State.objects.filter(id = s_id,system_name= sName)
             if not state_rec:

@@ -135,8 +135,6 @@ class CountrySerializer(serializers.ModelSerializer):
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        response['system_name']=instance.country.name
-        response['flag']=instance.country.flag
         return response
     
     def create(self, data):
@@ -586,9 +584,9 @@ class ListFilterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     def create(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='ListFilters')
+        record_id = RecordIdentifiers.objects.filter(record='listfilters')
         if record_id:
-            data['id']=get_rid_pkey('ListFilters')
+            data['id']=get_rid_pkey('listfilters')
         return super().create(data)
 
 class ListIconSerializer(serializers.ModelSerializer):
@@ -698,16 +696,17 @@ class MenuSerializer(serializers.ModelSerializer):
         return None
     class Meta:
         model = Menu
-        fields = ("__all__")
+        #fields = ("__all__")
+        exclude = ('created_time', 'modified_time', 'created_by', 'description')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
         
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        created_by = RelatedUserSerilaizer(instance.created_by).data
-        if 'id' in created_by:
-            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        # created_by = RelatedUserSerilaizer(instance.created_by).data
+        # if 'id' in created_by:
+        #     response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         request = self.context['request']
         list_data = RelatedListSerializer(instance.list, context={'request': request}).data
         if 'id' in list_data:

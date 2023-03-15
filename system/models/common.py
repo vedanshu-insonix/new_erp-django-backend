@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django_countries.fields import CountryField
+#from django_countries.fields import CountryField
 
 # Create your models here.
 # Base class for all models
@@ -61,9 +61,11 @@ class Language(BaseContent):
     
 class Country(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    country = CountryField(unique=True, countries_flag_url="/static/flags/{code}.png")
-    native_name = models.CharField(max_length=255, null=True, unique= True, blank=True)
+    system_name = models.CharField(max_length=255, null=True, blank=True)
+    country_code = models.CharField(max_length=3, null=True, blank=True)
+    native_name = models.CharField(max_length=255, null=True, blank=True)
     telephone_code = models.CharField(max_length=50, null=True, blank=True)
+    flag = models.FileField(upload_to='flag/', max_length=255, null=True, blank=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
     symbol_position = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_symbol_position")
     money_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_money_format")
@@ -71,7 +73,7 @@ class Country(BaseContent):
     time_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_time_format")
     
     def __str__(self):
-        return self.country.name
+        return self.country_code
 
     class Meta:
         verbose_name = "Country"

@@ -63,6 +63,7 @@ router.register(r'countries', common_views.CountryViewSet)
 router.register(r'states', common_views.StateViewSet)
 router.register(r'stages', common_views.StageViewSet)
 router.register(r'buttons', common_views.ButtonViewSet)
+router.register(r'listfilters', common_views.ListFiltersViewSet)
 router.register(r'configurations', common_views.ConfigurationViewSet)
 router.register(r'territories', common_views.TerritoriesViewSet)
 router.register(r'choices', common_views.ChoiceViewSet)
@@ -105,6 +106,7 @@ router.register(r'routes', route_views.RouteViewSet)
 router.register(r'routetypes', route_views.RouteTypeViewSet)
 router.register(r'routetyperules', route_views.RouteTypeRulesViewSet)
 router.register(r'operations', operation_views.OperationViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
