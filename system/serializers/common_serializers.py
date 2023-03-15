@@ -968,7 +968,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
 
-            if datatype == 'email' or 'website':
+            if datatype == 'email' or datatype == 'website':
                 validations['format'] = response['format']
             elif datatype == 'string':
                 validations['min_length'] = response['minimum']
@@ -977,7 +977,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                 validations['min'] = response['minimum']
                 validations['max'] = response['maximum']
 
-        response['validations'] = validations
+            response['validations'] = validations
         table = instance.table
         if table:
             response['table'] = instance.table.system_name                        
