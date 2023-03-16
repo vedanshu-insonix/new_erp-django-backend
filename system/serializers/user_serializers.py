@@ -98,27 +98,32 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
+
     class Meta:
         model = User
         fields = ['email']
-    
-    
+       
     def validate(self, attrs):
         email = attrs.get('email')
+        request = self.context.get('request')
+
         if User.objects.filter(email = email).exists():
             user = User.objects.get(email = email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            link = 'http://127.0.0.1:8000/api/users/reset-password/' + uid + '/'+ token
+            base_uri = str('/'.join(request.build_absolute_uri().split('/')[:-2]))
+            full_token = uid+'_'+token
+            link =  '/reset-password/' +  full_token + '/'
             # Send Email
             email_from = settings.EMAIL_HOST_USER
             subject = "Password Reset Requested"
+            attrs['token'] = full_token
             content='Set your new password by clicking on the below link. Thank You :)'
             message = f'{content} \n {link}'
-            status = send_email(subject,message,email) 
+            status = send_email(subject,message,email)
             if status == "0":
                 raise ValidationError('Email sending failed. Please try again')
-            return attrs   
+            return attrs
         else:
             raise ValidationError('You are not registered user.')
 

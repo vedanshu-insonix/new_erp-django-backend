@@ -21,7 +21,7 @@ from rest_framework import routers
 from system.views import user_views, common_views, communication_views, entity_views, translation_views, team_views, role_permission_views, dataset_views, recordid_views
 from sales.views import customers_views, vendors_views, addresses_views, invoices_views, receipts_views, pricelists_views, orders_views, quotations_views, credits_views, cart_views, return_views
 from rest_framework_simplejwt import views as jwt_views
-from warehouse.views import products_views, general_views, route_views, operation_views
+from warehouse.views import products_views, general_views, route_views, operation_views, ledger_views
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 from rest_framework.authtoken import views
@@ -74,6 +74,7 @@ router.register(r'channels', communication_views.ChannelViewSet)
 router.register(r'entities', entity_views.EntityViewSet)
 router.register(r'translations', translation_views.TranslationViewSet)
 router.register(r'teams', team_views.TeamViewSet)
+router.register(r'actions', common_views.ActionViewSet)
 ##****************************************SALES APP URL'S****************************************##
 router.register(r'customers', customers_views.CustomerViewSet)
 router.register(r'vendors', vendors_views.VendorViewSet)
@@ -106,6 +107,7 @@ router.register(r'routes', route_views.RouteViewSet)
 router.register(r'routetypes', route_views.RouteTypeViewSet)
 router.register(r'routetyperules', route_views.RouteTypeRulesViewSet)
 router.register(r'operations', operation_views.OperationViewSet)
+router.register(r'accounts', ledger_views.AccountsViewSet)
 
 
 urlpatterns = [

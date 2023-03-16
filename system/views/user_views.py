@@ -17,6 +17,8 @@ from system import utils
 from sales.serializers.addresses_serializers import AddressSerializer
 from system.models.teams import Team
 from system.models.roles_permissions import Role, Permission, RolePermissions
+from rest_framework.decorators import  permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -24,7 +26,6 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
@@ -214,18 +215,20 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response(response)     
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Send link to Reset Password 
+    # Send link to Reset Password
+    
     @action(detail=False, methods=['post'], url_path='request-reset-email', url_name='request-reset-email')
     def request_reset_email(self, request):
-         serializers = SendPasswordResetEmailSerializer(data = request.data)
+         serializers = SendPasswordResetEmailSerializer(data=request.data, context = {'request': request})
          if serializers.is_valid(raise_exception=True):
              msg = "Password Reset link send. Please check your email"
-             response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}
+             token = serializers.validate(request.data)['token']
+             response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token': token}
              return Response(response)
          return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # Reset Password 
-    @action(detail=False, methods=['post'],url_path = "reset-password/(?P<uid>[-\w]+)/(?P<token>[-\w]+)")
+    @action(detail=False, methods=['post'],url_path = "reset-password/(?P<uid>[-\w]+)_(?P<token>[-\w]+)")
     def resetPassword(self, request, uid, token):
         serializers = UserPasswordResetSerializer(data = request.data, context = {'uid':uid, 'token': token})
         if serializers.is_valid(raise_exception=True):
@@ -233,6 +236,15 @@ class UserViewSet(viewsets.ModelViewSet):
              response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}
              return Response(response)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_permissions(self):
+        """Returns the permission based on the type of action"""
+
+        if self.action == "request_reset_email" or self.action == "resetPassword":
+            return [permissions.AllowAny()]
+
+        return [permissions.IsAuthenticated()]
+
         
 class GroupViewSet(viewsets.ModelViewSet):
     """
