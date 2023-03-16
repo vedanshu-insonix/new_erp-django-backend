@@ -1,6 +1,5 @@
 from django.db import models
 from .common import BaseContent
-from system.models.common import *
 from django.contrib.auth.models import User
 
 class Team(BaseContent):

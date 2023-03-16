@@ -4,6 +4,8 @@ from system.models.teams import *
 from system.serializers.role_permission_serializer import RoleSerializer
 from system.models.recordid import RecordIdentifiers
 from system.service import get_rid_pkey
+from system.models.recordid import RecordIdentifiers
+from system.service import get_rid_pkey
 
 class TeamSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
@@ -37,11 +39,11 @@ class TeamSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='team')
         if record_id:
             data['id']=get_rid_pkey('team')
-        return data
+        return super().create(data)
 
 class TeamRoleSerializer(serializers.ModelSerializer):
     class Meta:

@@ -11,11 +11,11 @@ class JournalSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='journal')
         if record_id:
             data['id']=get_rid_pkey('journal')
-        return data
+        return super().create(data)
 
 class RelatedJournalTemplateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,11 +38,11 @@ class JournalTemplateSerializer(serializers.ModelSerializer):
             
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='journaltemplate')
         if record_id:
             data['id']=get_rid_pkey('journaltemplate')
-        return data
+        return super().create(data)
 
 class RelatedAttributesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,11 +64,11 @@ class AttributesSerializer(serializers.ModelSerializer):
             
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='attributes')
         if record_id:
             data['id']=get_rid_pkey('attributes')
-        return data
+        return super().create(data)
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,11 +98,11 @@ class ImagesSerializer(serializers.ModelSerializer):
             
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='images')
         if record_id:
             data['id']=get_rid_pkey('images')
-        return data
+        return super().create(data)
 
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:

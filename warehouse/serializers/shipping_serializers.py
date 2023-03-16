@@ -14,11 +14,11 @@ class DeliveriesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliveries')
         if record_id:
             data['id']=get_rid_pkey('deliveries')
-        return data
+        return super().create(data)
 
 class DeliveryLinesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,11 +27,11 @@ class DeliveryLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliverylines')
         if record_id:
             data['id']=get_rid_pkey('deliverylines')
-        return data
+        return super().create(data)
 
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,21 +40,22 @@ class ShipmentSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='shipments')
         if record_id:
             data['id']=get_rid_pkey('shipments')
-        return data
+        return super().create(data)
 
 class ContainerTypesSerializer(serializers.ModelSerializer):
+    label=serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.id
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationContainerType.objects.filter(containerType = obj.id, translation__language__name = language).first()
+        queryset = TranslationContainerType.objects.filter(containerType = obj.id, translation__language__system_name = language).first()
         if queryset:
             translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language__name = language).first()
+            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
             serializers = RelatedTranslationSerializer(translation, many=False)
             return serializers.data['label']
         else:
@@ -65,11 +66,11 @@ class ContainerTypesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containertypes')
         if record_id:
             data['id']=get_rid_pkey('containertypes')
-        return data
+        return super().create(data)
 
 class ContainersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,11 +79,11 @@ class ContainersSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containers')
         if record_id:
             data['id']=get_rid_pkey('containers')
-        return data
+        return super().create(data)
 
 class ContentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,8 +92,8 @@ class ContentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='contents')
         if record_id:
             data['id']=get_rid_pkey('contents')
-        return data
+        return super().create(data)

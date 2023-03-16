@@ -1,16 +1,13 @@
 from django.db import models
-from system.models.common import BaseContent
+from system.models.common import BaseContent, Choice
 from django.contrib.auth.models import User
 from sales.models.address import Addresses
 
 class Entity(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    parent = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete = models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
-    EntityTypeChoice =(("1","Entity1"),("2","Entity2"),
-                    ("3","Entity3"),("4","Entity4")
-                    )
-    entity_type = models.CharField(max_length=255, null=True, blank=True, choices=EntityTypeChoice)
+    entity_type = models.ForeignKey(Choice, on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)

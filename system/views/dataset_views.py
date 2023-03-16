@@ -75,9 +75,3 @@ class DataViewSet(viewsets.ModelViewSet):
                 return Response(utils.error(msg))
         except Exception as e:
             return Response(utils.error(str(e)))
-        
-    # def destroy(self, pk):
-    #     print(pk)
-    #     queryset = Data.objects.filter(data_id=pk)
-    #     queryset.delete()
-    #     return "Deletion Successful."

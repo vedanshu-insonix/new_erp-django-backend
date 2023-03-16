@@ -6,6 +6,7 @@ from warehouse.models.general import *
 from warehouse.serializers.general_serializer import *
 from sales.serializers.addresses_serializers import AddressSerializer
 from warehouse.serializers.route_serializer import RouteSerializer
+from warehouse.serializers.route_serializer import RouteSerializer
 
 #******************************* Product Serializer *******************************
 class RelatedProductSerializer(serializers.ModelSerializer):
@@ -72,11 +73,11 @@ class ProductSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='product')
         if record_id:
             data['id']=get_rid_pkey('product')
-        return data
+        return super().create(data)
 
 class BomSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,11 +86,11 @@ class BomSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='bom')
         if record_id:
             data['id']=get_rid_pkey('bom')
-        return data
+        return super().create(data)
 
 class ComponentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,11 +99,11 @@ class ComponentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='components')
         if record_id:
             data['id']=get_rid_pkey('components')
-        return data
+        return super().create(data)
 
 class CharacteristicsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -111,11 +112,12 @@ class CharacteristicsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='characteristics')
         if record_id:
             data['id']=get_rid_pkey('characteristics')
-        return data
+        return super().create(data)
 
 class RelatedValueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -137,11 +139,13 @@ class ValueSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='value')
         if record_id:
             data['id']=get_rid_pkey('value')
-        return data
+        return super().create(data)
+
+
 
 class ProductValueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -156,11 +160,12 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productcategory')
         if record_id:
             data['id']=get_rid_pkey('productcategory')
-        return data
+        return super().create(data)
+
 
 class EquivalentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -169,16 +174,18 @@ class EquivalentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='equivalents')
         if record_id:
             data['id']=get_rid_pkey('equivalents')
-        return data
+        return super().create(data)
+
+
 
 class RelatedLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Locations
-        fields = ("id","locations_name", "code")    
+        fields = ("id","locations_name", "code")   
 
 class LocationsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -201,11 +208,13 @@ class LocationsSerializer(serializers.ModelSerializer):
             response['loc_address'] = AddressSerializer(instance.loc_address).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='locations')
         if record_id:
             data['id']=get_rid_pkey('locations')
-        return data
+        return super().create(data)
+
+
 
 class ProductCountsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -214,11 +223,12 @@ class ProductCountsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productcounts')
         if record_id:
             data['id']=get_rid_pkey('productcounts')
-        return data
+        return super().create(data)
+
 
 class ProductLocationsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -227,11 +237,12 @@ class ProductLocationsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productlocations')
         if record_id:
             data['id']=get_rid_pkey('productlocations')
-        return data
+        return super().create(data)
+
 
 class UOMSerializer(serializers.ModelSerializer):
     class Meta:
@@ -240,8 +251,8 @@ class UOMSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='uom')
         if record_id:
             data['id']=get_rid_pkey('uom')
-        return data
+        return super().create(data)

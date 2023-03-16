@@ -1,17 +1,18 @@
 from django.db import models
 from system.models.common import BaseContent
-from system.utils import EntityChoice, StatusChoice
+from system.utils import StatusChoice
 from system.models.common import *
 # Create your models here.
 
-class Vendors(BaseContent): 
+class Vendors(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_id = models.ForeignKey('Vendors', on_delete=models.SET_NULL, null=True, blank=True)
-    entity = models.CharField(max_length=255, choices=EntityChoice)
+    entity = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="vendor_entity")
     vendor = models.CharField(max_length=100,null=True,blank=True)
-    shipping_terms = models.CharField(max_length=255, null=True, blank=True) #choice
-    ship_via = models.CharField(max_length=255, null=True, blank=True) #choice
-    payment_terms = models.CharField(max_length=255, null=True, blank=True) #choice
-    payment_method = models.CharField(max_length=255, null=True, blank=True) #choice
+    shipping_terms = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="vendor_shipping_terms")
+    ship_via = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="vendor_shipping_method")
+    payment_terms = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="vendor_payment_terms")
+    payment_method = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="vendor_payment_method")
     purchasing_currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     free_freight_minimum = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
     require_pos = models.BooleanField(default=False)
@@ -41,6 +42,7 @@ class VendorAddress(BaseContent):
         return str(self.id)
 
 class VendorProducts(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     stock_number = models.CharField(max_length=3,null=True,blank=True)
     vendor_product_description = models.CharField(max_length=255,null=True,blank=True)
     list_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
@@ -77,14 +79,17 @@ class VendorProducts(BaseContent):
     status = models.CharField(max_length=1, null=True, blank=True)
 
 class CustomsClassifications(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     hts_code = models.CharField(max_length = 255, null = True, blank = True)
     hts_code_description = models.TextField(null = True, blank = True)
     hts_duty = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     
 class NMFC(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     pass
 
 class VendorPrices(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     vendor = models.ForeignKey('Vendors', on_delete=models.CASCADE, null=True)
     vendor_product_id = models.ForeignKey('VendorProducts', on_delete=models.CASCADE, null=True)
     base_price = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)

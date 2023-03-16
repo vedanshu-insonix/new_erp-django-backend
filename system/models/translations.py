@@ -13,6 +13,7 @@ class Translation(BaseContent):
     
     # def __str__(self):
     #     return self.label 
+
 class TranslationSelector(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
     selector = models.ForeignKey('Selectors', on_delete = models.SET_NULL, null = True)
@@ -35,7 +36,7 @@ class TranslationCurrency(BaseContent):
     
 class TranslationConfiguration(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
-    Configuration = models.ForeignKey('Configuration', on_delete = models.SET_NULL, null = True)
+    configuration = models.ForeignKey('Configuration', on_delete = models.SET_NULL, null = True)
     
 # class TranslationState(BaseContent):
 #     translation = models.ForeignKey('Translation', on_delete=models.SET_NULL, null = True)
@@ -83,7 +84,7 @@ class TranslationTag(BaseContent):
     
 class TranslationTile(BaseContent):
     translation = models.OneToOneField('Translation', on_delete=models.CASCADE, null = True)
-    tag = models.ForeignKey('Tile', on_delete=models.CASCADE, null = True)
+    tile = models.ForeignKey('Tile', on_delete=models.CASCADE, null = True)
     
 class TranslationList(BaseContent):
     translation = models.ForeignKey('Translation', on_delete=models.CASCADE, null = True)

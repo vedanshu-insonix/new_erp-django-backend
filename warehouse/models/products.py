@@ -1,5 +1,5 @@
 from django.db import models
-from system.models.common import *
+from system.models.common import BaseContent
 
 class Product(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -55,7 +55,7 @@ class Product(BaseContent):
     # price_difference_account = models.ForeignKey('ChartOfAccounts', on_delete = models.SET_NULL, null=True, blank=True)
     deferred_revenue_type = models.CharField(max_length=255, null=True, blank=True)
     asset_type = models.CharField(max_length=255, null=True, blank=True)
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class Bom(BaseContent):
@@ -143,7 +143,7 @@ class ProductCounts(BaseContent):
     counted = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     discrepancy = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class ProductLocations(BaseContent):
@@ -154,7 +154,7 @@ class ProductLocations(BaseContent):
     max_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     mini_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class UOM(BaseContent):

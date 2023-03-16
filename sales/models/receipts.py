@@ -2,6 +2,7 @@ from django.db import models
 from system.models.common import BaseContent
 
 class Receipts(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     date = models.DateTimeField(null = True, blank = True)
     amount = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     currency = models.ForeignKey('system.Currency', on_delete = models.SET_NULL, null= True, blank = True)

@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from system import utils
 from warehouse.services.route_services import route_services
 
-class Route_ViewSet(viewsets.ModelViewSet):
+class RouteViewSet(viewsets.ModelViewSet):
     queryset = Routes.objects.all()
     serializer_class = RouteSerializer
 
-class Route_Type_ViewSet(viewsets.ModelViewSet):
+class RouteTypeViewSet(viewsets.ModelViewSet):
     queryset = RouteTypes.objects.all()
     serializer_class = RouteTypeSerializer
 
@@ -22,6 +22,6 @@ class Route_Type_ViewSet(viewsets.ModelViewSet):
             ret = route_create['error']
             return Response(utils.error(self,ret))
 
-class Route_Type_Rules_ViewSet(viewsets.ModelViewSet):
+class RouteTypeRulesViewSet(viewsets.ModelViewSet):
     queryset = RouteTypeRules.objects.all()
     serializer_class = RouteTypeRulesSerializer

@@ -38,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
             haveRoles = False           
             user=User.objects.filter(email=email) 
             if user:
-                return Response(utils.error(self,"User Already Exist With This Email Id"))
+                return Response(utils.error("User Already Exist With This Email Id"))
             else:
                 if 'address' in data:
                     address_rec = data.pop('address')
@@ -82,9 +82,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 user_id=serializer.data.get('id')
                 new_user = User.objects.get(id=user_id)
                 result = UserSerializer(new_user, context={'request':request})
-                return Response(utils.success_msg(self,result.data))
+                return Response(utils.success_msg(result.data))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
     def update(self, request, pk):
         try:
@@ -159,9 +159,9 @@ class UserViewSet(viewsets.ModelViewSet):
                         if find:
                             remove_role=(UserRoles.objects.filter(role=role, user=user_rec)).delete()
             msg = "User Updation Successful."
-            return Response(utils.success_msg(self,msg))
+            return Response(utils.success_msg(msg))
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(str(e)))
 
     # User login API
     @action(detail=False, methods=['post'], name='login')
@@ -169,15 +169,17 @@ class UserViewSet(viewsets.ModelViewSet):
         serializers = UserLoginSerializer(data = request.data)
         if serializers.is_valid(raise_exception=True):
             username = request.data.get('username')
+            entity = request.data.get('entity')
             password = request.data.get('password')
             # user = authenticate(email= email, password=password)
             user = User.objects.get(username=username)
             if check_password(password, user.password):
                 token = get_tokens_for_user(user)
                 msg = 'Login Successful!'
-                queryset = Configuration.objects.filter(category = "appearance")
-                configuration = RelatedConfigurationSerializer(queryset, many = True)
-                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token, "configuration":configuration.data}
+                # queryset = Configuration.objects.filter(category = "appearance")
+                #queryset = Configuration.objects.filter(system_name = "appearance")
+                #configuration = RelatedConfigurationSerializer(queryset, many = True)
+                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token} #, "configuration":configuration.data}
                 return Response(response)
             else:
                 msg = 'Username or Password is not valid'
@@ -192,12 +194,12 @@ class UserViewSet(viewsets.ModelViewSet):
         if serializers.is_valid(raise_exception=True):
             user_id = serializers.data.get('user_id')
             curr_pass = serializers.data.get('current_password')
-            password = serializers.data.get('new_password')
+            new_password = serializers.data.get('new_password')
             user = User.objects.get(id=user_id)
             if user:
                 password = user.password
                 if check_password(curr_pass, password):
-                    user.set_password(password)
+                    user.set_password(new_password)
                     user.save()
                     msg = "Password changed successfully!"
                     response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}

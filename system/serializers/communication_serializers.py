@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .user_serializers import RelatedUserSerilaizer
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from system.service import get_rid_pkey
+from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
 
 
@@ -27,11 +27,11 @@ class ChannelSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='channel')
         if record_id:
             data['id']=get_rid_pkey('channel')
-        return data
+        return super().create(data)
 
 
 class RelatedCommunicationSerializer(serializers.ModelSerializer):
@@ -59,13 +59,12 @@ class CommunicationSerializer(serializers.ModelSerializer):
         #    response['channel'] = RelatedChannelSerializer(instance.channel).data
         return response
     
-    def validate(self, data):
+    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='communication')
         if record_id:
             data['id']=get_rid_pkey('communication')
-        return data
-
-   
+        return super().create(data)
+  
 class CommunicationAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunicationAddress
@@ -74,9 +73,7 @@ class CommunicationAddressSerializer(serializers.ModelSerializer):
 
 @receiver(post_save, sender=Communication)
 def update_comm(created,instance,**kwargs):
-    if created==True:
-        pass
-    else:
+    if not created:
         if instance.id is not None:
             addr_rec = CommunicationAddress.objects.filter(communication_id=instance.id)
             if addr_rec:

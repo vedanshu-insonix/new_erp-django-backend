@@ -12,6 +12,8 @@ from .customers_serializers import CustomerAddressSerializer
 from .vendors_serializers import VendorAddressSerializer
 from ..models.customers import CustomerAddress
 from ..models.vendors import VendorAddress
+from system.service import get_rid_pkey
+from system.models.recordid import RecordIdentifiers
 
 
 class AddressTagSerializer(serializers.ModelSerializer):
@@ -19,13 +21,19 @@ class AddressTagSerializer(serializers.ModelSerializer):
         model = AddressTag
         fields = ("tag",)
         depth = 1
-    
+
+class RelatedAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Addresses
+        fields = ("__all__")
+        
 class AddressSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     vendor = serializers.SerializerMethodField()
     entity = serializers.SerializerMethodField()
     communication = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    
     def get_customer(self, obj):
         queryset = CustomerAddress.objects.filter(address = obj.id)
         serializer = CustomerAddressSerializer(queryset, many=True)
@@ -92,3 +100,9 @@ class AddressSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
             
         return response
+    
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='addresses')
+        if record_id:
+            data['id']=get_rid_pkey('addresses')
+        return super().create(data)

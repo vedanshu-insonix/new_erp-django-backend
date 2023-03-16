@@ -1,6 +1,4 @@
 from system.models.recordid import RecordIdentifiers
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 def get_related_pkey(sender,initial,sequence):
     new_id=(int(initial)*1000)+int(sequence)
@@ -26,15 +24,8 @@ def get_rid_pkey(sender):
     record_id.save()
     return primary_id
 
-# @receiver(post_save)
-# def update_record_identifier(sender, created, **kwargs):
-#     if created==True:
-#         model_name = str(sender._meta)
-#         text_split = model_name.split('.')
-#         model_name=text_split[1]
-#         record_id = RecordIdentifiers.objects.filter(record=model_name)
-#         if record_id:
-#             next_id = record_id.values()[0]['next']
-#             new_id = next_id + 1
-#             record_id.update(next=new_id)
-#     return None
+def updatenextid(sender, pid):
+    record_id = RecordIdentifiers.objects.get(record=sender)
+    record_id.next = int(pid)+1
+    record_id.save()
+    return None
