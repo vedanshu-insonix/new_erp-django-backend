@@ -146,6 +146,7 @@ class Selectors(BaseContent):
     def __str__(self):
         return self.system_name
     
+    
 class Choice(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     selector = models.ForeignKey('Selectors', on_delete=models.CASCADE, null=True, blank=True)
@@ -247,9 +248,10 @@ class ListFilters(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     list = models.ForeignKey('List', on_delete=models.CASCADE)
     data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
-    operator_choice = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
+    logic = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='logic_operators')
     value = models.CharField(max_length=255, null=True, blank=True)
     sequence = models.IntegerField(null=True , blank=True)
+    sublogic = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='sublogic_operators')
 
 class ListSorts(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

@@ -5,8 +5,10 @@ import pandas as pd
 import os
 from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
 from system.service import get_rid_pkey, updatenextid
+from system.service import get_rid_pkey, updatenextid
 from django.contrib.auth.models import User
 
+folder = r'./managementCommandsFiles/'
 folder = r'./managementCommandsFiles/'
 files = os.listdir(folder)
 
@@ -72,6 +74,7 @@ def create_selectors():
                 Selectors.objects.create(id = sel_id,system_name = sName,type = typ,description = desc,created_by_id = user)
             sel = Selectors.objects.get(id = sel_id)
             updatenextid('selectors',sel.id)
+            updatenextid('selectors',sel.id)
             trans = TranslationSelector.objects.filter(selector=sel, translation_id=label_rec.id)
             if not trans:
                 TranslationSelector.objects.create(selector=sel, translation = label_rec)
@@ -106,6 +109,7 @@ def create_choice():
                 Choice.objects.create(id = choice_id,selector=gSel,system_name=nName,sequence=sequence,description = desc,created_by_id = user)
             ch = Choice.objects.get(id = choice_id)
             updatenextid('choice',ch.id)
+            updatenextid('choice',ch.id)
             trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
             if not trans:
                 TranslationChoice.objects.create(choice=ch, translation = label_rec)
@@ -126,6 +130,7 @@ def create_dataset():
             dataset_rec = DataTable.objects.filter(id= tbl_id,system_name=dName)
             if not dataset_rec:
                 DataTable.objects.create(id= tbl_id,system_name=dName,description=desc,created_by_id = user)
+                updatenextid('datatable',tbl_id)
                 updatenextid('datatable',tbl_id)
     except Exception as e:
         print(e)
@@ -174,6 +179,7 @@ def create_data():
                 Data.objects.create(id = data_id,system_name=dName,description=desc,data_source=sdset,created_by_id = user,sequence=sequence)#data_type=dtype,field= f,field_type=ftype,comment=cmnt,)
             dt_id = Data.objects.get(id = data_id)
             updatenextid('data',dt_id.id)
+            updatenextid('data',dt_id.id)
             trans = TranslationData.objects.filter(name=dt_id, translation_id=label_rec.id)
             if not trans:
                 TranslationData.objects.create(name=dt_id, translation = label_rec)
@@ -206,6 +212,7 @@ def create_icons():
                     icon_p= f'{icons}{iImage}'
                     Icons.objects.create(id =icon_id,system_name=sName,icon_image=icon_p,created_by_id = user)
             ic_id = Icons.objects.get(id = icon_id)
+            updatenextid('icons',ic_id.id)
             updatenextid('icons',ic_id.id)
             trans = TranslationIcons.objects.filter(icon=ic_id, translation_id=label_rec.id)
             if not trans:
@@ -773,6 +780,7 @@ def create_entities():
             entity_rec = Entity.objects.filter(name = eName,id = ent_id)
             if len(entity_rec) < 1:
                 Entity.objects.create(id = ent_id,name = eName,parent = gcprnt,created_by_id = user)
+                updatenextid('entity',ent_id)
                 updatenextid('entity',ent_id)
     except Exception as e:
         print(e)
