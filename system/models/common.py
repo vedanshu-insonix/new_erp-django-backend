@@ -18,8 +18,10 @@ class BaseContent(models.Model):
 class Button(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     form = models.ForeignKey('Form', on_delete= models.CASCADE, null = True, blank=True)
+    stage=models.ForeignKey('Stage',on_delete= models.CASCADE, null = True, blank=True)
     system_name = models.CharField(max_length=255, null=True, blank=True)
     button_type = models.CharField(max_length=255, null=True, blank=True)
+    highlight=models.BooleanField(default = False)
     
     def __str__(self):
         return self.system_name
@@ -61,9 +63,11 @@ class Language(BaseContent):
     
 class Country(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    country = CountryField(unique=True, countries_flag_url="/static/flags/{code}.png")
-    native_name = models.CharField(max_length=255, null=True, unique= True, blank=True)
+    system_name = models.CharField(max_length=255, null=True, blank=True)
+    country_code = models.CharField(max_length=3, null=True, blank=True)
+    native_name = models.CharField(max_length=255, null=True, blank=True)
     telephone_code = models.CharField(max_length=50, null=True, blank=True)
+    flag = models.FileField(upload_to='flag/', max_length=255, null=True, blank=True)
     currency = models.ForeignKey('Currency', on_delete= models.SET_NULL, null=True, blank=True)
     symbol_position = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_symbol_position")
     money_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_money_format")
@@ -71,7 +75,7 @@ class Country(BaseContent):
     time_format = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="country_time_format")
     
     def __str__(self):
-        return self.country.name
+        return self.country_code
 
     class Meta:
         verbose_name = "Country"
@@ -142,6 +146,7 @@ class Selectors(BaseContent):
     def __str__(self):
         return self.system_name
     
+    
 class Choice(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     selector = models.ForeignKey('Selectors', on_delete=models.CASCADE, null=True, blank=True)
@@ -172,9 +177,13 @@ class Form(BaseContent):
     
     def __str__(self):
         return self.system_name
+    
+# class FormIcon(BaseContent):
+#     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+#     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
 class FormList(BaseContent):
-    id = models.CharField(max_length=255, primary_key=True, editable=False)
+    #id = models.CharField(max_length=255, primary_key=True, editable=False)
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     relation = models.CharField(max_length = 255, null=True, blank = True)

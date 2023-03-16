@@ -107,8 +107,9 @@ class CountryViewSet(viewsets.ModelViewSet):
     """
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
+    filterset_fields = {'system_name': ['exact', 'icontains'],'country_code': ['exact'], 'telephone_code':['exact'], 'currency':['exact']}
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ("__all__")
+    #filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
@@ -805,3 +806,4 @@ class IconViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("system_name",)
     ordering_fields = ("system_name",)
+    
