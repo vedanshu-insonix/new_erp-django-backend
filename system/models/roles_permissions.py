@@ -11,7 +11,6 @@ class Permission(BaseContent):
     def __str__(self):
         return self.permission
     
-    
 class Role(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True, unique=True)

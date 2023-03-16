@@ -116,7 +116,7 @@ class LanguageSerializer(serializers.ModelSerializer):
             data['id']=get_rid_pkey('language')
         return super().create(data)
 
-# ************************ Country Serializer ******************************************
+# *********************** Country Serializer *****************************************
 class RelatedCountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
@@ -438,7 +438,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.system_name
-        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__system_name = language).first()
@@ -665,6 +664,7 @@ class ColumnsSerializer(serializers.ModelSerializer):
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
+        
         
         return response
     
@@ -917,6 +917,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section).data
 
+
         data = instance.data
         if data:
             response['data'] = instance.data.system_name
@@ -967,7 +968,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
 
-            if datatype == 'email' or datatype == 'website':
+            if datatype == 'email' or 'website':
                 validations['format'] = response['format']
             elif datatype == 'string':
                 validations['min_length'] = response['minimum']
@@ -976,9 +977,10 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                 validations['min'] = response['minimum']
                 validations['max'] = response['maximum']
 
-            response['validations'] = validations
+        response['validations'] = validations
         table = instance.table
         if table:
+            response['table'] = instance.table.system_name                        
             response['table'] = instance.table.system_name                        
         return response 
 
@@ -1004,9 +1006,11 @@ class FormDataSerializer(serializers.ModelSerializer):
         if table:
             response['table'] = instance.table.system_name             
                      
+                     
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+
 
         return response
     
@@ -1044,6 +1048,7 @@ class HelpSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    def create(self, data):
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='help')
         if record_id:

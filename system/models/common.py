@@ -18,8 +18,10 @@ class BaseContent(models.Model):
 class Button(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     form = models.ForeignKey('Form', on_delete= models.CASCADE, null = True, blank=True)
+    stage=models.ForeignKey('Stage',on_delete= models.CASCADE, null = True, blank=True)
     system_name = models.CharField(max_length=255, null=True, blank=True)
     button_type = models.CharField(max_length=255, null=True, blank=True)
+    highlight=models.BooleanField(default = False)
     
     def __str__(self):
         return self.system_name
@@ -144,6 +146,7 @@ class Selectors(BaseContent):
     def __str__(self):
         return self.system_name
     
+    
 class Choice(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     selector = models.ForeignKey('Selectors', on_delete=models.CASCADE, null=True, blank=True)
@@ -174,9 +177,13 @@ class Form(BaseContent):
     
     def __str__(self):
         return self.system_name
+    
+# class FormIcon(BaseContent):
+#     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+#     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
 class FormList(BaseContent):
-    id = models.CharField(max_length=255, primary_key=True, editable=False)
+    #id = models.CharField(max_length=255, primary_key=True, editable=False)
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     relation = models.CharField(max_length = 255, null=True, blank = True)
