@@ -100,7 +100,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
-    
+
 class CountryViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Country to be modified.
@@ -635,10 +635,10 @@ class MenuViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ("__all__")
     
-    def list(self, request, *args, **kwargs):
-        queryset = Menu.objects.filter().all()
-        serializers = MenuSerializer(queryset, many = True, context = {"request": request})
-        return super().list(request, *args, **kwargs)
+    # def list(self, request, *args, **kwargs):
+    #     queryset = Menu.objects.filter().all()
+    #     serializers = MenuSerializer(queryset, many = True, context = {"request": request})
+    #     return super().list(request, *args, **kwargs)
     
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
