@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from system.utils import StatusChoice
 #from django_countries.fields import CountryField
 
 # Create your models here.
@@ -93,7 +94,6 @@ class State(BaseContent):
 
 class Stage(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    form = models.ForeignKey('Form', on_delete = models.CASCADE, null=True, blank=True)
     system_name = models.CharField(max_length=255, null=True)
     sequence = models.IntegerField(null=True, blank=True)
     warning_interval = models.DateTimeField(null=True, blank=True)
@@ -291,3 +291,22 @@ class Icons(BaseContent):
     system_name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     icon_image = models.FileField(upload_to='icon_images/', max_length=255, null=True, blank=True)
+
+class Action(BaseContent):
+    system_name = models.CharField(max_length=255, null=False, blank=False, unique=True) #required field in post
+    form = models.ManyToManyField(Form, blank=True)
+    button = models.ManyToManyField(Button, blank=True)
+    dataset = models.ForeignKey('DataTable', on_delete=models.CASCADE, null=True, blank=True)
+    data = models.ForeignKey('Data', on_delete=models.CASCADE, null=True, blank=True)
+    operator = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
+    value = models.CharField(max_length=255, null=True, blank=True)
+    stage= models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
+    status_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
+
+class FormStage(BaseContent):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE)
+
+class ButtonStage(BaseContent):
+    button = models.ForeignKey('Button', on_delete=models.CASCADE)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE)

@@ -44,7 +44,7 @@ class EntityTeam(BaseContent):
 
 class EntityAccounts(BaseContent):
     entity = models.ForeignKey('Entity', on_delete=models.CASCADE, null=True, blank=True)
-    #accounts = models.ForeignKey('warehouse.Accounts', on_delete=models.CASCADE, null=True, blank=True)
+    accounts = models.ForeignKey('warehouse.Accounts', on_delete=models.CASCADE, null=True, blank=True)
 
 class EntityForms(BaseContent):
     entity = models.ForeignKey('Entity', on_delete=models.CASCADE, null=True, blank=True)

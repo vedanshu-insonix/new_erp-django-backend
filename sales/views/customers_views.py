@@ -15,7 +15,7 @@ from django.db.models import Q
 from rest_framework import filters
 import openpyxl
 from system.utils import *
-from system.models.common import Choice
+from system.models.common import Choice, ListFilters
 
 class CustomerViewSet(viewsets.ModelViewSet):
     """
@@ -289,3 +289,18 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(utils.success(count))
         except Exception as e:
             return Response(utils.error(str(e)))
+        
+    @action(detail=False, methods=['get'], url_path = "search_customer")
+    def search_customer(self, request):
+        all_fields = [f.name for f in Customers._meta.get_fields()]
+        filter_values = ListFilters.objects.filter(list__system_name='Customers')
+        if filter_values:
+            field = (filter_values.data.system_name).lower()
+            value = filter_values.value
+            if field in all_fields:
+                lookup = "%s__contains" % field
+                search_result = Customers.objects.filter(**{lookup:value})
+        else:
+            search_result = Customers.objects.all()
+        serializer = CustomerSerializer(search_result, many=True, context={'request':request})
+        return Response(utils.success_msg(serializer.data))

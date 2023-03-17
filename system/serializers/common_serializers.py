@@ -210,7 +210,6 @@ class RelatedStageSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
         data = obj.system_name
-        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationStage.objects.filter(stage = obj.id, translation__language__system_name = language).first()
@@ -416,7 +415,6 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
        
     def get_label(self, obj):
         data = obj.system_name
-        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationChoice.objects.filter(choice = obj.id, translation__language__system_name = language).first()
@@ -468,10 +466,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
         request = self.context['request']
-        # form = RelatedFormSerializer(instance.form, context={'request': request}).data
-        # if 'id' in form:
-        #     response['form'] = RelatedFormSerializer(instance.form, context={'request': request}).data
-            
+        
         return response
 
     def create(self, data):
@@ -696,7 +691,6 @@ class MenuSerializer(serializers.ModelSerializer):
         return None
     class Meta:
         model = Menu
-        #fields = ("__all__")
         exclude = ('created_time', 'modified_time', 'created_by', 'description')
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
@@ -704,9 +698,6 @@ class MenuSerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        # created_by = RelatedUserSerilaizer(instance.created_by).data
-        # if 'id' in created_by:
-        #     response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         request = self.context['request']
         list_data = RelatedListSerializer(instance.list, context={'request': request}).data
         if 'id' in list_data:
@@ -882,6 +873,12 @@ class RelatedTranslationSerializer(serializers.ModelSerializer):
 class RelatedFormDataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     default = serializers.SerializerMethodField()
+    choices = serializers.SerializerMethodField()
+    
+    def get_choices(self, obj):
+        field = obj.field
+        request = self.context['request']
+        return None
     
     def get_label(self, obj):
         data = obj.data.system_name
@@ -980,8 +977,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         response['validations'] = validations
         table = instance.table
         if table:
-            response['table'] = instance.table.system_name                        
-            response['table'] = instance.table.system_name                        
+            response['table'] = instance.table.system_name                       
         return response 
 
 class FormDataSerializer(serializers.ModelSerializer):
@@ -1049,7 +1045,6 @@ class HelpSerializer(serializers.ModelSerializer):
         return response
     
     def create(self, data):
-    def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='help')
         if record_id:
             data['id']=get_rid_pkey('help')
@@ -1085,3 +1080,36 @@ class IconSerializer(serializers.ModelSerializer):
         if record_id:
             data['id']=get_rid_pkey('icons')
         return super().create(data)
+
+# ****************************** Action Serializer *********************************************************
+class ActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Action
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+        
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        return response
+
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='action')
+        if record_id:
+            data['id']=get_rid_pkey('action')
+        return super().create(data)
+       
+# ****************************** Form Stage Serializer *********************************************************
+class FormStageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormStage
+        fields = ("__all__")
+        
+# ****************************** Button Stage Serializer *********************************************************
+class ButtonStageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ButtonStage
+        fields = ("__all__")

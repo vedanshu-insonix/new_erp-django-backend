@@ -28,7 +28,8 @@ def extracting_data(file):
     max_col = sheet.max_column
     for i in range(1, max_col+1):
         cell_obj = sheet.cell(row = 1, column = i)
-        heading.append((cell_obj.value).lower())
+        header = utils.encode_api_name(cell_obj.value)
+        heading.append(header)
     for row in sheet.iter_rows(min_row=2):
         data_dict={}
         row_data = []
@@ -107,9 +108,8 @@ class CountryViewSet(viewsets.ModelViewSet):
     """
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
-    filterset_fields = {'system_name': ['exact', 'icontains'],'country_code': ['exact'], 'telephone_code':['exact'], 'currency':['exact']}
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    #filterset_fields = ("__all__")
+    filterset_fields = {'system_name': ['exact', 'icontains'],'country_code': ['exact'], 'telephone_code':['exact'], 'currency':['exact']}
     ordering_fields = ("__all__")
 
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
@@ -231,38 +231,47 @@ class StageViewSet(viewsets.ModelViewSet):
                 count = 0
                 defective_data=[]
                 for i in range(len(data_dict)):
-                    stage_name = data_dict[i]['stage']
+                    stage_name = data_dict[i]['system_name']
                     if stage_name:
-                        form_name = data_dict[i]['form']
-                        form_rec = Form.objects.filter(form=form_name)
+                        fname = data_dict[i]['form']
+                        fid = data_dict[i].pop('form_id')
+                        req_action = data_dict[i].pop('required_action_buttons')
+                        opt_action = data_dict[i].pop('optional_action_buttons')
+                        form_rec = Form.objects.filter(Q(system_name=fname, id=fid)|Q(system_name=fname))
                         if form_rec:
-                            req_action = data_dict[i].pop('required action buttons')
-                            opt_action = data_dict[i].pop('optional action buttons')
-                            data_dict[i]['form']=form_rec.values()[0]['id']
-                            stage_rec = Stage.objects.filter(system_name = stage_name,form_id=form_rec.values()[0]['id'])
+                            form_id = form_rec.values()[0]['id']
+                            data_dict[i]['form']=form_id
+                            stage_rec = Stage.objects.filter(system_name = stage_name)
                             if stage_rec:
-                                stage_id = stage_rec.values()[0]['id']
+                                sid = stage_rec.values()[0]['id']
                             else:
                                 serializer=StageSerializer(data=data_dict[i],context={'request': request})
-                                if serializer.is_valid():
+                                if serializer.is_valid(raise_exception=True):
                                     serializer.save()
                                     count += 1
-                                stage_rec = Stage.objects.get(system_name = stage_name,form_id=form_rec.values()[0]['id'])
-                                stage_id=stage_rec.id
+                                    
+                                stage_rec = Stage.objects.get(id=serializer.data.get('id'), system_name = stage_name)
+                                sid=stage_rec.id
+                            
+                            #to save in formstage
+                            fstage_rec = FormStage.objects.filter(form = form_id, stage = sid)
+                            if not fstage_rec:
+                                serializer = FormStage.objects.create(form=form_id, stage = sid)
+
                             if req_action:
                                 text_split = req_action.split(',')
                                 for i in range (len(text_split)):
-                                    check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
+                                    check = StageAction.objects.filter(stage=sid,action=text_split[i])
                                     if not check:
-                                        StageAction.objects.create(stage_id=stage_id,action=text_split[i],required=True)
+                                        StageAction.objects.create(stage=sid,action=text_split[i],required=True)
                             if opt_action:
                                 text_split = opt_action.split(',')
                                 for i in range (len(text_split)):
-                                    check = StageAction.objects.filter(stage_id=stage_id,action=text_split[i])
+                                    check = StageAction.objects.filter(stage=sid,action=text_split[i])
                                     if not check:
-                                        StageAction.objects.create(stage_id=stage_id,action=text_split[i],optional=True)
+                                        StageAction.objects.create(stage=sid,action=text_split[i],optional=True)
                         else:
-                            defective_data.append(form_name)
+                            defective_data.append(fname)
                 if defective_data:
                     defective_data = {
                         "missing_form" : f"These {set(defective_data)} are the invalid form names."
@@ -807,3 +816,32 @@ class IconViewSet(viewsets.ModelViewSet):
     filterset_fields = ("system_name",)
     ordering_fields = ("system_name",)
     
+class ActionViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows Actions to be modified.
+    """
+    queryset = Action.objects.all()
+    serializer_class = ActionSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
+
+class FormStageViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows FormStage to be modified.
+    """
+    queryset = FormStage.objects.all()
+    serializer_class = FormStageSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
+
+class ButtonStageViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows Button Stage to be modified.
+    """
+    queryset = ButtonStage.objects.all()
+    serializer_class = ButtonStageSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
