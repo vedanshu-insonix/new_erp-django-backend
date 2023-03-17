@@ -113,27 +113,17 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 
 
 
+
 DATABASES = {
-     'default': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'admin',
-        'NAME': 'erp',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'defaultdb',
+        'USER': 'doadmin',
+        'PASSWORD': 'AVNS_-Df0ctPeZMiFnZWBAYT',
+        'HOST': 'db-postgresql-nyc1-52247-do-user-6613485-0.b.db.ondigitalocean.com',
+        'PORT': '25060',
     }
-}
-# DATABASES = {
-#     'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'defaultdb',
-#        'USER': 'doadmin',
-#        'PASSWORD': 'AVNS_-Df0ctPeZMiFnZWBAYT',
-#        'HOST': 'db-postgresql-nyc1-52247-do-user-6613485-0.b.db.ondigitalocean.com',
-#        'PORT': '25060',
-#    }
-# }
+ }
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
