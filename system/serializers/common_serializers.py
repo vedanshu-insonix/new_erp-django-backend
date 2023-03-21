@@ -887,8 +887,6 @@ class RelatedDataSerializer(serializers.ModelSerializer):
             field_type = instance.field_type.system_name
             response['field_type']= instance.field_type.system_name
 
-
-
         if field and field_type=='dropdown':
             if field == 'State' or field == 'state':
                 add_link = 'states/?country='
@@ -934,12 +932,12 @@ class RelatedDataSerializer(serializers.ModelSerializer):
 class RelatedFormDataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     default = serializers.SerializerMethodField()
-    # choices = serializers.SerializerMethodField()
+    choices = serializers.SerializerMethodField()
     
-    # def get_choices(self, obj):
-    #     field = obj.field
-    #     request = self.context['request']
-    #     return None
+    def get_choices(self, obj):
+        data_type = obj.data_type
+        request = self.context['request']
+        return None
     
     def get_label(self, obj):
         data = obj.data
@@ -981,12 +979,6 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         data = RelatedDataSerializer(instance.data, context={'request':request}).data
         if 'id' in data:
             response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
-            # response['section'] = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
-
-
-        # data = RelatedDataSerializer(instance.data).data
-        # if 'id' in data:
-        #     response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
 
         # field = instance.field
         # field_type = instance.type
@@ -1046,11 +1038,14 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         response['validations'] = validations
         table = instance.table
         if table:
-            response['table'] = instance.table.system_name                       
+            response['table'] = instance.table.system_name  
+        visibility = instance.visibility
+        if visibility:
+            response['visibility'] = instance.visibility.system_name 
         return response 
 
 class FormDataSerializer(serializers.ModelSerializer):
-    field = serializers.CharField(max_length= 255, required = True)
+    #field = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormData
         fields = ("__all__")
@@ -1070,8 +1065,9 @@ class FormDataSerializer(serializers.ModelSerializer):
         table = instance.table
         if table:
             response['table'] = instance.table.system_name             
-                     
-                     
+        visibility = instance.visibility
+        if visibility:
+            response['visibility'] = instance.visibility.system_name                        
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
