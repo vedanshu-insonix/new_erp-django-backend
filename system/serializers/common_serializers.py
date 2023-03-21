@@ -151,7 +151,8 @@ class RelatedStateSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
   
 class StateSerializer(serializers.ModelSerializer):
-    
+    system_name = serializers.CharField(max_length = 255, required=True)
+    sequence = serializers.CharField(max_length = 255, required=True)
     class Meta:
         model = State
         fields = ("__all__")
@@ -173,8 +174,8 @@ class StateSerializer(serializers.ModelSerializer):
     
     def create(self, data):
         country = data['country']
-        country_id=Country.objects.get(country__name=country)
         sequence = data['sequence']
+        country_id=Country.objects.get(country_code=country)
         data['id']=get_related_pkey('state', country_id.id, sequence)
         return super().create(data)
 
@@ -870,64 +871,6 @@ class RelatedTranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
         fields = ("id","label")
-
-class RelatedDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Data
-        exclude =("created_time", "modified_time", "created_by", "data_source")
-    
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        request = self.context['request']
-        base = request.build_absolute_uri('/') + 'api/'
-
-        field = instance.field
-        field_type = instance.field_type
-        if field_type:
-            field_type = instance.field_type.system_name
-            response['field_type']= instance.field_type.system_name
-
-        if field and field_type=='dropdown':
-            if field == 'State' or field == 'state':
-                add_link = 'states/?country='
-                link = base+add_link
-                response['link'] = link
-            elif field == 'Country' or field == 'country':
-                add_link = 'countries/'
-                link = base+add_link
-                response['link'] = link
-                response['child_field'] = 'state'
-            elif field == 'Language' or field == 'language':
-                add_link = 'languages/'
-                link = base+add_link
-                response['link'] = link
-            elif field == 'Stage' or field == 'stage':
-                add_link = 'stages/?form='
-                link = base+add_link
-                response['link'] = link
-            elif 'currency'in field or 'Currency' in field:
-                add_link = 'currencies/'
-                link = base+add_link
-                response['link'] = link
-            elif 'list' in field or 'List' in field:
-                add_link = 'lists/'
-                link = base+add_link
-                response['link'] = link
-            elif 'form' in field or 'Form' in field:
-                add_link = 'forms/'
-                link = base+add_link
-                response['link'] = link
-            elif 'column' in field or 'Column' in field:
-                add_link = 'columns/'
-                link = base+add_link
-                response['link'] = link
-            else:
-                sel_id = Selectors.objects.filter(system_name=field)
-                if sel_id:
-                    add_link = 'choices/?selector='+sel_id.values()[0]['id']
-                    link = base+add_link
-                    response['link'] = link
-        return response 
         
 class RelatedFormDataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
@@ -969,59 +912,60 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
+        base = request.build_absolute_uri('/') + 'api/'
         data = instance.data
 
         section = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
 
-
-        data = RelatedDataSerializer(instance.data, context={'request':request}).data
-        if 'id' in data:
-            response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
-
-        # field = instance.field
-        # field_type = instance.type
-        # if field and field_type=='dropdown':
-        #     if field == 'State' or field == 'state':
-        #         add_link = 'states/?country='
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif field == 'Country' or field == 'country':
-        #         add_link = 'countries/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #         response['child_field'] = 'state'
-        #     elif field == 'Language' or field == 'language':
-        #         add_link = 'languages/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif field == 'Stage' or field == 'stage':
-        #         add_link = 'stages/?form='
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif 'currency'in field or 'Currency' in field:
-        #         add_link = 'currencies/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif 'list' in field or 'List' in field:
-        #         add_link = 'lists/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif 'form' in field or 'Form' in field:
-        #         add_link = 'forms/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #     elif 'column' in field or 'Column' in field:
-        #         add_link = 'columns/'
-        #         link = base+add_link
-        #         response['link'] = link
-        #     else:
-        #         sel_id = Selectors.objects.filter(system_name=field)
-        #         if sel_id:
-        #             add_link = 'choices/?selector='+sel_id.values()[0]['id']
-        #             link = base+add_link
-        #             response['link'] = link
+        data = instance.data
+        if data:
+            response['data'] = instance.data.system_name
+            field = instance.data.field
+            field_type = instance.data.field_type.system_name
+            response['field']=instance.data.field
+            response['type']=instance.data.field_type.system_name
+            if field and field_type=='dropdown':
+                if field == 'State' or field == 'state':
+                    add_link = 'states/?country='
+                    link = base+add_link
+                    response['link'] = link
+                elif field == 'Country' or field == 'country':
+                    add_link = 'countries/'
+                    link = base+add_link
+                    response['link'] = link
+                    response['child_field'] = 'state'
+                elif field == 'Language' or field == 'language':
+                    add_link = 'languages/'
+                    link = base+add_link
+                    response['link'] = link
+                elif field == 'Stage' or field == 'stage':
+                    add_link = 'stages/?form='
+                    link = base+add_link
+                    response['link'] = link
+                elif 'currency'in field or 'Currency' in field:
+                    add_link = 'currencies/'
+                    link = base+add_link
+                    response['link'] = link
+                elif 'list' in field or 'List' in field:
+                    add_link = 'lists/'
+                    link = base+add_link
+                    response['link'] = link
+                elif 'form' in field or 'Form' in field:
+                    add_link = 'forms/'
+                    link = base+add_link
+                    response['link'] = link
+                elif 'column' in field or 'Column' in field:
+                    add_link = 'columns/'
+                    link = base+add_link
+                    response['link'] = link
+                else:
+                    sel_id = Selectors.objects.filter(system_name=field)
+                    if sel_id:
+                        add_link = 'choices/?selector='+sel_id.values()[0]['id']
+                        link = base+add_link
+                        response['link'] = link
         validations = {'datatype': response['data_type'], 'required': response['is_required']}
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
@@ -1034,7 +978,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
             elif datatype == 'number':
                 validations['min'] = response['minimum']
                 validations['max'] = response['maximum']
-
+        
         response['validations'] = validations
         table = instance.table
         if table:

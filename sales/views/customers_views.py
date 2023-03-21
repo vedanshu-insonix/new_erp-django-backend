@@ -292,15 +292,48 @@ class CustomerViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['get'], url_path = "search_customer")
     def search_customer(self, request):
+        queryset = Customers.objects.all()
+        new_queryset = Customers.objects.none()
         all_fields = [f.name for f in Customers._meta.get_fields()]
         filter_values = ListFilters.objects.filter(list__system_name='Customers')
-        if filter_values:
-            field = (filter_values.data.system_name).lower()
-            value = filter_values.value
+        for filters in filter_values:
+            field = utils.encode_api_name(filters.data.system_name)
+            value = filters.value
+            operator = str(filters.operator)
+            logic = str(filters.logic)
+            sublogic = str(filters.sublogic)
+            if logic:
+                if logic.lower() == 'or':
+                    new_queryset = queryset|new_queryset
+                    queryset = Customers.objects.all()
+
             if field in all_fields:
-                lookup = "%s__contains" % field
-                search_result = Customers.objects.filter(**{lookup:value})
-        else:
-            search_result = Customers.objects.all()
-        serializer = CustomerSerializer(search_result, many=True, context={'request':request})
+                if operator=='is':
+                    lookup = "%s__contains" % field
+                    queryset = queryset.filter(**{lookup:value})
+                elif operator=='is not':
+                    lookup = "%s__contains" % field
+                    queryset = queryset.exclude(**{lookup:value})
+                elif operator == 'is greater':
+                    lookup = "%s__gt" % field
+                    queryset = queryset.filter(**{lookup:value})
+                elif operator == 'is lesser':
+                    lookup = "%s__lt" % field
+                    queryset = queryset.filter(**{lookup:value})
+                elif operator == 'is lesser or equal':
+                    lookup = "%s__lte" % field
+                    queryset = queryset.filter(**{lookup:value})
+                elif operator == 'is greater or equal':
+                    lookup = "%s__gte" % field
+                    queryset = queryset.filter(**{lookup:value})
+                elif operator == 'like':
+                    lookup = "%s__icontains" % field
+                    queryset = queryset.filter(**{lookup:value})
+            
+                if logic.lower() == 'or':
+                    new_queryset = new_queryset|queryset
+                    queryset = Customers.objects.all()   
+                elif logic.lower() == 'and':
+                    new_queryset = queryset
+        serializer = CustomerSerializer(new_queryset, many=True, context={'request':request})
         return Response(utils.success_msg(serializer.data))
