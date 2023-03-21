@@ -965,7 +965,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     if sel_id:
                         add_link = 'choices/?selector='+sel_id.values()[0]['id']
                         link = base+add_link
-                        response['link'] = link
+                        response['link'] = link 
         validations = {'datatype': response['data_type'], 'required': response['is_required']}
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
