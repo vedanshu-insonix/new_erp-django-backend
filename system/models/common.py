@@ -195,25 +195,25 @@ class FormData(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
     table = models.ForeignKey('DataTable', on_delete=models.SET_NULL, null=True, blank=True)
-    parent_field = models.CharField(max_length=255, null=True, blank=True)
-    field = models.CharField(max_length=255, null=True)
-    TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
-                    ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'),
-                    ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'),
-                    ('composite', 'Composite'))
-    type = models.CharField(max_length=50, null=True, blank=True, choices=TYPE_CHOICES)
+    # parent_field = models.CharField(max_length=255, null=True, blank=True)
+    # field = models.CharField(max_length=255, null=True)
+    # TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
+    #                 ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'),
+    #                 ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'),
+    #                 ('composite', 'Composite'))
+   # data_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='field_type')
     link = models.CharField(max_length=255, null = True, blank = True)
     section = models.ForeignKey('FormSection', on_delete=models.SET_NULL, null=True, blank=True)
     column = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
-    visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='visibility')
     sequence = models.IntegerField(null=True, blank=True)
     display_label = models.CharField(max_length=255, null = True, blank = True)
     is_heading = models.BooleanField(default = False)
     is_required = models.BooleanField(null=True, blank=True)
     maximum = models.BigIntegerField(null=True, blank=True)
     minimum = models.BigIntegerField(null=True, blank=True)
-    child_field = models.CharField(max_length=255, null=True, blank=True)
+    # child_field = models.CharField(max_length=255, null=True, blank=True)
     format = models.CharField(max_length=255, null=True, blank=True )
     data_type = models.CharField(max_length=255, null=True, blank=True)
     
@@ -304,9 +304,10 @@ class Action(BaseContent):
     status_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
 
 class FormStage(BaseContent):
-    form = models.ForeignKey('Form', on_delete=models.CASCADE)
-    stage = models.ForeignKey('Stage', on_delete=models.CASCADE)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
+    sequence = models.IntegerField(null=True , blank=True)
 
 class ButtonStage(BaseContent):
-    button = models.ForeignKey('Button', on_delete=models.CASCADE)
-    stage = models.ForeignKey('Stage', on_delete=models.CASCADE)
+    button = models.ForeignKey('Button', on_delete=models.CASCADE, null=True, blank=True)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)

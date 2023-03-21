@@ -240,11 +240,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Returns the permission based on the type of action"""
 
-        if self.action == "request_reset_email" or self.action == "resetPassword":
+        actions = ["request_reset_email", "resetPassword", "login"]
+
+        if self.action in actions :
             return [permissions.AllowAny()]
 
         return [permissions.IsAuthenticated()]
-
         
 class GroupViewSet(viewsets.ModelViewSet):
     """

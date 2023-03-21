@@ -10,7 +10,8 @@ from system import utils
 from django.db.models import Q
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
-
+from system.models.dataset import Data
+#from .dataset_serializers import RelatedDataSerializer
 
 # ************************ Button Serializer ******************************************
 
@@ -869,58 +870,25 @@ class RelatedTranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
         fields = ("id","label")
-    
-class RelatedFormDataSerializer(serializers.ModelSerializer):
-    label = serializers.SerializerMethodField()
-    default = serializers.SerializerMethodField()
-    choices = serializers.SerializerMethodField()
-    
-    def get_choices(self, obj):
-        field = obj.field
-        request = self.context['request']
-        return None
-    
-    def get_label(self, obj):
-        data = obj.data.system_name
-        user = self.context['request'].user
-        language = get_current_user_language(user)
-        queryset = TranslationFromData.objects.filter(formdata = obj.id, translation__language__system_name = language).first()
-        if queryset:
-            translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
-            serializers = RelatedTranslationSerializer(translation, many=False)
-            return serializers.data['label']
-        else:
-            return data
-    
-    def get_default(self,obj):
-        data = obj.data.system_name
-        queryset = Configuration.objects.filter(system_name = data).first()
-        serializers = RelatedConfigurationSerializer(queryset, many = False)
-        return serializers.data['default_value']
-    
+
+class RelatedDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FormData
-        exclude = ("created_time", "modified_time",'form', 'created_by')
+        model = Data
+        exclude =("created_time", "modified_time", "created_by", "data_source")
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
         base = request.build_absolute_uri('/') + 'api/'
-        data = instance.data
-        add_link = ''
-
-        section = RelatedFormSectionSerializer(instance.section).data
-        if 'id' in section:
-            response['section'] = RelatedFormSectionSerializer(instance.section).data
-
-
-        data = instance.data
-        if data:
-            response['data'] = instance.data.system_name
 
         field = instance.field
-        field_type = instance.type
+        field_type = instance.field_type
+        if field_type:
+            field_type = instance.field_type.system_name
+            response['field_type']= instance.field_type.system_name
+
+
+
         if field and field_type=='dropdown':
             if field == 'State' or field == 'state':
                 add_link = 'states/?country='
@@ -961,6 +929,107 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     add_link = 'choices/?selector='+sel_id.values()[0]['id']
                     link = base+add_link
                     response['link'] = link
+        return response 
+        
+class RelatedFormDataSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+    default = serializers.SerializerMethodField()
+    # choices = serializers.SerializerMethodField()
+    
+    # def get_choices(self, obj):
+    #     field = obj.field
+    #     request = self.context['request']
+    #     return None
+    
+    def get_label(self, obj):
+        data = obj.data
+        if data:
+            data = obj.data.system_name
+        user = self.context['request'].user
+        language = get_current_user_language(user)
+        queryset = TranslationFromData.objects.filter(formdata = obj.id, translation__language__system_name = language).first()
+        if queryset:
+            translation_id = queryset.translation.id
+            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
+            serializers = RelatedTranslationSerializer(translation, many=False)
+            return serializers.data['label']
+        else:
+            return data
+    
+    def get_default(self,obj):
+        data = obj.data
+        if data:
+            data = obj.data.system_name
+        queryset = Configuration.objects.filter(system_name = data).first()
+        serializers = RelatedConfigurationSerializer(queryset, many = False)
+        return serializers.data['default_value']
+    
+    class Meta:
+        model = FormData
+        exclude = ("created_time", "modified_time",'form', 'created_by')
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context['request']
+        data = instance.data
+
+        section = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
+        if 'id' in section:
+            response['section'] = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
+
+
+        data = RelatedDataSerializer(instance.data, context={'request':request}).data
+        if 'id' in data:
+            response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
+            # response['section'] = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
+
+
+        # data = RelatedDataSerializer(instance.data).data
+        # if 'id' in data:
+        #     response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
+
+        # field = instance.field
+        # field_type = instance.type
+        # if field and field_type=='dropdown':
+        #     if field == 'State' or field == 'state':
+        #         add_link = 'states/?country='
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif field == 'Country' or field == 'country':
+        #         add_link = 'countries/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #         response['child_field'] = 'state'
+        #     elif field == 'Language' or field == 'language':
+        #         add_link = 'languages/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif field == 'Stage' or field == 'stage':
+        #         add_link = 'stages/?form='
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif 'currency'in field or 'Currency' in field:
+        #         add_link = 'currencies/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif 'list' in field or 'List' in field:
+        #         add_link = 'lists/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif 'form' in field or 'Form' in field:
+        #         add_link = 'forms/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #     elif 'column' in field or 'Column' in field:
+        #         add_link = 'columns/'
+        #         link = base+add_link
+        #         response['link'] = link
+        #     else:
+        #         sel_id = Selectors.objects.filter(system_name=field)
+        #         if sel_id:
+        #             add_link = 'choices/?selector='+sel_id.values()[0]['id']
+        #             link = base+add_link
+        #             response['link'] = link
         validations = {'datatype': response['data_type'], 'required': response['is_required']}
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
