@@ -965,20 +965,11 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     if sel_id:
                         add_link = 'choices/?selector='+sel_id.values()[0]['id']
                         link = base+add_link
-                        response['link'] = link 
-        validations = {'datatype': response['data_type'], 'required': response['is_required']}
-        if response['data_type']:
-            datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
-
-            if datatype == 'email' or datatype == 'website':
-                validations['format'] = response['format']
-            elif datatype == 'string':
-                validations['min_length'] = response['minimum']
-                validations['max_length'] = response['maximum']
-            elif datatype == 'number':
-                validations['min'] = response['minimum']
-                validations['max'] = response['maximum']
-        
+                        response['link'] = link
+        validation_data = ['data_type', 'is_required', 'format', 'minimum', 'maximum'] 
+        validations = {} 
+        for i in validation_data:
+            validations[i]=response.pop(i)
         response['validations'] = validations
         table = instance.table
         if table:
@@ -989,7 +980,6 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         return response 
 
 class FormDataSerializer(serializers.ModelSerializer):
-    #field = serializers.CharField(max_length= 255, required = True)
     class Meta:
         model = FormData
         fields = ("__all__")
