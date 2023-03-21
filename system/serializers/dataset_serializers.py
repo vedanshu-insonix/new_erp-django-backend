@@ -7,6 +7,7 @@ from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
+from system.models.common import Selectors
 
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
@@ -38,11 +39,13 @@ class TableSerializer(serializers.ModelSerializer):
             data['id']=get_rid_pkey('datatable')
         return super().create(data)
 
+
+    
 class DataSerializer(serializers.ModelSerializer):
     selector = serializers.StringRelatedField(many=True, read_only=True)
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
-        data = obj.id
+        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationData.objects.filter(name = obj.id, translation__language__system_name = language).first()

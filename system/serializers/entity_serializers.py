@@ -4,9 +4,6 @@ from ..serializers.user_serializers import RelatedUserSerilaizer
 from system.serializers.common_serializers import RelatedStageSerializer
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
-from system.service import get_rid_pkey
-from system.models.recordid import RecordIdentifiers
-
 
 class RelatedEntitySerializer(serializers.ModelSerializer):
     class Meta:

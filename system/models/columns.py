@@ -10,7 +10,6 @@ class Column(BaseContent):
     position = models.IntegerField(null=True, blank=True)
     visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True)
     
-    
     def __str__(self):
         return self.column
     
