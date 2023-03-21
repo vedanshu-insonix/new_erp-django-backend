@@ -970,7 +970,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         if response['data_type']:
             datatype = ''.join(e.lower() for e in response['data_type'] if e.isalnum())
 
-            if datatype == 'email' or 'website':
+            if datatype == 'email' or datatype == 'website':
                 validations['format'] = response['format']
             elif datatype == 'string':
                 validations['min_length'] = response['minimum']
