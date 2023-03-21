@@ -415,7 +415,7 @@ class ChoiceViewSet(viewsets.ModelViewSet):
                             choice_name=utils.encode_api_name(choice)
                             choice_rec = Choice.objects.filter(system_name=choice_name, selector = selector)
                             if not choice_rec:
-                                if default == 'yes' or 'Yes':
+                                if default == 'yes' or default == 'Yes':
                                     data_dict[i]['default'] = True
                                 else:
                                     data_dict[i]['default'] = False
