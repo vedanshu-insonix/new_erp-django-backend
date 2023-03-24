@@ -1000,7 +1000,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     link = base+add_link
                     response['link'] = link
                 elif field == 'Stage' or field == 'stage':
-                    add_link = 'formstages/?form='
+                    add_link = 'formstages/?form=' 
                     link = base+add_link
                     response['link'] = link
                 elif 'currency'in field or 'Currency' in field:
