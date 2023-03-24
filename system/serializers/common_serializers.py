@@ -1000,7 +1000,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     link = base+add_link
                     response['link'] = link
                 elif field == 'Stage' or field == 'stage':
-                    add_link = 'stages/?form='
+                    add_link = 'formstages/?form='
                     link = base+add_link
                     response['link'] = link
                 elif 'currency'in field or 'Currency' in field:
@@ -1169,7 +1169,15 @@ class ActionSerializer(serializers.ModelSerializer):
 class FormStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormStage
-        fields = ("__all__")
+        exclude = ("created_time","modified_time","created_by", "form")
+
+    def to_representation(self, instance):
+        request = self.context['request']
+        response = super().to_representation(instance)
+        stage = RelatedStageSerializer(instance.stage, context={'request':request}).data
+        if 'id' in stage:
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request':request}).data
+        return response
         
 # ****************************** Button Stage Serializer *********************************************************
 class ButtonStageSerializer(serializers.ModelSerializer):
