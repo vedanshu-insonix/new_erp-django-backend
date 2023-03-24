@@ -183,7 +183,7 @@ class Form(BaseContent):
 #     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
 class FormList(BaseContent):
-    #id = models.CharField(max_length=255, primary_key=True, editable=False)
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     relation = models.CharField(max_length = 255, null=True, blank = True)
@@ -195,14 +195,8 @@ class FormData(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
     table = models.ForeignKey('DataTable', on_delete=models.SET_NULL, null=True, blank=True)
-    # parent_field = models.CharField(max_length=255, null=True, blank=True)
-    # field = models.CharField(max_length=255, null=True)
-    # TYPE_CHOICES = (('dropdown','Dropdown'),('text','Text'),('number','Number'),('checkbox','Checkbox'),
-    #                 ('radio','Radio'), ('link', 'Link'), ('read-only', 'Read-Only'),
-    #                 ('decimal', 'Decimal'), ('button', 'Button'), ('enterable', 'Enterable'),
-    #                 ('composite', 'Composite'))
-   # data_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='field_type')
     link = models.CharField(max_length=255, null = True, blank = True)
+    line = models.CharField(max_length=255, null = True, blank = True)
     section = models.ForeignKey('FormSection', on_delete=models.SET_NULL, null=True, blank=True)
     column = models.IntegerField(null=True, blank=True)
     position = models.IntegerField(null=True, blank=True)
@@ -213,8 +207,8 @@ class FormData(BaseContent):
     is_required = models.BooleanField(null=True, blank=True)
     maximum = models.BigIntegerField(null=True, blank=True)
     minimum = models.BigIntegerField(null=True, blank=True)
-    # child_field = models.CharField(max_length=255, null=True, blank=True)
-    format = models.CharField(max_length=255, null=True, blank=True )
+    child_field = models.CharField(max_length=255, null=True, blank=True)
+    format = models.CharField(max_length=255, null=True, blank=True)
     data_type = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):

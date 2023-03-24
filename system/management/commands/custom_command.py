@@ -8,8 +8,9 @@ from system.models.common import FormStage
 from system.service import get_rid_pkey, updatenextid
 from django.contrib.auth.models import User
 from system import utils
+from django.db.models import Q
 
-folder = r'./managementCommandsFiles/'
+folder = r'./managementcmdfiles/'
 files = os.listdir(folder)
 
 icons = r'icon_images/'
@@ -49,15 +50,20 @@ def create_recordIdentifiers():
                 RecordIdentifiers.objects.create(id = record_id,record = rName,next = nxt,description = desc,code=cod,starting = start,created_by_id = user)
     except Exception as e:
         print(e)
-
+        
 def create_selectors():
+    try:
+        trans_id = get_rid_pkey('language')
+        lang = Language.objects.get_or_create(id = trans_id,system_name='English (US)')
+    except Exception as e:
+        print(e)
     try:
         id = global_data.get("Selector ID")
         system_name = global_data.get("System Name")
         type = global_data.get("Type")
         description = global_data.get("System Description")
-        sList = list(system_name.keys())
         lang = Language.objects.get(system_name='English (US)')
+        sList = list(system_name.keys())
         for x in sList:
             sel_id = id.get(x)
             sName = system_name.get(x)
@@ -82,43 +88,44 @@ def create_selectors():
         print(e)
         
 def create_choice():
-    try:
-        selector = global_data.get('Selector')
-        sel_id = global_data.get("Selector ID")
-        system_name = global_data.get('System Name')
-        id = global_data.get("Choice ID")
-        seq = global_data.get("Sequence")
-        #description = global_data.get("System Description")
-        lang = Language.objects.get(system_name='English (US)')
-        sList = list(selector.keys())
-        for x in sList:
+    
+    selector = global_data.get('Selector')
+    sel_id = global_data.get("Selector ID")
+    system_name = global_data.get('System Name')
+    id = global_data.get("Choice ID")
+    seq = global_data.get("Sequence")
+    #description = global_data.get("System Description")
+    lang = Language.objects.get(system_name='English (US)')
+    sList = list(selector.keys())
+    for x in sList:
+        try:
             choice_id = id.get(x)
             nName = system_name.get(x)
             sel = selector.get(x)
             sel_name = utils.encode_api_name(sel)
             temp_sequence=seq.get(x)
-            if temp_sequence == '':
-                sequence= None
-            else:
-                sequence = int(temp_sequence)
-            #desc = description.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            gSel = Selectors.objects.filter(system_name=sel_name).first()
-            choice_rec = Choice.objects.filter(id = choice_id)
-            check=Translation.objects.filter(label=nName, language_id=lang.id)
-            if not check:
-                trans_id = get_rid_pkey('translation')
-                Translation.objects.create(id=trans_id,label=nName, language_id=lang.id)
-            label_rec = Translation.objects.get(label=nName, language_id=lang.id)
-            if not choice_rec:
-                Choice.objects.create(id = choice_id,selector=gSel,system_name=nName,sequence=sequence,created_by_id = user)
-            ch = Choice.objects.get(id = choice_id)
-            updatenextid('choice',ch.id)
-            trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
-            if not trans:
-                TranslationChoice.objects.create(choice=ch, translation = label_rec)
-    except Exception as e:
-        print(e)
+            if nName:
+                if temp_sequence == '':
+                    sequence= None
+                else:
+                    sequence = int(temp_sequence)
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                gSel = Selectors.objects.filter(system_name=sel_name).first()
+                choice_rec = Choice.objects.filter(selector__system_name=sel_name, system_name=nName)
+                check=Translation.objects.filter(label=nName, language_id=lang.id)
+                if not check:
+                    trans_id = get_rid_pkey('translation')
+                    Translation.objects.create(id=trans_id,label=nName, language_id=lang.id)
+                label_rec = Translation.objects.get(label=nName, language_id=lang.id)
+                if not choice_rec:
+                    Choice.objects.create(id = choice_id,selector=gSel,system_name=nName,sequence=sequence,created_by_id = user)
+                ch = Choice.objects.get(id = choice_id)
+                updatenextid('choice',ch.id)
+                trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
+                if not trans:
+                    TranslationChoice.objects.create(choice=ch, translation = label_rec)
+        except Exception as e:
+            print(e)
   
 def create_dataset():
     try:
@@ -311,7 +318,7 @@ def create_countries():
         system_name = global_data.get('System Name')
         cur_code = global_data.get("Currency Code")
         flag = global_data.get('Flag')
-        #cur_id = data.get("Currency ID")
+        cur_id = global_data.get("Currency ID")
         symbol_position = global_data.get("Currency Symbol Position")
         money_format = global_data.get('Money Format',"")
         date_format = global_data.get("Date Format","")
@@ -325,7 +332,7 @@ def create_countries():
             ccode = country_code.get(x)
             #s_id = symbol_id.get(x)
             cu_code =cur_code.get(x)
-            #cu_id = cur_id.get(x)
+            cu_id = cur_id.get(x)
             nName = native_name.get(x)
             sname = system_name.get(x)
             xtel= telephone_code.get(x)
@@ -337,7 +344,7 @@ def create_countries():
             sflag = flag.get(x)
             
             user= User.objects.filter(username = 'admin').values()[0]["id"]
-            sCur = Currency.objects.filter(code=cu_code,system_name =xCurr).first()
+            sCur = Currency.objects.filter(id = cu_id,code =cu_code).first()
             sSym = Choice.objects.filter(system_name=sym).first()
             sMon = Choice.objects.filter(system_name=Mon).first()
             sDate = Choice.objects.filter(system_name=Date).first()
@@ -381,29 +388,31 @@ def create_language():
     try:
         id = global_data.get("Language ID")
         system_name = global_data.get('System Name')
-        #native_Translation = global_data.get('Native Name')
-        #code = global_data.get("Code")
-        #direction = global_data.get("Direction")
-        #dir_choice = global_data.get("Direction Choice ID")
+        native_Translation = global_data.get('Native Name')
+        code = global_data.get("Code")
+       # direction = global_data.get("Direction")
+        dir_choice = global_data.get("Direction Choice ID")
         langList = list(system_name.keys())
         for x in langList:
-            l_id =  id.get(x)
-            xName = system_name.get(x)
-            #dir_c = dir_choice.get(x)
-            #nTrans = native_Translation.get(x)
-            #cod = code.get(x)
-            #dir = direction.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            #sChoice = Choice.objects.filter(id=dir_c).first()
-            lang_rec =Language.objects.filter(id =l_id,system_name=xName)
-            if not lang_rec:
-                Language.objects.create(id =l_id,system_name=xName,created_by_id = user)
-                updatenextid('language',l_id)
+            try:
+                l_id =  id.get(x)
+                xName = system_name.get(x)
+                dir_c = dir_choice.get(x)
+                nTrans = native_Translation.get(x)
+                cod = code.get(x)
+                #dir = direction.get(x)
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                sChoice = Choice.objects.filter(id=dir_c).first()
+                lang_rec =Language.objects.filter(id =l_id,system_name=xName)
+                if not lang_rec:
+                    Language.objects.create(id =l_id,system_name=xName,native_name=nTrans,code=cod,direction=sChoice,created_by_id = user)
+                    updatenextid('language',l_id)
+            except Exception as e:
+                print(e)
     except Exception as e:
         print(e)
         
 def create_list():
-    try:
         id = global_data.get("List ID")
         system_name = global_data.get('System Name')
         tbl_id = global_data.get("Dataset ID")
@@ -420,68 +429,66 @@ def create_list():
         lang = Language.objects.get(system_name='English (US)')
         lList = list(system_name.keys())
         for x in lList:
-            #v_id = view_id.get(x)
-            #d_id = tbl_id.get(x)
-            l_id = id.get(x)
-            desc = description.get(x)
-            def_view = default_view.get(x)
-            i_name = icon.get(x)
-            #i_id = icon_id.get(x)
-            #p_form = primary.get(x)
-            lName = system_name.get(x)
-            ptable = data_source.get(x)
-            #cat = category.get(x)
-            #t_id = type_id.get(x)
-            ltype = list_type.get(x)
-            #gccat= Choice.objects.get_or_create(choice_name= cat)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            sptble = DataTable.objects.filter(system_name=ptable).first()
-            sltp = Choice.objects.filter(system_name = ltype).first()
-            list_rec = List.objects.filter(id = l_id,system_name=lName)
             try:
-                check=Translation.objects.filter(label=lName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=lName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=lName, language_id=lang.id)
+                #v_id = view_id.get(x)
+                #d_id = tbl_id.get(x)
+                l_id = id.get(x)
+                desc = description.get(x)
+                def_view = default_view.get(x)
+                i_name = icon.get(x)
+                #i_id = icon_id.get(x)
+                #p_form = primary.get(x)
+                lName = system_name.get(x)
+                ptable = data_source.get(x)
+                #cat = category.get(x)
+                #t_id = type_id.get(x)
+                ltype = list_type.get(x)
+                #gccat= Choice.objects.get_or_create(choice_name= cat)
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                sptble = DataTable.objects.filter(system_name=ptable).first()
+                sltp = Choice.objects.filter(system_name = ltype).first()
+                list_rec = List.objects.filter(id = l_id,system_name=lName)
+                try:
+                    check=Translation.objects.filter(label=lName, language_id=lang.id)
+                    if not check:
+                        trans_id = get_rid_pkey('translation')
+                        Translation.objects.create(id=trans_id,label=lName, language_id=lang.id)
+                    label_rec = Translation.objects.get(label=lName, language_id=lang.id)
+                except Exception as e:
+                    pass
+                if not list_rec:
+                    if lName:
+                        List.objects.create(id = l_id,system_name=lName, data_source=sptble,list_type =sltp,description = desc,default_view = def_view,created_by_id = user)
+                list_id = List.objects.get(id = l_id)
+                updatenextid('list',list_id.id)
+                trans = TranslationList.objects.filter(list=list_id, translation_id=label_rec.id)
+                if not trans:
+                    TranslationList.objects.create(list=list_id, translation = label_rec)
+                gicon = Icons.objects.filter(system_name=i_name).first()
+                lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
+                if  not lIcon_rec:
+                    ListIcon.objects.create(
+                        list_id = l_id,
+                        icon =gicon
+                    )
+                
             except Exception as e:
                 print(e)
-            if not list_rec:
-                List.objects.create(id = l_id,system_name=lName, data_source=sptble,list_type =sltp,description = desc,default_view = def_view,created_by_id = user)
-            list_id = List.objects.get(id = l_id)
-            updatenextid('list',list_id.id)
-            trans = TranslationList.objects.filter(list=list_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationList.objects.create(list=list_id, translation = label_rec)
-            # form_rec= FormList.objects.filter(primary = p_form)
-            # if not form_rec:
-            #     FormList.objects.create(
-            #         primary = p_form
-            #     )
-            gicon = Icons.objects.filter(system_name=i_name).first()
-            lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
-            if  not lIcon_rec:
-                ListIcon.objects.create(
-                    list_id = l_id,
-                    icon =gicon
-                )
-                
-    except Exception as e:
-        print(e)
         
 def create_menu():
-    try:
-        id = global_data.get("Menu Item ID")
-        system_name = global_data.get("System Name")
-        menu_category = global_data.get('Category')
-        #description = global_data.get("System Description")
-        seq = global_data.get('Sequence')
-        lists = global_data.get('List')
-        listID = global_data.get("List ID")
-        visibility = global_data.get('Visibility')
-        lang = Language.objects.get(system_name='English (US)')
-        lList = list(system_name.keys())
-        for x in lList:
+   
+    id = global_data.get("Menu Item ID")
+    system_name = global_data.get("System Name")
+    menu_category = global_data.get('Category')
+    #description = global_data.get("System Description")
+    seq = global_data.get('Sequence')
+    lists = global_data.get('List')
+    listID = global_data.get("List ID")
+    visibility = global_data.get('Visibility')
+    lang = Language.objects.get(system_name='English (US)')
+    lList = list(system_name.keys())
+    for x in lList:
+        try:
             menu_id= id.get(x)
             mName = system_name.get(x)
             cCat =menu_category.get(x)
@@ -502,34 +509,35 @@ def create_menu():
                     Translation.objects.create(id=trans_id,label=mName, language_id=lang.id)
                 label_rec = Translation.objects.get(label=mName, language_id=lang.id)
             except Exception as e:
-                print(e)
+                pass
             if not menu_rec:
-                Menu.objects.create(id = menu_id,list= sclist,system_name=mName,menu_category=sCat,sequence = sequence,created_by_id = user)
+                if mName:
+                    Menu.objects.create(id = menu_id,list= sclist,system_name=mName,menu_category=sCat,sequence = sequence,created_by_id = user)
             m_id = Menu.objects.get(id = menu_id)
             updatenextid('menu',m_id.id)
             trans = TranslationMenu.objects.filter(menu=m_id, translation_id=label_rec.id)
             if not trans:
                 TranslationMenu.objects.create(menu=m_id, translation = label_rec)
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
         
     
 def create_columns():
-    try:
-        id = global_data.get("Column ID")
-        col_list = global_data.get('List')
-        field=global_data.get("Field")
-        #l_id = data.get("List ID")
-        column = global_data.get('Column System Name')
-        #seq = global_data.get("Sequence")
-        #dataset=global_data.get('Dataset')
-        #d_id =global_data.get("Dataset ID")
-        visibility = global_data.get('Visibility')
-        #data_id = global_data.get("Data ID")
-        #data = global_data.get('Data System Name')
-        lang = Language.objects.get(system_name='English (US)')
-        sList = list(col_list.keys())
-        for x in sList:
+    id = global_data.get("Column ID")
+    col_list = global_data.get('List')
+    field=global_data.get("Field")
+    #l_id = data.get("List ID")
+    column = global_data.get('Column System Name')
+    #seq = global_data.get("Sequence")
+    #dataset=global_data.get('Dataset')
+    #d_id =global_data.get("Dataset ID")
+    visibility = global_data.get('Visibility')
+    #data_id = global_data.get("Data ID")
+    #data = global_data.get('Data System Name')
+    lang = Language.objects.get(system_name='English (US)')
+    sList = list(col_list.keys())
+    for x in sList:
+        try:
             col_id =id.get(x) 
             col_field=field.get(x)
             #tbl_id = d_id.get(x)
@@ -544,66 +552,32 @@ def create_columns():
             # else:
             #     sequence = int(temp_sequence)
             #dt = data.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            gclist = List.objects.filter(system_name=cl).first()
-            gcvsb = Choice.objects.filter(system_name=vsb).first()
-            #gctble = DataTable .objects.filter(table=dts).first()
-            #gcdata = Data.objects.filter(name=dt).first()
-            col_rec= Column.objects.filter(id = col_id,column = col)
-            try:
-                check=Translation.objects.filter(label=col, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=col, language_id=lang.id)
-                label_rec = Translation.objects.get(label=col, language_id=lang.id)
-            except Exception as e:
-                print(e)
-            if not col_rec:
-                Column.objects.create(id = col_id,col_list = gclist,field=col_field,column = col,visibility = gcvsb,created_by_id = user)
-            column_id = Column.objects.get(id = col_id)
-            updatenextid('column',column_id.id)
-            trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
-    except Exception as e:
-        print(e)    
-# def create_columns():
-#     try:
-#         id = global_data.get("Column ID")
-#         col_list = global_data.get('List')
-#         field=global_data.get("Field")
-#         column = global_data.get('Column System Name')
-#         visibility = global_data.get('Visibility')
-#         lang = Language.objects.get(system_name='English (US)')
-#         sList = list(col_list.keys())
-#         for x in sList:
-#             col_id =id.get(x) 
-#             col_field=field.get(x)
-#             cl = col_list.get(x)
-#             col = column.get(x)
-#             vsb= visibility.get(x)
-#             user= User.objects.filter(username = 'admin').values()[0]["id"]
-#             gclist = List.objects.filter(system_name=cl).first()
-#             gcvsb = Choice.objects.filter(system_name=vsb).first()
-#             col_rec= Column.objects.filter(id = col_id,column = col)
-#             try:
-#                 check=Translation.objects.filter(label=col, language_id=lang.id)
-#                 if not check:
-#                     trans_id = get_rid_pkey('translation')
-#                     Translation.objects.create(id=trans_id,label=col, language_id=lang.id)
-#                 label_rec = Translation.objects.get(label=col, language_id=lang.id)
-#                 if not col_rec:
-#                     print("demoo")
-#                     Column.objects.create(id = col_id,field=col_field,col_list = gclist,field=col_field,column = col,visibility = gcvsb,created_by_id = user)
-#             except Exception as e:
-#                 column_id = Column.objects.get(id = col_id)
-#                 updatenextid('column',column_id.id)
-#             trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
-#             if not trans:
-#                 TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
-#     except Exception as e:
-#         print(e)
-        
+            if col and col_field:
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                gclist = List.objects.filter(system_name=cl).first()
+                gcvsb = Choice.objects.filter(selector__system_name='visibility', system_name=vsb).first()
+                #gctble = DataTable .objects.filter(table=dts).first()
+                #gcdata = Data.objects.filter(name=dt).first()
+                col_rec= Column.objects.filter(id = col_id,column = col)
+                try:
+                    check=Translation.objects.filter(label=col, language_id=lang.id)
+                    if not check:
+                        trans_id = get_rid_pkey('translation')
+                        Translation.objects.create(id=trans_id,label=col, language_id=lang.id)
+                    label_rec = Translation.objects.get(label=col, language_id=lang.id)
+                except Exception as e:
+                    print(e)
+                if not col_rec:
+                    if col or col_field:
+                        Column.objects.create(id = col_id,col_list = gclist,field=col_field,column = col,visibility = gcvsb,created_by_id = user)
+                column_id = Column.objects.get(id = col_id)
+                updatenextid('column',column_id.id)
+                trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
+                if not trans:
+                    TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
+        except Exception as e:
+            print(e)    
+
 def create_forms():
     try:
         system_name = global_data.get('Form System Name')
@@ -636,13 +610,13 @@ def create_forms():
             updatenextid('form',form_id.id)
             trans = TranslationForm.objects.filter(form=form_id, translation_id=label_rec.id)
             if not trans:
-                TranslationForm.objects.create(form=form_id, translation_id = label_rec.id)
-            
+                TranslationForm.objects.create(form=form_id, translation_id = label_rec.id)        
     except Exception as e:
         print(e)
 
 def create_formlist():
     try:
+        id=global_data.get("ListForm ID")
         list_id = global_data.get("List ID")
         fName = global_data.get("Form Name")
         form_id = global_data.get("Form ID")
@@ -650,18 +624,21 @@ def create_formlist():
         cList = list(list_id.keys())
         for x in cList:
             l_id = list_id.get(x)
-            #fname= fName.get(x)
+            flist_id=id.get(x)
+            fname= fName.get(x)
             f_id = form_id.get(x)
             lName= list_name.get(x)
-            glist = List.objects.filter(id=l_id).first()
-            gform=Form.objects.filter(id=f_id).first()
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            flist_rec = FormList.objects.filter(list=glist)
-            if not flist_rec:
-                f_list=get_rid_pkey('formlist')
-                FormList.objects.create(id = f_list,list=glist,form=gform,created_by_id = user)
+            if (fname or f_id) and (lName or l_id):
+                glist = List.objects.filter(Q(id=l_id)|Q(system_name=lName)).first()
+                gform=Form.objects.filter(Q(id=f_id)|Q(system_name=fname)).first()
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                flist_rec = FormList.objects.filter(id = flist_id,list=glist)
+                if not flist_rec:
+                    FormList.objects.create(id = flist_id,list=glist,form=gform,created_by_id = user)
+                    formlist_id = FormList.objects.get(id = flist_id)
+                    updatenextid('formlist',formlist_id.id)
     except Exception as e:
-        print(e)
+        pass
 
 def create_stages():
     try:
@@ -698,35 +675,31 @@ def create_formstage():
         form = global_data.get("Form")
         form_id = global_data.get("Form ID")
         stage = global_data.get("Stage")
-        stage_id = global_data.get("Stage ID")
         seq = global_data.get("Sequence")
-        #warning_interval = global_data.get("Warning Interval")
-        #urgent_interval = global_data.get("Urgent Interval")
-        #lang = Language.objects.get(system_name='English (US)')
+        stage_id=global_data.get("Stage ID")
         sList = list(stage.keys())
         for x in sList:
             fs_id = id.get(x)
+            s_id=stage_id.get(x)
             frm = form.get(x)
             f_id = form_id.get(x) 
             sName = stage.get(x)
-            sid = stage_id.get(x)
             temp_sequence= seq.get(x)
             if temp_sequence == '':
                 sequence= None
             else:
                 sequence = int(temp_sequence)
-            #wINT = warning_interval.get(x)
-            #uINT = urgent_interval.get(x)
             user= User.objects.filter(username = 'admin').values()[0]["id"]
-            gform=Form.objects.filter(id=f_id).first()
-            #print(gform)
-            stage_rec = Stage.objects.filter(system_name=sName).first()
-            fs_rec = FormStage.objects.filter(id = fs_id)
-            if not fs_rec:
-                FormStage.objects.create(id = fs_id, form = gform, stage=stage_rec, sequence =sequence, 
-                                         created_by_id = user)
+            if (frm or f_id) and (sName or s_id):
+                gform=Form.objects.filter(Q(id =f_id )|Q(system_name=frm)).first()
+                stage_rec = Stage.objects.filter(Q(id = s_id)|Q(system_name=sName)).first()
+                fs_rec = FormStage.objects.filter(form=gform,stage=stage_rec)
+                if not fs_rec:
+                    FormStage.objects.create(form = gform, stage=stage_rec, sequence =sequence, 
+                                            created_by_id = user)
     except Exception as e:
         print(e)
+
 def create_formsection():
     try:
         section_id = global_data.get("Section ID")
@@ -739,21 +712,21 @@ def create_formsection():
         fsList = list(form_id.keys())
         for x in fsList:
             fsection = sName.get(x)
-            f_id = form_id.get(x)
-            fName= form_name.get(x)
-            vis=visible.get(x)
-            temp_sequence= seq.get(x)
-            if temp_sequence == '':
-                sequence= None
-            else:
-                sequence = int(temp_sequence)
-            gvis = Choice.objects.filter(system_name=vis).first()
-            gform=Form.objects.filter(id=f_id).first()
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            flist_rec = FormSection.objects.filter(form=f_id)
-            if not flist_rec:
-                #f_section=get_rid_pkey('formsection')
-                FormSection.objects.create(section_title=fsection,form=gform,section_sequence=sequence,created_by_id = user)
+            if fsection:
+                f_id = form_id.get(x)
+                fName= form_name.get(x)
+                vis=visible.get(x)
+                temp_sequence= seq.get(x)
+                if temp_sequence == '':
+                    sequence= None
+                else:
+                    sequence = int(temp_sequence)
+                gvis = Choice.objects.filter(system_name=vis).first()
+                gform=Form.objects.filter(id=f_id).first()
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                flist_rec = FormSection.objects.filter(section_title=fsection,form=f_id)
+                if not flist_rec:
+                    FormSection.objects.create(section_title=fsection,form=gform,section_sequence=sequence,created_by_id = user)
             
     except Exception as e:
         print(e)
@@ -763,26 +736,34 @@ def create_formdata():
         fdata= global_data.get("Form Data System Name")
         display_data=global_data.get("Translation")
         form_id = global_data.get("Form ID")
-        table_id= global_data.get("Dataset ID")
-        data_id= global_data.get("Data ID")
         data_type=global_data.get("Data Type")
-        is_heading=global_data.get("is_heading")
+        is_heading=global_data.get("Header")
         form=global_data.get("Form")
         table=global_data.get("Dataset")
         visibility = global_data.get("Visibility")
         section=global_data.get("Section")
-       # data_type=global_data.get("DTYPE")
         column=global_data.get("Column")
         seq=global_data.get("Sequence")
         position=global_data.get("Position")
-        #line=global_data.get("Lines")
+        lines=global_data.get("Lines")
         fdList=list(fdata.keys())
         for x in fdList:
             dis_data=display_data.get(x)
+            fName=form.get(x)
             form_data=fdata.get(x)
-            f_id=form_id.get(x)
+            #f_id=form_id.get(x)
             tbl=table.get(x)
+            templine=lines.get(x)
+            if templine == '':
+                fline=None
+            else:
+                fline=int(templine)
             head=is_heading.get(x)
+            valid = ['TRUE', 'true', 'True', 'yes', 'YES', 'Yes']
+            if head in valid:
+                head = True
+            else:
+                head =False
             dt_type=data_type.get(x)
             vis= visibility.get(x)
             tempsec=section.get(x)
@@ -805,19 +786,20 @@ def create_formdata():
                 sequence= None
             else:
                 sequence = int(tempseq)
-            gform=Form.objects.filter(id = f_id).first()
-            gtable=DataTable.objects.filter(system_name=tbl).first()
-            gdata=Data.objects.filter(system_name = form_data).first()
-            gdtype=Choice.objects.filter(system_name=dt_type).first()
-            gvis=Choice.objects.filter(system_name=vis).first()
-            gsec=FormSection.objects.filter(id= sec).first()
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
-            formdata_rec=FormData.objects.filter(id=fdata)
-            if not formdata_rec:
-                f_data=get_rid_pkey('formdata')
-                FormData.objects.create(id =f_data,display_label=dis_data,form=gform,data_type=gdtype,table=gtable,
-                                        data=gdata,visibility=gvis,section=gsec,column=col,is_heading=head,
-                                        position=pos,sequence=sequence,created_by_id = user)
+            if fName and tbl and form_data:
+                gform=Form.objects.filter(system_name = fName).first()
+                gtable=DataTable.objects.filter(system_name=tbl).first()
+                gdata=Data.objects.filter(data_source__system_name=tbl, system_name = form_data).first()
+                gdtype=Choice.objects.filter(selector__system_name='data_type',system_name=dt_type).first()
+                gvis=Choice.objects.filter(selector__system_name='visibility',system_name=vis).first()
+                gsec=FormSection.objects.filter(section_sequence= sec,form=gform).first()
+                user= User.objects.filter(username = 'admin').values()[0]["id"]
+                formdata_rec=FormData.objects.filter(form=gform, table=gtable, data=gdata)
+                if not formdata_rec:
+                    f_data=get_rid_pkey('formdata')
+                    FormData.objects.create(id =f_data,display_label=dis_data,form=gform,data_type=gdtype,table=gtable,
+                                            data=gdata,visibility=gvis,section=gsec,column=col,is_heading=head,
+                                            position=pos,sequence=sequence,created_by_id = user,line=fline)
                 
     except Exception as e:
         print(e)
@@ -890,7 +872,7 @@ class Command(BaseCommand):
     help = "load data from import excel sheet"
     def handle(self, *args, **kwargs):
         global global_data
-        file1 = open('./managementCommandsFiles/managementSequence.txt', 'r') 
+        file1 = open('./managementcmdfiles/managementSequence.txt', 'r') 
         Lines = file1.readlines() 
         for line in Lines:
             line=line.strip('\n')

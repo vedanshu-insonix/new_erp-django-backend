@@ -47,9 +47,9 @@ class CustomerSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        currency_data = RelatedCurrencySerializer(instance.currency).data
-        if 'id' in currency_data:
-            response['currency'] = RelatedCurrencySerializer(instance.currency).data
+        # currency_data = RelatedCurrencySerializer(instance.currency).data
+        # if 'id' in currency_data:
+        #     response['currency'] = RelatedCurrencySerializer(instance.currency).data
             
         stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in stage_data:
@@ -86,6 +86,10 @@ class CustomerSerializer(serializers.ModelSerializer):
         customer_source = instance.customer_source
         if customer_source:
             response['customer_source'] = instance.shipping_terms.system_name
+
+        currency_data = instance.currency
+        if currency_data:
+            response['currency'] = instance.currency.system_name
 
         return response
     
