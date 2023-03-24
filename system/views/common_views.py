@@ -644,10 +644,10 @@ class MenuViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ("__all__")
     
-    # def list(self, request, *args, **kwargs):
-    #     queryset = Menu.objects.filter().all()
-    #     serializers = MenuSerializer(queryset, many = True, context = {"request": request})
-    #     return super().list(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        queryset = Menu.objects.filter().all()
+        serializers = RelatedMenuSerializer(queryset, many = True, context = {"request": request})
+        return Response(serializers.data)
     
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):
