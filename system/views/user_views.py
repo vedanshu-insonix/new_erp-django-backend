@@ -180,7 +180,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 # queryset = Configuration.objects.filter(category = "appearance")
                 #queryset = Configuration.objects.filter(system_name = "appearance")
                 #configuration = RelatedConfigurationSerializer(queryset, many = True)
-                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token} #, "configuration":configuration.data}
+                response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token':token, "username":username} #, "configuration":configuration.data}
                 return Response(response)
             else:
                 msg = 'Username or Password is not valid'
