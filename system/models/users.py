@@ -30,7 +30,7 @@ class UserRoles(BaseContent):
 def get_current_user_language(user):
     try:
         get_address = UserAddress.objects.filter(user = user.id, address__address_type = "user").first()
-        language = "US English"
+        language = "English (US)"
         if get_address:
             address_details = Addresses.objects.filter(id = get_address.address.id).first()
             if address_details:

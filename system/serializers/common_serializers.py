@@ -702,7 +702,7 @@ class ColumnsSerializer(serializers.ModelSerializer):
         list_data = RelatedListsSerializer(instance.col_list, context={'request': request}).data        
         if 'id' in list_data:
             data = RelatedListsSerializer(instance.col_list, context={'request': request}).data
-            list = data.pop('columns')
+            #list = data.pop('columns')
             response['col_list'] = data
         visibility = instance.visibility
         if visibility:
@@ -731,7 +731,7 @@ class RelatedMenuSerializer(serializers.ModelSerializer):
             response['list'] = RelatedListsSerializer(instance.list, context={'request': request}).data
         menu_category = instance.menu_category
         if menu_category:
-            response['menu_category']=instance.menu_category.system_name
+            response['menu_category']=utils.decode_api_name(instance.menu_category.system_name)
         return response
          
 class MenuSerializer(serializers.ModelSerializer):
@@ -983,8 +983,8 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
             field_type = instance.data.field_type
             if field_type:
                 field_type = instance.data.field_type.system_name
-            response['field']=instance.data.field
-            response['type']=instance.data.field_type.system_name
+            response['field']=field
+            response['type']=field_type
             if field and field_type=='dropdown':
                 if field == 'State' or field == 'state':
                     add_link = 'states/?country='
@@ -1169,14 +1169,14 @@ class ActionSerializer(serializers.ModelSerializer):
 class FormStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormStage
-        exclude = ("created_time","modified_time","created_by", "form")
+        exclude = ("created_time","modified_time","created_by", "form", "id")
 
     def to_representation(self, instance):
         request = self.context['request']
         response = super().to_representation(instance)
-        stage = RelatedStageSerializer(instance.stage, context={'request':request}).data
-        if 'id' in stage:
-            response['stage'] = RelatedStageSerializer(instance.stage, context={'request':request}).data
+        stage = instance.stage
+        if stage:
+            response['system_name'] = instance.stage.system_name
         return response
         
 # ****************************** Button Stage Serializer *********************************************************

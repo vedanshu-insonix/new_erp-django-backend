@@ -15,7 +15,7 @@ from django.db.models import Q
 from rest_framework import filters
 import openpyxl
 from system.utils import *
-from system.models.common import Choice, ListFilters
+from system.models.common import Choice, ListFilters, Currency, FormStage, Stage
 
 class CustomerViewSet(viewsets.ModelViewSet):
     """
@@ -252,28 +252,62 @@ class CustomerViewSet(viewsets.ModelViewSet):
                     for key in sequences:
                         data_dict[key] = row_data[sequences[key]-1]
                     try:
-                        sp_term = Choice.objects.filter(selector__system_name='shipping_terms', system_name=data_dict['shipping_terms'])
-                        sp_method = Choice.objects.filter(selector__system_name='shipping_method', system_name=data_dict['ship_via'])
-                        pay_terms = Choice.objects.filter(selector__system_name='payment_terms', system_name=data_dict['payment_terms'])
-                        pay_method = Choice.objects.filter(selector__system_name='payment_method', system_name=data_dict['payment_method'])
-                        #cust_source = Choice.objects.filter(selector__system_name='customer_source', system_name=data_dict['customer_source'])
-
-                        if sp_term:
-                            data_dict['shipping_terms'] = sp_term.values()[0]['id']
-                        if sp_method:
-                            data_dict['ship_via'] = sp_method.values()[0]['id']
-                        if pay_terms:
-                            data_dict['payment_terms'] = pay_terms.values()[0]['id']
-                        if pay_method:
-                            data_dict['payment_method'] = pay_method.values()[0]['id']
-                        # if cust_source:
-                        #     data_dict['customer_source'] = cust_source.values()[0]['id']
+                        if 'shipping_terms' in data_dict:
+                            sterm=data_dict['shipping_terms']
+                            sterm=utils.encode_api_name(sterm)
+                            sp_term = Choice.objects.filter(selector__system_name='shipping_terms', system_name=sterm)
+                            if sp_term:
+                                data_dict['shipping_terms'] = sp_term.values()[0]['id']
                         
-                        data_dict['entity'] = '94001'
+                        if 'ship_via' in data_dict:
+                            smethod = data_dict['ship_via']
+                            smethod = utils.encode_api_name(smethod)
+                            sp_method = Choice.objects.filter(selector__system_name='ship_via', system_name=smethod)
+                            if sp_method:
+                                data_dict['ship_via'] = sp_method.values()[0]['id']
+
+                        if 'payment_terms' in data_dict:
+                            pterm = data_dict['payment_terms']
+                            pterm = utils.encode_api_name(pterm)
+                            pay_terms = Choice.objects.filter(selector__system_name='payment_terms', system_name=pterm)
+                            if pay_terms:
+                                data_dict['payment_terms'] = pay_terms.values()[0]['id']
+
+                        if 'payment_method' in data_dict:
+                            pmethod = data_dict['payment_method']
+                            pmethod = utils.encode_api_name(pmethod)
+                            pay_method = Choice.objects.filter(selector__system_name='payment_method', system_name=pmethod)
+                            if pay_method:
+                                data_dict['payment_method'] = pay_method.values()[0]['id']
+
+                        if 'customer_source' in data_dict:
+                            source = data_dict['customer_source']
+                            source = utils.encode_api_name(source)
+                            cust_source = Choice.objects.filter(selector__system_name='customer_source', system_name=source)
+                            if cust_source:
+                                data_dict['customer_source'] = cust_source.values()[0]['id']
+
+                        if 'entity' in data_dict:
+                            entity = data_dict['entity']
+                            entity = utils.encode_api_name(entity)
+                            entity = Choice.objects.filter(selector__system_name='entity', system_name=entity)
+                            if entity:
+                                data_dict['entity'] = entity.values()[0]['id']
+
+                        if  'currency' in data_dict:
+                            currency = Currency.objects.filter(code=data_dict['currency'])
+                            if currency:
+                                data_dict['currency'] = currency.values()[0]['id']
+                        
+                        if  'stage' in data_dict:
+                            stage_id = Stage.objects.filter(system_name=data_dict['stage'])
+                            if stage_id:
+                                stage = FormStage.objects.filter(form__system_name='Customer', stage=stage_id.values()[0]['id'])
+                                if stage:
+                                    data_dict['stage'] = stage.values()[0]['stage_id']
+
                         data_dict['require_pos'] = True
                         data_dict['average_pay_days'] = 10
-                        data_dict['last_credit_review'] = '2022-12-11'
-                        data_dict['used'] = '2022-12-11'
                         data_dict['created_by']=request.user.id
                         
                         serializers = CustomerSerializer(data = data_dict, context={'request': request})
@@ -281,8 +315,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
                             serializers.save()
                             count += 1
                     except Exception as e:
-                         print("Error > ", str(e), data_dict)
-                         pass
+                        print("Error > ", str(e), data_dict)
+                        pass
             else:
                 msg="Please Upload A Suitable Excel File."
                 return Response(utils.error(msg))

@@ -585,7 +585,7 @@ class ColumnsViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     # filterset_fields = ("app__name",)
     filterset_fields = {
-            'position': ['exact'],'visibility': ['exact']
+            'position': ['exact'],'visibility': ['exact'], 'col_list':['exact']
         }
     ordering_fields = ("__all__")
     

@@ -85,7 +85,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
         customer_source = instance.customer_source
         if customer_source:
-            response['customer_source'] = instance.shipping_terms.system_name
+            response['customer_source'] = instance.customer_source.system_name
 
         currency_data = instance.currency
         if currency_data:
