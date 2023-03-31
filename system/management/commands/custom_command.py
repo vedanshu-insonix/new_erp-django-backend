@@ -1,3 +1,4 @@
+# Custom Command to seed database with basic data for further operations.
 from django.core.management.base import BaseCommand
 from warehouse.models import ContainerTypes
 from system.models import Choice, RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon
@@ -10,24 +11,29 @@ from django.contrib.auth.models import User
 from system import utils
 from django.db.models import Q
 
+# Excel Data path to be import in db
 folder = r'./managementcmdfiles/'
 files = os.listdir(folder)
 
+# Icon location
 icons = r'icon_images/'
 imag_file= os.listdir(icons)
 
+# Country flag location
 flag_path = r'country_flag/'
 flag_file= os.listdir(flag_path)
 
 data_dict={}
 global_data = {}
 
+# Function to extract data from excel file
 def  extract_data(file):
     global global_data
     file_path = f'{folder}{file}'
     data = pd.read_excel(file_path).fillna('').to_dict() 
     global_data = data
-    
+
+# Function to seed recordidentifier model     
 def create_recordIdentifiers():
     try:
         id = global_data.get("Record Identifier ID")
@@ -51,7 +57,8 @@ def create_recordIdentifiers():
     except Exception as e:
         print("RID Error >", str(e))
         pass
-        
+
+# Function to seed Selectors model           
 def create_selectors():
     try:
         trans_id = get_rid_pkey('language')
@@ -88,7 +95,8 @@ def create_selectors():
     except Exception as e:
         print("Selector Error >", str(e))
         pass
-        
+
+# Function to seed Choice model           
 def create_choice():
     
     selector = global_data.get('Selector')
@@ -130,7 +138,8 @@ def create_choice():
         except Exception as e:
             print("Choice Error >", str(e))
             pass
-  
+
+# Function to seed DataSet model     
 def create_dataset():
     try:
         id = global_data.get("Dataset ID")
@@ -150,6 +159,7 @@ def create_dataset():
         print("Dataset Error >", str(e))
         pass
 
+# Function to seed Data model   
 def create_data():
     try:
         id = global_data.get("Data ID")
@@ -207,7 +217,8 @@ def create_data():
     except Exception as e:
         print("Data Error >", str(e))
         pass
-     
+
+# Function to seed Icons model        
 def create_icons():
     try:
         id = global_data.get("Icon ID")
@@ -241,7 +252,8 @@ def create_icons():
     except Exception as e:
         print("Icons Error >", str(e))
         pass
-               
+
+# Function to seed Configurations model                  
 def create_conf():
     try:
         id = global_data.get("Configuration ID")
@@ -276,7 +288,7 @@ def create_conf():
         print("Configurations Error >", str(e))
         pass
         
-        
+# Function to seed Currency model           
 def create_currencies():
     try:
         id = global_data.get("Currency ID")
@@ -310,7 +322,8 @@ def create_currencies():
     except Exception as e:
         print("Currency Error >", str(e))
         pass
-        
+
+# Function to seed Country model           
 def create_countries():
     try:
         id = global_data.get("Country ID")
@@ -362,7 +375,8 @@ def create_countries():
     except Exception as e:
         print("Country Error >", str(e))
         pass
-        
+
+# Function to seed State model           
 def create_state():
     try:
         id = global_data.get("State ID")
@@ -387,7 +401,8 @@ def create_state():
     except Exception as e:
         print("State Error >", str(e))
         pass
-        
+
+# Function to seed Language model           
 def create_language():
     try:
         id = global_data.get("Language ID")
@@ -416,7 +431,8 @@ def create_language():
     except Exception as e:
         print("Language Error >", str(e))
         pass
-        
+
+# Function to seed List model           
 def create_list():
         id = global_data.get("List ID")
         system_name = global_data.get('System Name')
@@ -480,7 +496,8 @@ def create_list():
             except Exception as e:
                 print("List Error >", str(e))
                 pass
-        
+
+# Function to seed Menu model           
 def create_menu():
    
     id = global_data.get("Menu Item ID")
@@ -522,7 +539,7 @@ def create_menu():
             print("Menu Error >", str(e))
             pass
         
-    
+# Function to seed Column model       
 def create_columns():
     id = global_data.get("Column ID")
     col_list = global_data.get('List')
@@ -580,6 +597,7 @@ def create_columns():
             print("Column Error >", str(e))
             pass
 
+# Function to seed Forms model   
 def create_forms():
     try:
         system_name = global_data.get('Form System Name')
@@ -617,6 +635,7 @@ def create_forms():
         print("Form Error >", str(e))
         pass
 
+# Function to seed FormList model   
 def create_formlist():
     try:
         id=global_data.get("ListForm ID")
@@ -644,6 +663,7 @@ def create_formlist():
         print("FList Error >", str(e))
         pass
 
+# Function to seed Stage model   
 def create_stages():
     try:
         id = global_data.get("Stage ID")
@@ -673,7 +693,8 @@ def create_stages():
     except Exception as e:
         print("Stage Error >", str(e))
         pass
-        
+
+# Function to seed FormStage model           
 def create_formstage():
     try:
         id = global_data.get("Form Stage ID")
@@ -706,6 +727,7 @@ def create_formstage():
         print("FStage Error >", str(e))
         pass
 
+# Function to seed FormSection model
 def create_formsection():
     try:
         section_id = global_data.get("Section ID")
@@ -737,7 +759,8 @@ def create_formsection():
     except Exception as e:
         print("FSection Error >", str(e))
         pass
-        
+
+# Function to seed FormData model        
 def create_formdata():
     try:
         fdata= global_data.get("Form Data System Name")
@@ -811,7 +834,8 @@ def create_formdata():
     except Exception as e:
         print("FData Error >", str(e))
         pass
-        
+
+# Function to seed Entity model        
 def create_entities():
     try:
         id = global_data.get("Entity ID")
@@ -834,6 +858,7 @@ def create_entities():
         print("Entity Error >", str(e))
         pass
 
+# Function to seed containerTypes model
 # def create_container():
 #     try:
 #         id = global_data.get("Container ID")
@@ -877,7 +902,8 @@ def create_entities():
 #     except Exception as e:
 #         print("Container Error >", str(e))
 #         pass
-        
+
+# Parent Function for DataBase Seeding        
 class Command(BaseCommand):
     help = "load data from import excel sheet"
     def handle(self, *args, **kwargs):

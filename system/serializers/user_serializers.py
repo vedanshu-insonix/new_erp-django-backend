@@ -14,6 +14,11 @@ from system.models.teams import TeamUser
 from system.serializers.team_serializer import TeamUserSerializer
 from system.models.users import UserAddress, UserRoles
 
+#**************************Serializer For User Model**************************#
+class RelatedUserSerilaizer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields =("id","first_name", "last_name", "email")
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
@@ -48,45 +53,39 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("__all__")
-        
+    
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
         return super(UserSerializer, self).create(validated_data)
 
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        request = self.context['request']
-
-        return response
-
-class RelatedUserSerilaizer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields =("id","first_name", "last_name", "email")
-
+#**************************Serializer For User Address Model**************************#
 class UserAddressSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = UserAddress
         exclude =("id","user", "created_time", "modified_time", "created_by")
         depth = 1
 
+#**************************Serializer For User Roles Model**************************#
 class UserRoleSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = UserRoles
         exclude =("id","user", "created_time", "modified_time", "created_by")
         depth = 1
 
+#**************************Serializer For Group Model**************************#
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ("__all__")
-        
+
+#**************************Serializer For User Login Functionality**************************#        
 class UserLoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length = 255)    
     class Meta:
         model = User
         fields = ["username","password"]
-        
+
+#**************************Serializer For Change Password Functionality**************************#        
 class ChangePasswordSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
@@ -95,7 +94,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         model = User
         fields =["user_id","current_password","new_password"]
 
-
+#**************************Serializer For Send Email Functionality**************************#
 class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
 
@@ -111,9 +110,10 @@ class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
             user = User.objects.get(email = email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            base_uri = str('/'.join(request.build_absolute_uri().split('/')[:-2]))
+            #base_uri = str('/'.join(request.build_absolute_uri().split('/')[:-2]))
+            base_uri = "http://localhost:3000"
             full_token = uid+'_'+token
-            link =  '/reset-password/' +  full_token + '/'
+            link =  base_uri + '/reset-password/' +  full_token + '/'
             # Send Email
             email_from = settings.EMAIL_HOST_USER
             subject = "Password Reset Requested"
@@ -127,6 +127,7 @@ class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
         else:
             raise ValidationError('You are not registered user.')
 
+#**************************Serializer For Reset Password Functionality**************************#
 class UserPasswordResetSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length = 255, style = {'input_type':'password'}, write_only = True)
     confirm_password = serializers.CharField(max_length = 255, style = {'input_type':'password'}, write_only = True)

@@ -5,14 +5,16 @@ from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from django.db.models import Q
 
-class RelatedCustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customers
-        exclude = ("created_time","modified_time","created_by")
-
+#**************************Serializer to get the record of addresses in detail**************************#
 class RelatedAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Addresses
+        exclude = ("created_time","modified_time","created_by")
+
+#**************************Serializer For Customers Model**************************#
+class RelatedCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customers
         exclude = ("created_time","modified_time","created_by")
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -43,7 +45,8 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time", "created_by")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-        
+
+    # To return forign key values in detail     
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -92,13 +95,15 @@ class CustomerSerializer(serializers.ModelSerializer):
             response['currency'] = instance.currency.system_name
 
         return response
-    
+
+    # pkey of new data will be created on the basis of recordidentifiers. 
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='customers')
         if record_id:
             data['id']=get_rid_pkey('customers')
         return super().create(data)
-  
+
+#**************************Serializer to get the record of addresses related to paricular customer**************************#  
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerAddress

@@ -5,6 +5,7 @@ from system.serializers.common_serializers import *
 from sales.serializers.addresses_serializers import AddressSerializer
 from sales.serializers.customers_serializers import RelatedCustomerSerializer
 
+#**************************Serializer For Sales Orders Model**************************#
 class RelatedSalesOrdersSerializer(serializers.ModelSerializer):
      class Meta:
         model = SalesOrders
@@ -67,12 +68,14 @@ class SalesOrdersSerializer(serializers.ModelSerializer):
 
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='salesorders')
         if record_id:
             data['id']=get_rid_pkey('salesorders')
         return super().create(data)
 
+#**************************Serializer For Sales Order Lines Model**************************#
 class SalesOrderLinesSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesOrderLines
@@ -80,6 +83,7 @@ class SalesOrderLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='salesorderlines')
         if record_id:

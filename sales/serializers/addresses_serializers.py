@@ -15,13 +15,14 @@ from ..models.vendors import VendorAddress
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
-
+#**************************Serializer For Address Tag Model**************************#
 class AddressTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = AddressTag
         fields = ("tag",)
         depth = 1
 
+#**************************Serializer For Addresses Model**************************#
 class RelatedAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Addresses
@@ -76,6 +77,7 @@ class AddressSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail 
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -101,6 +103,7 @@ class AddressSerializer(serializers.ModelSerializer):
             
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='addresses')
         if record_id:

@@ -229,11 +229,7 @@ class List(BaseContent):
     data_source = models.ForeignKey('DataTable', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
     default_view = models.CharField(max_length=255, null=True)
-    # visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='visibility')
-    # visibility = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='visibility')
-    # data_filter = models.CharField(max_length=255, null=True)
-    # data_sort = models.CharField(max_length=255, null=True)
-    # sequence = models.IntegerField(null=True , blank=True)
+    #sequence = models.IntegerField(null=True , blank=True)
 
     def __str__(self):
         return self.system_name
@@ -246,6 +242,7 @@ class ListFilters(BaseContent):
     value = models.CharField(max_length=255, null=True, blank=True)
     sequence = models.IntegerField(null=True , blank=True)
     sublogic = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='sublogic_operators')
+    operator = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='relational_operators')
 
 class ListSorts(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

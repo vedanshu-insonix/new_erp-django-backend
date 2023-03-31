@@ -1,4 +1,3 @@
-from secrets import choice
 from ..models.common import *
 from ..models.translations import *
 from ..models.columns import Column
@@ -10,11 +9,9 @@ from system import utils
 from django.db.models import Q
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
-from system.models.dataset import Data
-#from .dataset_serializers import RelatedDataSerializer
 
-# ************************ Button Serializer ******************************************
 
+#**************************Serializer For Button Model**************************# 
 class ButtonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Button
@@ -30,13 +27,14 @@ class ButtonSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='button')
         if record_id:
             data['id']=get_rid_pkey('button')
         return super().create(data)
         
-# ************************ Button Serializer ******************************************
+#**************************Serializer For Currency Model**************************# 
 class RelatedCurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
@@ -57,13 +55,14 @@ class CurrencySerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='currency')
         if record_id:
             data['id']=get_rid_pkey('currency')
         return super().create(data)
        
-# ************************ Tag Serializer ******************************************             
+#**************************Serializer For Tag Model**************************#             
 class RelatedTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -84,13 +83,14 @@ class TagSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='tag')
         if record_id:
             data['id']=get_rid_pkey('tag')
         return super().create(data)
 
-# ************************ Language Serializer ******************************************
+#**************************Serializer For Language Model**************************#
 class RelatedLanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Language
@@ -111,13 +111,14 @@ class LanguageSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='language')
         if record_id:
             data['id']=get_rid_pkey('language')
         return super().create(data)
 
-# *********************** Country Serializer *****************************************
+#**************************Serializer For Country Model**************************#
 class RelatedCountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
@@ -138,13 +139,14 @@ class CountrySerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='country')
         if record_id:
             data['id']=get_rid_pkey('country')
         return super().create(data)
 
-# ************************ State Serializer ******************************************
+#**************************Serializer For State Model**************************#
 class RelatedStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = State
@@ -172,6 +174,7 @@ class StateSerializer(serializers.ModelSerializer):
             
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         country = data['country']
         sequence = data['sequence']
@@ -179,8 +182,7 @@ class StateSerializer(serializers.ModelSerializer):
         data['id']=get_related_pkey('state', country_id.id, sequence)
         return super().create(data)
 
-#******************************* Stage Action Serializer *******************************
-
+#**************************Serializer For Stage Action Model**************************#
 class RelatedStageActionSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -207,7 +209,7 @@ class StageActionSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}} 
 
-# ************************ Stage Serializer ******************************************    
+#**************************Serializer For Stage Model**************************#
 class RelatedStageSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -264,13 +266,14 @@ class StageSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='stage')
         if record_id:
             data['id']=get_rid_pkey('stage')
         return super().create(data)
      
-# ************************ Configuration Serializer ******************************************    
+#**************************Serializer For Configuration Model**************************#    
 class RelatedConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Configuration
@@ -306,13 +309,14 @@ class ConfigurationSerializer(serializers.ModelSerializer):
                     
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='configuration')
         if record_id:
             data['id']=get_rid_pkey('configuration')
         return super().create(data)
     
-# ************************ Territories Serializer ******************************************  
+#**************************Serializer For Territories Model**************************#  
 class RelatedTerritoriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Territories
@@ -333,6 +337,7 @@ class TerritoriesSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='territories')
         if record_id:
@@ -369,7 +374,7 @@ class TerritoriesSerializer(serializers.ModelSerializer):
             
 #         return response
 
-# ************************ Selector Serializer ******************************************
+#**************************Serializer For Selectors Model**************************#
 class SelectorSerializer(serializers.ModelSerializer):
     system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
@@ -405,13 +410,14 @@ class SelectorSerializer(serializers.ModelSerializer):
         data['system_name'] = utils.encode_api_name(selector)
         return data
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='selectors')
         if record_id:
             data['id']=get_rid_pkey('selectors')
         return super().create(data)
     
-# ************************ Choice Serializer ******************************************
+#**************************Serializer For Choice Model**************************#
 class RelatedChoiceSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
        
@@ -428,7 +434,6 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
         else:
             return data
     
-    
     class Meta:
         model = Choice
         fields = ("id","system_name","label")
@@ -436,6 +441,7 @@ class RelatedChoiceSerializer(serializers.ModelSerializer):
 class ChoiceSerializer(serializers.ModelSerializer):
     system_name = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField()
+
     def get_label(self, obj):
         data = obj.system_name
         user = self.context['request'].user
@@ -471,6 +477,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
         
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         selector = data['selector']
         sel_id=Selectors.objects.get(system_name=selector)
@@ -478,7 +485,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
         data['id']=get_related_pkey('choice', sel_id.id, sequence)
         return super().create(data)
     
-# ************************ List Serializer ****************************************** 
+#**************************Serializer For List Model**************************# 
 class RelatedListsSerializer(serializers.ModelSerializer): ## for menus only
     label = serializers.SerializerMethodField()
     icon = serializers.SerializerMethodField()
@@ -612,12 +619,14 @@ class ListSerializer(serializers.ModelSerializer):
             response['data_source'] = instance.data_source.system_name        
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='list')
         if record_id:
             data['id']=get_rid_pkey('list')
         return super().create(data)
 
+#**************************Serializer For List Filters Model**************************# 
 class ListFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = ListFilters
@@ -625,12 +634,14 @@ class ListFilterSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='listfilters')
         if record_id:
             data['id']=get_rid_pkey('listfilters')
         return super().create(data)
 
+#**************************Serializer For List Icon Model**************************# 
 class ListIconSerializer(serializers.ModelSerializer):
     icon = serializers.CharField(max_length = 255, required = True)
     class Meta:
@@ -647,7 +658,7 @@ class ListIconSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
-# ************************ Columns Serializer ****************************************** 
+#**************************Serializer For Column Model**************************# 
 class RelatedColumnsSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -673,7 +684,7 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         if visibility:
             response['visibility'] = instance.visibility.system_name
         return response
-## column serializer
+
 class ColumnsSerializer(serializers.ModelSerializer):
     column = serializers.CharField(max_length = 255, required = True)
     field = serializers.CharField(max_length = 255, required = True)
@@ -711,13 +722,14 @@ class ColumnsSerializer(serializers.ModelSerializer):
         
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='column')
         if record_id:
             data['id']=get_rid_pkey('column')
         return super().create(data)
 
-# ************************ Menu Serializer ******************************************
+#**************************Serializer For Menu Model**************************# 
 class RelatedMenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
@@ -766,6 +778,7 @@ class MenuSerializer(serializers.ModelSerializer):
             response['menu_category']=instance.menu_category.system_name
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='menu')
         if record_id:
@@ -773,7 +786,7 @@ class MenuSerializer(serializers.ModelSerializer):
         return super().create(data)
 
 
-# ************************ Form Serializer ******************************************  
+#**************************Serializer For Form Model**************************#   
 class RelatedFormSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -841,7 +854,8 @@ class FormSerializer(serializers.ModelSerializer):
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-        
+
+    # To return forign key values in detail    
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
@@ -855,12 +869,14 @@ class FormSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='form')
         if record_id:
             data['id']=get_rid_pkey('form')
         return super().create(data)
 
+#**************************Serializer For Form List Model**************************# 
 class RelatedFormListSerializer(serializers.ModelSerializer):  
     icon = serializers.SerializerMethodField()
     display_records = serializers.SerializerMethodField()
@@ -886,7 +902,8 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormList
         exclude = ("created_time", "modified_time","form","created_by")
-      
+
+    # To return forign key values in detail  
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -902,6 +919,7 @@ class FormListSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -918,17 +936,20 @@ class FormListSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='formlist')
         if record_id:
             data['id']=get_rid_pkey('formlist')
         return super().create(data)
 
+#**************************Serializer For Translation Model**************************# 
 class RelatedTranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
         fields = ("id","label")
-        
+
+#**************************Serializer For Form Data Model**************************#         
 class RelatedFormDataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     default = serializers.SerializerMethodField()
@@ -966,6 +987,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         model = FormData
         exclude = ("created_time", "modified_time",'form', 'created_by')
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -1045,6 +1067,7 @@ class FormDataSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -1070,16 +1093,16 @@ class FormDataSerializer(serializers.ModelSerializer):
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
 
-
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='formdata')
         if record_id:
             data['id']=get_rid_pkey('formdata')
         return super().create(data)
     
-# ************************ Help Serializer ****************************************** 
+#**************************Serializer For Help Model**************************#  
 class RelatedHelpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Help
@@ -1092,6 +1115,7 @@ class HelpSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         form = RelatedFormSerializer(instance.form).data
@@ -1107,18 +1131,21 @@ class HelpSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='help')
         if record_id:
             data['id']=get_rid_pkey('help')
         return super().create(data)
 
+#**************************Serializer For Form Section Model**************************# 
 class RelatedFormSectionSerializer(serializers.ModelSerializer):
     section_title = serializers.CharField(required = True, max_length = 255)
     class Meta:
         model = FormSection
         exclude = ("created_time","modified_time","created_by", "form")
 
+#**************************Serializer For Icons Model**************************# 
 class IconSerializer(serializers.ModelSerializer):
     def get_label(self, obj):
         data = obj.data
@@ -1138,20 +1165,22 @@ class IconSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='icons')
         if record_id:
             data['id']=get_rid_pkey('icons')
         return super().create(data)
 
-# ****************************** Action Serializer *********************************************************
+#**************************Serializer For Action Model**************************# 
 class ActionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Action
         fields = ("__all__")
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-        
+
+    # To return forign key values in detail    
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
@@ -1159,18 +1188,20 @@ class ActionSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='action')
         if record_id:
             data['id']=get_rid_pkey('action')
         return super().create(data)
        
-# ****************************** Form Stage Serializer *********************************************************
+#**************************Serializer For Form Stage Model**************************# 
 class FormStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormStage
         exclude = ("created_time","modified_time","created_by", "form", "id")
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         request = self.context['request']
         response = super().to_representation(instance)
@@ -1179,7 +1210,7 @@ class FormStageSerializer(serializers.ModelSerializer):
             response['system_name'] = instance.stage.system_name
         return response
         
-# ****************************** Button Stage Serializer *********************************************************
+#**************************Serializer For Button Stage Model**************************# 
 class ButtonStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ButtonStage

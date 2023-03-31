@@ -1,13 +1,14 @@
 from rest_framework import serializers
-from system.models.dataset import DataTable, Data
+from system.models.dataset import DataTable, Data, DataRequirements
 from ..models.translations import TranslationData
 from system.models import Translation
 from ..models.users import get_current_user_language
-from system.serializers.common_serializers import RelatedTranslationSerializer
+from system.serializers.common_serializers import RelatedTranslationSerializer, RelatedFormSerializer, RelatedStageSerializer, RelatedChoiceSerializer
 from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
 
+#**************************Serializer For DataTable Model**************************#
 class TableSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField()
 
@@ -24,6 +25,7 @@ class TableSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
@@ -32,14 +34,19 @@ class TableSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='datatable')
         if record_id:
             data['id']=get_rid_pkey('datatable')
         return super().create(data)
 
+#**************************Serializer For Data Model**************************#
+class RelatedDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Data
+        exclude =("created_time", "modified_time", "created_by")
 
-    
 class DataSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -60,9 +67,40 @@ class DataSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         datasource = data['data_source']
         dataSource_id=DataTable.objects.get(id=datasource.id)
         sequence = data['sequence']
         data['id']=get_related_pkey('data', dataSource_id.id, sequence)
         return super().create(data)
+    
+#**************************Serializer For Data Requirements Model**************************#
+class DataRequirementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataRequirements
+        exclude =("created_time", "modified_time", "created_by")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    # To return forign key values in detail
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context['request']
+
+        form = RelatedFormSerializer(instance.form, context={'request':request}).data
+        if 'id' in form:
+            response['form'] = RelatedFormSerializer(instance.form, context={'request':request}).data
+        data = RelatedDataSerializer(instance.data, context={'request':request}).data
+        if 'id' in data:
+            response['data'] = RelatedDataSerializer(instance.data, context={'request':request}).data
+        stage = RelatedStageSerializer(instance.stage, context={'request':request}).data
+        if 'id' in stage:
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request':request}).data
+        requirement = RelatedChoiceSerializer(instance.requirement, context={'request':request}).data
+        if 'id' in requirement:
+            response['requirement'] = RelatedChoiceSerializer(instance.requirement, context={'request':request}).data
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+        return response

@@ -7,6 +7,7 @@ from system.models.translations import TranslationContainerType
 from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.models import Translation
 
+#**************************Serializer For Deliveries Model**************************#
 class DeliveriesSerializer(serializers.ModelSerializer):
     class meta:
         model = Deliveries
@@ -14,12 +15,14 @@ class DeliveriesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliveries')
         if record_id:
             data['id']=get_rid_pkey('deliveries')
         return super().create(data)
 
+#**************************Serializer For Delivery Lines Model**************************#
 class DeliveryLinesSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryLines
@@ -27,12 +30,14 @@ class DeliveryLinesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='deliverylines')
         if record_id:
             data['id']=get_rid_pkey('deliverylines')
         return super().create(data)
 
+#**************************Serializer For Shipments Model**************************#
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipments
@@ -40,12 +45,14 @@ class ShipmentSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='shipments')
         if record_id:
             data['id']=get_rid_pkey('shipments')
         return super().create(data)
 
+#**************************Serializer For Container Types Model**************************#
 class ContainerTypesSerializer(serializers.ModelSerializer):
     label=serializers.SerializerMethodField()
     def get_label(self, obj):
@@ -66,12 +73,14 @@ class ContainerTypesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containertypes')
         if record_id:
             data['id']=get_rid_pkey('containertypes')
         return super().create(data)
 
+#**************************Serializer For Containers Model**************************#
 class ContainersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Containers
@@ -79,12 +88,14 @@ class ContainersSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='containers')
         if record_id:
             data['id']=get_rid_pkey('containers')
         return super().create(data)
 
+#**************************Serializer For Contents Model**************************#
 class ContentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contents
@@ -92,6 +103,7 @@ class ContentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='contents')
         if record_id:

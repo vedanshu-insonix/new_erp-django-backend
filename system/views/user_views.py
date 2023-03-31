@@ -111,56 +111,60 @@ class UserViewSet(viewsets.ModelViewSet):
             if "remove_role" in data:
                 remove_roles= data.pop('remove_role')
                 RemoveRoles=True
-            serializer = UserSerializer(user_rec, data=data, context={'request':request})
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                user_id = User.objects.get(id=serializer.data.get('id'))
-                if haveAddr == True:
-                    address_rec['address_type'] = 'company user'
-                    check = UserAddress.objects.filter(user=pk)
-                    if check:
-                        address_id = check.values()[0]['address_id']
-                        addr = Addresses.objects.get(id=address_id)
-                        update_addr = AddressSerializer(addr, data=address_rec, context={'request':request})
-                        if update_addr.is_valid(raise_exception=True):
-                            update_addr.save()
-                    else:
-                        new_address = AddressSerializer(data=address_rec, context={'request':request})
-                        if new_address.is_valid(raise_exception=True):
-                            new_address.save()
-                        new_address = Addresses.objects.get(id=new_address.data.get('id'))
-                        create_user_address=UserAddress.objects.create(address=new_address,user=user_id)
-                if AddTeam == True:
-                    for team in add_teams:
-                        team = team.get('id')
-                        team=Team.objects.get(id=team)
-                        find = TeamUser.objects.filter(team=team, user=user_rec)
-                        if not find:
-                            add_Team=TeamUser.objects.create(team=team, user=user_rec)
-                if RemoveTeam == True:
-                    for team in remove_teams:
-                        team = team.get('id')
-                        team=Team.objects.get(id=team)
-                        find = TeamUser.objects.filter(team=team, user=user_rec)
-                        if find:
-                            remove_Team=(TeamUser.objects.filter(team=team, user=user_rec)).delete()
-                        
-                if AddRoles == True:
-                    for role in add_roles:
-                        role = role.get('id')
-                        role=Role.objects.get(id=role)
-                        find = UserRoles.objects.filter(role=role, user=user_rec)
-                        if not find:
-                            add_role=UserRoles.objects.create(role=role, user=user_rec)
-                if RemoveRoles == True:
-                    for role in remove_roles:
-                        role = role.get('id')
-                        role=Role.objects.get(id=role)
-                        find = UserRoles.objects.filter(role=role, user=user_rec)
-                        if find:
-                            remove_role=(UserRoles.objects.filter(role=role, user=user_rec)).delete()
-            msg = "User Updation Successful."
-            return Response(utils.success_msg(msg))
+            if 'password' in data:
+                msg = "Password Can't be updated through this interface. Please Request a Reset Password Email from Admin."
+                return Response(utils.error(msg))
+            else:
+                serializer = UserSerializer(user_rec, data=data, context={'request':request})
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    user_id = User.objects.get(id=serializer.data.get('id'))
+                    if haveAddr == True:
+                        address_rec['address_type'] = 'company user'
+                        check = UserAddress.objects.filter(user=pk)
+                        if check:
+                            address_id = check.values()[0]['address_id']
+                            addr = Addresses.objects.get(id=address_id)
+                            update_addr = AddressSerializer(addr, data=address_rec, context={'request':request})
+                            if update_addr.is_valid(raise_exception=True):
+                                update_addr.save()
+                        else:
+                            new_address = AddressSerializer(data=address_rec, context={'request':request})
+                            if new_address.is_valid(raise_exception=True):
+                                new_address.save()
+                            new_address = Addresses.objects.get(id=new_address.data.get('id'))
+                            create_user_address=UserAddress.objects.create(address=new_address,user=user_id)
+                    if AddTeam == True:
+                        for team in add_teams:
+                            team = team.get('id')
+                            team=Team.objects.get(id=team)
+                            find = TeamUser.objects.filter(team=team, user=user_rec)
+                            if not find:
+                                add_Team=TeamUser.objects.create(team=team, user=user_rec)
+                    if RemoveTeam == True:
+                        for team in remove_teams:
+                            team = team.get('id')
+                            team=Team.objects.get(id=team)
+                            find = TeamUser.objects.filter(team=team, user=user_rec)
+                            if find:
+                                remove_Team=(TeamUser.objects.filter(team=team, user=user_rec)).delete()
+                            
+                    if AddRoles == True:
+                        for role in add_roles:
+                            role = role.get('id')
+                            role=Role.objects.get(id=role)
+                            find = UserRoles.objects.filter(role=role, user=user_rec)
+                            if not find:
+                                add_role=UserRoles.objects.create(role=role, user=user_rec)
+                    if RemoveRoles == True:
+                        for role in remove_roles:
+                            role = role.get('id')
+                            role=Role.objects.get(id=role)
+                            find = UserRoles.objects.filter(role=role, user=user_rec)
+                            if find:
+                                remove_role=(UserRoles.objects.filter(role=role, user=user_rec)).delete()
+                msg = "User Updation Successful."
+                return Response(utils.success_msg(msg))
         except Exception as e:
             return Response(utils.error(str(e)))
 
@@ -216,25 +220,23 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # Send link to Reset Password
-    
     @action(detail=False, methods=['post'], url_path='request-reset-email', url_name='request-reset-email')
     def request_reset_email(self, request):
-         serializers = SendPasswordResetEmailSerializer(data=request.data, context = {'request': request})
-         if serializers.is_valid(raise_exception=True):
-             msg = "Password Reset link send. Please check your email"
-             token = serializers.validate(request.data)['token']
-             response = {'status': 'success','code': status.HTTP_200_OK,'message': msg, 'token': token}
-             return Response(response)
-         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializers = SendPasswordResetEmailSerializer(data=request.data, context = {'request': request})
+        if serializers.is_valid(raise_exception=True):
+            msg = "Password Reset link send. Please check your email"
+            response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}
+            return Response(response)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
     
     # Reset Password 
     @action(detail=False, methods=['post'],url_path = "reset-password/(?P<uid>[-\w]+)_(?P<token>[-\w]+)")
     def resetPassword(self, request, uid, token):
         serializers = UserPasswordResetSerializer(data = request.data, context = {'uid':uid, 'token': token})
         if serializers.is_valid(raise_exception=True):
-             msg = "Password Reset successfully"
-             response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}
-             return Response(response)
+            msg = "Password Reset successfully"
+            response = {'status': 'success','code': status.HTTP_200_OK,'message': msg}
+            return Response(response)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get_permissions(self):

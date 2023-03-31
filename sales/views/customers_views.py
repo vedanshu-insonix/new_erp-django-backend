@@ -233,25 +233,27 @@ class CustomerViewSet(viewsets.ModelViewSet):
         serializer = AddressSerializer(address_queryset, many = True)         
         return Response(serializer.data)
 
+    # Create Customer Records in Bulk.
     @action(detail=False, methods=['post'], url_path = "import")
     def import_customers(self, request):
-        try:
-            file = request.FILES.get('file')
-            sequences = json.loads(request.data.get('sequences'))
-          
-            count=0
-            data_dict = {}
+        file = request.FILES.get('file')
+        sequences = json.loads(request.data.get('sequences'))
+        
+        count=0
+        data_dict = {}
 
-            if file:
-                wb = openpyxl.load_workbook(file)
-                sheet = wb.active
-                for row in sheet.iter_rows(min_row=2):
-                    row_data = []
-                    for cell in row:
-                        row_data.append(cell.value)
-                    for key in sequences:
-                        data_dict[key] = row_data[sequences[key]-1]
-                    try:
+        if file:
+            wb = openpyxl.load_workbook(file)
+            sheet = wb.active
+            for row in sheet.iter_rows(min_row=2):
+                row_data = []
+                for cell in row:
+                    row_data.append(cell.value)
+                for key in sequences:
+                    data_dict[key] = row_data[sequences[key]-1]
+                try:
+                    customer_name = data_dict['customer']
+                    if customer_name:
                         if 'shipping_terms' in data_dict:
                             sterm=data_dict['shipping_terms']
                             sterm=utils.encode_api_name(sterm)
@@ -314,60 +316,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
                         if serializers.is_valid(raise_exception=True):
                             serializers.save()
                             count += 1
-                    except Exception as e:
-                        print("Error > ", str(e), data_dict)
-                        pass
-            else:
-                msg="Please Upload A Suitable Excel File."
-                return Response(utils.error(msg))
-            return Response(utils.success(count))
-        except Exception as e:
-            return Response(utils.error(str(e)))
-        
-    @action(detail=False, methods=['get'], url_path = "search_customer")
-    def search_customer(self, request):
-        queryset = Customers.objects.all()
-        new_queryset = Customers.objects.none()
-        all_fields = [f.name for f in Customers._meta.get_fields()]
-        filter_values = ListFilters.objects.filter(list__system_name='Customers')
-        for filters in filter_values:
-            field = utils.encode_api_name(filters.data.system_name)
-            value = filters.value
-            operator = str(filters.operator)
-            logic = str(filters.logic)
-            sublogic = str(filters.sublogic)
-            if logic:
-                if logic.lower() == 'or':
-                    new_queryset = queryset|new_queryset
-                    queryset = Customers.objects.all()
-
-            if field in all_fields:
-                if operator=='is':
-                    lookup = "%s__contains" % field
-                    queryset = queryset.filter(**{lookup:value})
-                elif operator=='is not':
-                    lookup = "%s__contains" % field
-                    queryset = queryset.exclude(**{lookup:value})
-                elif operator == 'is greater':
-                    lookup = "%s__gt" % field
-                    queryset = queryset.filter(**{lookup:value})
-                elif operator == 'is lesser':
-                    lookup = "%s__lt" % field
-                    queryset = queryset.filter(**{lookup:value})
-                elif operator == 'is lesser or equal':
-                    lookup = "%s__lte" % field
-                    queryset = queryset.filter(**{lookup:value})
-                elif operator == 'is greater or equal':
-                    lookup = "%s__gte" % field
-                    queryset = queryset.filter(**{lookup:value})
-                elif operator == 'like':
-                    lookup = "%s__icontains" % field
-                    queryset = queryset.filter(**{lookup:value})
-            
-                if logic.lower() == 'or':
-                    new_queryset = new_queryset|queryset
-                    queryset = Customers.objects.all()   
-                elif logic.lower() == 'and':
-                    new_queryset = queryset
-        serializer = CustomerSerializer(new_queryset, many=True, context={'request':request})
-        return Response(utils.success_msg(serializer.data))
+                except Exception as e:
+                    print("Error > ", str(e), data_dict)
+                    pass
+        else:
+            msg="Please Upload A Suitable Excel File."
+            return Response(utils.error(msg))
+        return Response(utils.success(count))

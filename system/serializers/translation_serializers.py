@@ -7,7 +7,7 @@ from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 from system.service import get_rid_pkey
 
-
+#**************************Serializer For Translation Model**************************#
 class TranslationSerializer(serializers.ModelSerializer):
     column = serializers.SerializerMethodField()
     formdata = serializers.SerializerMethodField()
@@ -20,7 +20,6 @@ class TranslationSerializer(serializers.ModelSerializer):
     # tile = serializers.SerializerMethodField()
     
     def get_column(self, obj):
-        
         return None
     
     def get_formdata(self, obj):
@@ -62,6 +61,7 @@ class TranslationSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='translation')
         if record_id:

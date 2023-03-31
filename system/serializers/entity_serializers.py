@@ -5,6 +5,7 @@ from system.serializers.common_serializers import RelatedStageSerializer
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
+#**************************Serializer For Entity Model**************************#
 class RelatedEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
@@ -70,24 +71,28 @@ class EntitySerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='entity')
         if record_id:
             data['id']=get_rid_pkey('entity')
         return super().create(data)
-        
+
+#**************************Serializer For Entity Address Model**************************#        
 class EntityAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityAddress
         exclude = ("entity","created_time","modified_time","created_by","id")
         depth = 1
 
+#**************************Serializer For Entity User Model**************************#
 class EntityUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityUser
         exclude = ("entity","created_time","modified_time","created_by","id")
         depth = 1
 
+#**************************Serializer For Entity Team Model**************************#
 class EntityTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityTeam

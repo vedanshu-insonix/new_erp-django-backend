@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
 
-
+#**************************Serializer For Channel Model**************************#
 class RelatedChannelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Channel
@@ -27,19 +27,19 @@ class ChannelSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='channel')
         if record_id:
             data['id']=get_rid_pkey('channel')
         return super().create(data)
 
-
+#**************************Serializer For Communication Model**************************#
 class RelatedCommunicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Communication
         exclude = ("created_time", "modified_time", "created_by")
         
-
 class CommunicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Communication
@@ -59,12 +59,14 @@ class CommunicationSerializer(serializers.ModelSerializer):
         #    response['channel'] = RelatedChannelSerializer(instance.channel).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='communication')
         if record_id:
             data['id']=get_rid_pkey('communication')
         return super().create(data)
-  
+
+#**************************Serializer For Communication Address Model**************************#  
 class CommunicationAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunicationAddress

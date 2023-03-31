@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from system.models.recordid import RecordIdentifiers
 
+#**************************Serializer For Record Identifier Model**************************#
 class RecordIdentifierSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordIdentifiers

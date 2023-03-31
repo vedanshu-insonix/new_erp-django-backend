@@ -221,7 +221,8 @@ class AddressViewSet(viewsets.ModelViewSet):
             return Response({'status': 'success','code': status.HTTP_200_OK})
         except Exception as e:
             return Response(utils.error(self,str(e)))
-        
+
+    # Create Address Records in Bulk.    
     @action(detail=False, methods=['post'], url_path = "import")
     def import_address(self, request):
         try:
@@ -287,6 +288,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response(utils.error(str(e)))
 
+# To Update the communication record after the updation of any address record.
 @receiver(post_save, sender=Addresses)
 def update_comm(created, sender,instance,**kwargs):
     if not created:

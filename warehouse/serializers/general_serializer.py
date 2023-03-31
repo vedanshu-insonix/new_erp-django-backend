@@ -4,6 +4,7 @@ from system.serializers.user_serializers import RelatedUserSerilaizer
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 
+#**************************Serializer For Journal Model**************************#
 class JournalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Journal
@@ -11,12 +12,14 @@ class JournalSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='journal')
         if record_id:
             data['id']=get_rid_pkey('journal')
         return super().create(data)
 
+#**************************Serializer For Journal Template Model**************************#
 class RelatedJournalTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalTemplate
@@ -29,6 +32,7 @@ class JournalTemplateSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
@@ -38,12 +42,14 @@ class JournalTemplateSerializer(serializers.ModelSerializer):
             
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='journaltemplate')
         if record_id:
             data['id']=get_rid_pkey('journaltemplate')
         return super().create(data)
 
+#**************************Serializer For Attributes Model**************************#
 class RelatedAttributesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attributes
@@ -56,6 +62,7 @@ class AttributesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         created_by = RelatedUserSerilaizer(instance.created_by).data
@@ -64,19 +71,21 @@ class AttributesSerializer(serializers.ModelSerializer):
             
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='attributes')
         if record_id:
             data['id']=get_rid_pkey('attributes')
         return super().create(data)
 
+#**************************Serializer For Product Attribute Model**************************#
 class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductAttribute
         exclude = ("id","product","created_time","modified_time","created_by")
         depth = 1
         
-
+#**************************Serializer For Images Model**************************#
 class RelatedImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images
@@ -89,6 +98,7 @@ class ImagesSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
@@ -98,12 +108,14 @@ class ImagesSerializer(serializers.ModelSerializer):
             
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='images')
         if record_id:
             data['id']=get_rid_pkey('images')
         return super().create(data)
 
+#**************************Serializer For Product Images Model**************************#
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImages

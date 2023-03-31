@@ -7,6 +7,7 @@ from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 from system.service import get_rid_pkey
 
+#**************************Serializer For Team Model**************************#
 class TeamSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
@@ -39,12 +40,14 @@ class TeamSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='team')
         if record_id:
             data['id']=get_rid_pkey('team')
         return super().create(data)
 
+#**************************Serializer For Team Role Model**************************#
 class TeamRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamRole
@@ -61,6 +64,7 @@ class TeamRoleSerializer(serializers.ModelSerializer):
             response['role'] = RoleSerializer(instance.role, context={'request':request}).data
         return response  
 
+#**************************Serializer For Team User Model**************************#
 class TeamUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeamUser

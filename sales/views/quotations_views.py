@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.crypto import get_random_string
 
+# To generate a unique id to reference an order/quotation other than pkey
 def create_unique_id(title):
     unique_code = get_random_string(6, allowed_chars='0123456789')
     unique_code=f'{title}{unique_code}'
@@ -22,6 +23,7 @@ class SalesQuotationsViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 
+    # Create
     def create(self,request):
         data = request.data
         try:
@@ -51,6 +53,7 @@ class SalesQuotationsViewSet(viewsets.ModelViewSet):
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)
 
+    # Update
     def update(self,request,pk):
         data = request.data
         try:
@@ -58,7 +61,7 @@ class SalesQuotationsViewSet(viewsets.ModelViewSet):
             if 'quotation_id' in data:
                 result = "Quotation ID can't get updated."
             else:
-                if ('merchandise' in data):
+                if 'merchandise' in data:
                     price = data['merchandise']
                 else:
                     price = order_rec.merchandise

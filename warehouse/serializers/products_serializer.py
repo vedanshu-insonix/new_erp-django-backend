@@ -8,7 +8,7 @@ from sales.serializers.addresses_serializers import AddressSerializer
 from warehouse.serializers.route_serializer import RouteSerializer
 from warehouse.serializers.route_serializer import RouteSerializer
 
-#******************************* Product Serializer *******************************
+#**************************Serializer For Product Model**************************#
 class RelatedProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -49,6 +49,7 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
@@ -73,12 +74,14 @@ class ProductSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='product')
         if record_id:
             data['id']=get_rid_pkey('product')
         return super().create(data)
 
+#**************************Serializer For Bom Model**************************#
 class BomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bom
@@ -86,12 +89,14 @@ class BomSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='bom')
         if record_id:
             data['id']=get_rid_pkey('bom')
         return super().create(data)
 
+#**************************Serializer For Components Model**************************#
 class ComponentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Components
@@ -99,12 +104,14 @@ class ComponentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='components')
         if record_id:
             data['id']=get_rid_pkey('components')
         return super().create(data)
 
+#**************************Serializer For Characteristics Model**************************#
 class CharacteristicsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Characteristics
@@ -112,13 +119,14 @@ class CharacteristicsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
-
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='characteristics')
         if record_id:
             data['id']=get_rid_pkey('characteristics')
         return super().create(data)
 
+#**************************Serializer For Value Model**************************#
 class RelatedValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Value
@@ -131,6 +139,7 @@ class ValueSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
     
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
@@ -139,20 +148,21 @@ class ValueSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='value')
         if record_id:
             data['id']=get_rid_pkey('value')
         return super().create(data)
 
-
-
+#**************************Serializer For Product Values Model**************************#
 class ProductValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductValues
         fields = ('value',)
         depth = 1
 
+#**************************Serializer For Product Category Model**************************#
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
@@ -160,13 +170,14 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productcategory')
         if record_id:
             data['id']=get_rid_pkey('productcategory')
         return super().create(data)
 
-
+#**************************Serializer For Equivalents Model**************************#
 class EquivalentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Equivalents
@@ -174,14 +185,14 @@ class EquivalentsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='equivalents')
         if record_id:
             data['id']=get_rid_pkey('equivalents')
         return super().create(data)
 
-
-
+#**************************Serializer For Locations Model**************************#
 class RelatedLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Locations
@@ -194,6 +205,7 @@ class LocationsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
@@ -208,14 +220,14 @@ class LocationsSerializer(serializers.ModelSerializer):
             response['loc_address'] = AddressSerializer(instance.loc_address).data
         return response
     
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='locations')
         if record_id:
             data['id']=get_rid_pkey('locations')
         return super().create(data)
 
-
-
+#**************************Serializer For Product Counts Model**************************#
 class ProductCountsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCounts
@@ -223,13 +235,14 @@ class ProductCountsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productcounts')
         if record_id:
             data['id']=get_rid_pkey('productcounts')
         return super().create(data)
 
-
+#**************************Serializer For Product Locations Model**************************#
 class ProductLocationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductLocations
@@ -237,13 +250,14 @@ class ProductLocationsSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='productlocations')
         if record_id:
             data['id']=get_rid_pkey('productlocations')
         return super().create(data)
 
-
+#**************************Serializer For UOM Model**************************#
 class UOMSerializer(serializers.ModelSerializer):
     class Meta:
         model = UOM
@@ -251,6 +265,7 @@ class UOMSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         record_id = RecordIdentifiers.objects.filter(record='uom')
         if record_id:

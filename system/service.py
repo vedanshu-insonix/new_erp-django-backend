@@ -1,5 +1,7 @@
+# Manual Pkey generation feature.
 from system.models.recordid import RecordIdentifiers
 
+# used to generate pkey in child models.(eg:- choices, states)
 def get_related_pkey(sender,initial,sequence):
     new_id=(int(initial)*1000)+int(sequence)
     record_id = RecordIdentifiers.objects.get(record=sender)
@@ -7,6 +9,7 @@ def get_related_pkey(sender,initial,sequence):
     record_id.save()
     return new_id
 
+# used to generate pkey in parent models.(eg:- selectors, country)
 def get_rid_pkey(sender):
     new_id = None
     record_id = RecordIdentifiers.objects.get(record=sender)
@@ -24,6 +27,7 @@ def get_rid_pkey(sender):
     record_id.save()
     return primary_id
 
+# used to update next pkey for a model in recordidentifier model.(Note:- Currently used in custom_command only.)
 def updatenextid(sender, pid):
     record_id = RecordIdentifiers.objects.get(record=sender)
     record_id.next = int(pid)+1
