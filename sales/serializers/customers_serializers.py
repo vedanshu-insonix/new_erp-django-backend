@@ -54,9 +54,13 @@ class CustomerSerializer(serializers.ModelSerializer):
         # if 'id' in currency_data:
         #     response['currency'] = RelatedCurrencySerializer(instance.currency).data
             
-        stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
-        if 'id' in stage_data:
-            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        # stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        # if 'id' in stage_data:
+        #     response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
+
+        stage_data = instance.stage
+        if stage_data:
+            response['stage']=instance.stage.system_name
             
         created_data = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_data:
@@ -93,6 +97,10 @@ class CustomerSerializer(serializers.ModelSerializer):
         currency_data = instance.currency
         if currency_data:
             response['currency'] = instance.currency.system_name
+
+        status_data = instance.status
+        if currency_data:
+            response['status'] = instance.status.system_name
 
         return response
 

@@ -243,6 +243,7 @@ class ListFilters(BaseContent):
     sequence = models.IntegerField(null=True , blank=True)
     sublogic = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='sublogic_operators')
     operator = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='relational_operators')
+    default = models.BooleanField(default=False)
 
 class ListSorts(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

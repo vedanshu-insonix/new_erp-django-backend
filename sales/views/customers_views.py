@@ -258,55 +258,53 @@ class CustomerViewSet(viewsets.ModelViewSet):
                             sterm=data_dict['shipping_terms']
                             sterm=utils.encode_api_name(sterm)
                             sp_term = Choice.objects.filter(selector__system_name='shipping_terms', system_name=sterm)
-                            if sp_term:
-                                data_dict['shipping_terms'] = sp_term.values()[0]['id']
+                            if sp_term: data_dict['shipping_terms'] = sp_term.values()[0]['id']
                         
                         if 'ship_via' in data_dict:
                             smethod = data_dict['ship_via']
                             smethod = utils.encode_api_name(smethod)
                             sp_method = Choice.objects.filter(selector__system_name='ship_via', system_name=smethod)
-                            if sp_method:
-                                data_dict['ship_via'] = sp_method.values()[0]['id']
+                            if sp_method: data_dict['ship_via'] = sp_method.values()[0]['id']
 
                         if 'payment_terms' in data_dict:
                             pterm = data_dict['payment_terms']
                             pterm = utils.encode_api_name(pterm)
                             pay_terms = Choice.objects.filter(selector__system_name='payment_terms', system_name=pterm)
-                            if pay_terms:
-                                data_dict['payment_terms'] = pay_terms.values()[0]['id']
+                            if pay_terms: data_dict['payment_terms'] = pay_terms.values()[0]['id']
 
                         if 'payment_method' in data_dict:
                             pmethod = data_dict['payment_method']
                             pmethod = utils.encode_api_name(pmethod)
                             pay_method = Choice.objects.filter(selector__system_name='payment_method', system_name=pmethod)
-                            if pay_method:
-                                data_dict['payment_method'] = pay_method.values()[0]['id']
+                            if pay_method: data_dict['payment_method'] = pay_method.values()[0]['id']
 
                         if 'customer_source' in data_dict:
                             source = data_dict['customer_source']
                             source = utils.encode_api_name(source)
                             cust_source = Choice.objects.filter(selector__system_name='customer_source', system_name=source)
-                            if cust_source:
-                                data_dict['customer_source'] = cust_source.values()[0]['id']
+                            if cust_source: data_dict['customer_source'] = cust_source.values()[0]['id']
 
                         if 'entity' in data_dict:
                             entity = data_dict['entity']
                             entity = utils.encode_api_name(entity)
                             entity = Choice.objects.filter(selector__system_name='entity', system_name=entity)
-                            if entity:
-                                data_dict['entity'] = entity.values()[0]['id']
+                            if entity: data_dict['entity'] = entity.values()[0]['id']
 
-                        if  'currency' in data_dict:
+                        if 'currency' in data_dict:
                             currency = Currency.objects.filter(code=data_dict['currency'])
-                            if currency:
-                                data_dict['currency'] = currency.values()[0]['id']
+                            if currency: data_dict['currency'] = currency.values()[0]['id']       
                         
-                        if  'stage' in data_dict:
+                        if 'stage' in data_dict:
                             stage_id = Stage.objects.filter(system_name=data_dict['stage'])
                             if stage_id:
                                 stage = FormStage.objects.filter(form__system_name='Customer', stage=stage_id.values()[0]['id'])
-                                if stage:
-                                    data_dict['stage'] = stage.values()[0]['stage_id']
+                                if stage: data_dict['stage'] = stage.values()[0]['stage_id']
+
+                        if 'status' in data_dict:
+                            status = data_dict['status']
+                            status = utils.encode_api_name(status)
+                            status_id = Choice.objects.filter(selector__system_name='status', system_name=status)
+                            if status_id: data_dict['status'] = status_id.values()[0]['id']
 
                         data_dict['require_pos'] = True
                         data_dict['average_pay_days'] = 10
@@ -323,3 +321,23 @@ class CustomerViewSet(viewsets.ModelViewSet):
             msg="Please Upload A Suitable Excel File."
             return Response(utils.error(msg))
         return Response(utils.success(count))
+    
+    @action(detail=False, methods=['get'], url_path = "search")
+    def search_result(self, request):
+        default_filter = ListFilters.objects.filter(list__system_name='Customers', default=True)
+        filter_list = []
+        for filters in default_filter:
+            filter_dict = {}
+            logic = filters.logic
+            if logic: logic = filters.logic.system_name   
+            filter_dict['logic']=logic
+            filter_dict['column']=filters.data.field
+            operator = filters.operator
+            if operator: operator = filters.operator.system_name    
+            filter_dict['operator']=operator
+            filter_dict['value']=filters.value
+            sublogic = filters.sublogic
+            if sublogic: sublogic = filters.sublogic.system_name
+            filter_dict['sublogic']=sublogic
+            filter_list.append(filter_dict)
+        print(filter_list)
