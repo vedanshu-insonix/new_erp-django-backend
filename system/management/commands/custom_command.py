@@ -1,7 +1,7 @@
 # Custom Command to seed database with basic data for further operations.
 from django.core.management.base import BaseCommand
-from warehouse.models import ContainerTypes
-from system.models import Choice, RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon
+from warehouse.models import ContainerTypes,Accounts
+from system.models import Choice,DataRequirements,Button,RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon
 import pandas as pd
 import os
 from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
@@ -25,6 +25,9 @@ flag_file= os.listdir(flag_path)
 
 data_dict={}
 global_data = {}
+
+# Get user 
+user= User.objects.filter(username = 'admin').values()[0]["id"]
 
 # Function to extract data from excel file
 def  extract_data(file):
@@ -50,12 +53,11 @@ def create_recordIdentifiers():
             cod = code.get(x)
             nxt = next.get(x) 
             start = starting.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             sel_rec = RecordIdentifiers.objects.filter(id = record_id,record = rName)
             if not sel_rec:
                 RecordIdentifiers.objects.create(id = record_id,record = rName,next = nxt,description = desc,code=cod,starting = start,created_by_id = user)
     except Exception as e:
-        print("RID Error >", str(e))
+        #print("RID Error >", str(e))
         pass
 
 # Function to seed Selectors model           
@@ -78,7 +80,6 @@ def create_selectors():
             sel_name = utils.encode_api_name(sName)
             typ = type.get(x)
             #desc = description.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             sel_rec = Selectors.objects.filter(id = sel_id,system_name = sel_name)
             check=Translation.objects.filter(label=sName, language_id=lang.id)
             if not check:
@@ -93,7 +94,7 @@ def create_selectors():
             if not trans:
                 TranslationSelector.objects.create(selector=sel, translation = label_rec)
     except Exception as e:
-        print("Selector Error >", str(e))
+        #print("Selector Error >", str(e))
         pass
 
 # Function to seed Choice model           
@@ -119,7 +120,6 @@ def create_choice():
                     sequence= None
                 else:
                     sequence = int(temp_sequence)
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 gSel = Selectors.objects.filter(system_name=sel_name).first()
                 choice_rec = Choice.objects.filter(selector__system_name=sel_name, system_name=nName)
                 label = utils.decode_api_name(nName)
@@ -136,7 +136,7 @@ def create_choice():
                 if not trans:
                     TranslationChoice.objects.create(choice=ch, translation = label_rec)
         except Exception as e:
-            print("Choice Error >", str(e))
+            #print("Choice Error >", str(e))
             pass
 
 # Function to seed DataSet model     
@@ -150,13 +150,12 @@ def create_dataset():
             tbl_id = id.get(x)
             dName = system_name.get(x)
             desc = description.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             dataset_rec = DataTable.objects.filter(id= tbl_id,system_name=dName)
             if not dataset_rec:
                 DataTable.objects.create(id= tbl_id,system_name=dName,description=desc,created_by_id = user)
                 updatenextid('datatable',tbl_id)
     except Exception as e:
-        print("Dataset Error >", str(e))
+        #print("Dataset Error >", str(e))
         pass
 
 # Function to seed Data model   
@@ -193,7 +192,6 @@ def create_data():
             gftype= Choice.objects.filter(system_name=ftype).first()
             #cmnt = comment.get(x)
             gsel_id = Selectors.objects.filter(id =selector_id ).first()
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             sdset = DataTable.objects.get(system_name=dset)
             try:
                 check=Translation.objects.filter(label=dName, language_id=lang.id)
@@ -215,7 +213,7 @@ def create_data():
             if not datasel:
                 DataSelector.objects.create(selector=gsel_id, data=dt_id)
     except Exception as e:
-        print("Data Error >", str(e))
+        #print("Data Error >", str(e))
         pass
 
 # Function to seed Icons model        
@@ -230,7 +228,6 @@ def create_icons():
             icon_id = id.get(x)
             sName = system_name.get(x)
             iImage = icon_image.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             icon_rec = Icons.objects.filter(id =icon_id,system_name=sName)
             try:
                 check=Translation.objects.filter(label=sName, language_id=lang.id)
@@ -250,7 +247,7 @@ def create_icons():
             if not trans:
                 TranslationIcons.objects.create(icon=ic_id, translation = label_rec)
     except Exception as e:
-        print("Icons Error >", str(e))
+        #print("Icons Error >", str(e))
         pass
 
 # Function to seed Configurations model                  
@@ -267,7 +264,6 @@ def create_conf():
             conf = system_name.get(x)
             typ = type.get(x)
             vdef = default_value.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             conf_rec = Configuration.objects.filter(id = conf_id,system_name=conf)
             try:
                 check=Translation.objects.filter(label=conf, language_id=lang.id)
@@ -285,7 +281,7 @@ def create_conf():
             if not trans:
                 TranslationConfiguration.objects.create(configuration=config_id, translation = label_rec)
     except Exception as e:
-        print("Configurations Error >", str(e))
+        #print("Configurations Error >", str(e))
         pass
         
 # Function to seed Currency model           
@@ -302,7 +298,6 @@ def create_currencies():
             xName = system_name.get(x)
             xCode = code.get(x)
             xSym = sym.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             cur_rec = Currency.objects.filter(id = cur_id,system_name=xName)
             try:
                 check=Translation.objects.filter(label=xName, language_id=lang.id)
@@ -320,7 +315,7 @@ def create_currencies():
             if not trans:
                 TranslationCurrency.objects.create(currency=curr_id, translation = label_rec)
     except Exception as e:
-        print("Currency Error >", str(e))
+        #print("Currency Error >", str(e))
         pass
 
 # Function to seed Country model           
@@ -357,8 +352,6 @@ def create_countries():
             Mon= utils.encode_api_name(money_format.get(x))
             Date = utils.encode_api_name(date_format.get(x))
             sflag = flag.get(x)
-            
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             sCur = Currency.objects.filter(id = cu_id,code =cu_code).first()
             sSym = Choice.objects.filter(system_name=sym).first()
             sMon = Choice.objects.filter(system_name=Mon).first()
@@ -373,7 +366,7 @@ def create_countries():
                                         system_name=sname, flag = flag_p, created_by_id = user)
                 updatenextid('country',con_id)
     except Exception as e:
-        print("Country Error >", str(e))
+        #print("Country Error >", str(e))
         pass
 
 # Function to seed State model           
@@ -391,7 +384,6 @@ def create_state():
             c_code = country_code.get(x)
             abb = abbreviation.get(x)
             sName=system_name.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             scon = Country.objects.filter(country_code=c_code).first()
             sequence = int(seq.get(x))
             state_rec = State.objects.filter(id = s_id,system_name= sName)
@@ -399,7 +391,7 @@ def create_state():
                 State.objects.create(id = s_id,abbreviation = abb,country=scon,system_name = sName,sequence = sequence, created_by_id = user)
                 updatenextid('state',s_id)
     except Exception as e:
-        print("State Error >", str(e))
+        #print("State Error >", str(e))
         pass
 
 # Function to seed Language model           
@@ -419,8 +411,6 @@ def create_language():
                 dir_c = dir_choice.get(x)
                 nTrans = native_Translation.get(x)
                 cod = code.get(x)
-                #dir = direction.get(x)
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 sChoice = Choice.objects.filter(id=dir_c).first()
                 lang_rec =Language.objects.filter(id =l_id,system_name=xName)
                 if not lang_rec:
@@ -429,7 +419,7 @@ def create_language():
             except Exception as e:
                 print(e)
     except Exception as e:
-        print("Language Error >", str(e))
+        #print("Language Error >", str(e))
         pass
 
 # Function to seed List model           
@@ -465,7 +455,6 @@ def create_list():
                 #t_id = type_id.get(x)
                 ltype = utils.encode_api_name(list_type.get(x))
                 #gccat= Choice.objects.get_or_create(choice_name= cat)
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 sptble = DataTable.objects.filter(system_name=ptable).first()
                 sltp = Choice.objects.filter(system_name = ltype).first()
                 list_rec = List.objects.filter(id = l_id,system_name=lName)
@@ -494,7 +483,7 @@ def create_list():
                     )
                 
             except Exception as e:
-                print("List Error >", str(e))
+                #print("List Error >", str(e))
                 pass
 
 # Function to seed Menu model           
@@ -515,7 +504,6 @@ def create_menu():
             cCat =utils.encode_api_name(menu_category.get(x))
             list_name = lists.get(x)
             sequence = int(seq.get(x))
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             sclist= List.objects.filter(system_name=list_name).first()
             sCat = Choice.objects.filter(system_name=cCat).first()
             menu_rec = Menu.objects.filter( id = menu_id,system_name=mName)
@@ -536,7 +524,7 @@ def create_menu():
             if not trans:
                 TranslationMenu.objects.create(menu=m_id, translation = label_rec)
         except Exception as e:
-            print("Menu Error >", str(e))
+            #print("Menu Error >", str(e))
             pass
         
 # Function to seed Column model       
@@ -571,7 +559,6 @@ def create_columns():
             #     sequence = int(temp_sequence)
             #dt = data.get(x)
             if col and col_field:
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 gclist = List.objects.filter(system_name=cl).first()
                 gcvsb = Choice.objects.filter(selector__system_name='visibility', system_name=vsb).first()
                 #gctble = DataTable .objects.filter(table=dts).first()
@@ -594,7 +581,7 @@ def create_columns():
                 if not trans:
                     TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
         except Exception as e:
-            print("Column Error >", str(e))
+            #print("Column Error >", str(e))
             pass
 
 # Function to seed Forms model   
@@ -614,7 +601,6 @@ def create_forms():
             #ic_id = icon_id.get(x)
             icn= icon.get(x)
             gicon= Icons.objects.filter(system_name=icn).first()
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             form_rec = Form.objects.filter(id = formId)
             try:
                 check=Translation.objects.filter(label=nName, language_id=lang.id)
@@ -653,7 +639,6 @@ def create_formlist():
             if (fname or f_id) and (lName or l_id):
                 glist = List.objects.filter(Q(id=l_id)|Q(system_name=lName)).first()
                 gform=Form.objects.filter(Q(id=f_id)|Q(system_name=fname)).first()
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 flist_rec = FormList.objects.filter(id = flist_id,list=glist)
                 if not flist_rec:
                     FormList.objects.create(id = flist_id,list=glist,form=gform,created_by_id = user)
@@ -673,7 +658,6 @@ def create_stages():
         for x in sList:
             s_id = id.get(x)
             sName = system_name.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             stage_rec = Stage.objects.filter(id = s_id)
             try:
                 check=Translation.objects.filter(label=sName, language_id=lang.id)
@@ -715,7 +699,6 @@ def create_formstage():
                 sequence= None
             else:
                 sequence = int(temp_sequence)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             if (frm or f_id) and (sName or s_id):
                 gform=Form.objects.filter(Q(id =f_id )|Q(system_name=frm)).first()
                 stage_rec = Stage.objects.filter(Q(id = s_id)|Q(system_name=sName)).first()
@@ -751,7 +734,6 @@ def create_formsection():
                     sequence = int(temp_sequence)
                 gvis = Choice.objects.filter(system_name=vis).first()
                 gform=Form.objects.filter(id=f_id).first()
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 flist_rec = FormSection.objects.filter(section_title=fsection,form=f_id)
                 if not flist_rec:
                     FormSection.objects.create(section_title=fsection,form=gform,section_sequence=sequence,created_by_id = user)
@@ -759,7 +741,26 @@ def create_formsection():
     except Exception as e:
         print("FSection Error >", str(e))
         pass
-
+    
+# Function to seed FormButton model
+def create_formbutton():
+    try:
+        fsbid=global_data.get("Form Stage Button ID")
+        form=global_data.get("Form")
+        form_id=global_data.get("Form ID")
+        stage=global_data.get("Stage")
+        stage_id=global_data.get("Stage ID")
+        form_button=global_data.get("Form Button")
+        form_button_id =global_data.get("Form Button ID")
+        sequence=global_data.get("Sequence")
+        highlight=global_data.get("Highlight")
+        seq=global_data.get("seq")
+        Button.objects.filter()
+        
+    except Exception as e:
+        print("Fbutton Error>>", e)
+        pass
+    
 # Function to seed FormData model        
 def create_formdata():
     try:
@@ -823,7 +824,6 @@ def create_formdata():
                 gdtype=Choice.objects.filter(selector__system_name='data_type',system_name=dt_type).first()
                 gvis=Choice.objects.filter(selector__system_name='visibility',system_name=vis).first()
                 gsec=FormSection.objects.filter(section_sequence= sec,form=gform).first()
-                user= User.objects.filter(username = 'admin').values()[0]["id"]
                 formdata_rec=FormData.objects.filter(form=gform, table=gtable, data=gdata)
                 if not formdata_rec:
                     f_data=get_rid_pkey('formdata')
@@ -834,6 +834,42 @@ def create_formdata():
     except Exception as e:
         print("FData Error >", str(e))
         pass
+
+# Function to seed datarequirements model    
+def create_fdrequirements():
+    try:
+        form=global_data.get("Form")
+        fId=global_data.get("Form ID")
+        fStage=global_data.get("Form Stage")
+        fsId=global_data.get("Form Stage ID")
+        data=global_data.get("Form Data")
+        dId=global_data.get("Data ID ")
+        requirement=global_data.get("Requirement")
+        reId=global_data.get("Requirement Choice ID")
+        fdList = list(form.keys())
+        for x in fdList:
+            fName=form.get(x)
+            fid=fId.get(x)
+            fstage=fStage.get(x)
+            fsid=fsId.get(x)
+            dt=data.get(x)
+            d_id=dId.get(x)
+            req=requirement.get(x)
+            #tempreqId=reId.get(x)
+            # if tempreqId == '':
+            #     reqId= None
+            # else:
+            #     reqId = int(tempreqId)
+            if fName and fstage and req:
+                gform=Form.objects.filter(system_name=fName).first()
+                gfstage=Stage.objects.filter(system_name=fstage).first()
+                gdata=Data.objects.filter(system_name=dt).first()
+                greq=Choice.objects.filter(selector__system_name='data_required',system_name=req).first()
+                dreq_rec=DataRequirements.objects.filter(form=gform,data=gdata,stage=gfstage,requirement=greq)
+                if not dreq_rec:
+                    DataRequirements.objects.create(form=gform,data=gdata,stage=gfstage,requirement=greq,created_by_id = user)
+    except Exception as e:
+        print("data requirements Error >>",e)
 
 # Function to seed Entity model        
 def create_entities():
@@ -848,7 +884,6 @@ def create_entities():
             eName = name.get(x)
             prnt = parent.get(x)
             prnt_id = parent_id.get(x)
-            user= User.objects.filter(username = 'admin').values()[0]["id"]
             gcprnt = Entity.objects.filter(name=prnt).first()
             entity_rec = Entity.objects.filter(name = eName,id = ent_id)
             if len(entity_rec) < 1:
@@ -902,6 +937,35 @@ def create_entities():
 #     except Exception as e:
 #         print("Container Error >", str(e))
 #         pass
+
+# Function to seed account model
+def create_account():
+    try:
+       #account=global_data.get("Account ID")
+       typ=global_data.get("Type")
+       type_id=global_data.get("Type ID")
+       category=global_data.get("Category")
+       cat_id=global_data.get("Category ID")
+       code=global_data.get("Code")
+       system_name=global_data.get("System Name")
+       #profit_loss_cat=global_data.get("Profit/Loss Category")
+       acList=list(system_name.keys())
+       for x in acList:
+           #acc=account.get(x)
+           tp=utils.encode_api_name(typ.get(x))
+           typ_id=type_id.get(x)
+           cat=utils.encode_api_name(category.get(x))
+           ct_id=cat_id.get(x)
+           cd=code.get(x)
+           acName=system_name.get(x)
+           gtype=Choice.objects.filter(selector__system_name='account_type',system_name=tp).first()
+           gcatg=Choice.objects.filter(selector__system_name='account_category',system_name =cat).first()
+           acc_rec=Accounts.objects.filter(system_name=acName)
+           if not acc_rec:
+                Accounts.objects.create(system_name=acName,type=gtype,category=gcatg,code=cd,created_by_id = user)
+    except Exception as e:
+        print("account Error >",e)
+        pass
 
 # Parent Function for DataBase Seeding        
 class Command(BaseCommand):

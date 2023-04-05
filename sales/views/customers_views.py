@@ -325,6 +325,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path = "search")
     def search_result(self, request):
         default_filter = ListFilters.objects.filter(list__system_name='Customers', default=True)
+        query = "Customers.objects.filter("
         filter_list = []
         for filters in default_filter:
             filter_dict = {}
@@ -340,4 +341,46 @@ class CustomerViewSet(viewsets.ModelViewSet):
             if sublogic: sublogic = filters.sublogic.system_name
             filter_dict['sublogic']=sublogic
             filter_list.append(filter_dict)
-        print(filter_list)
+        for i in range(len(filter_list)):
+            op = filter_list[i]['operator']
+            field = filter_list[i]['column']
+            value = filter_list[i]['value']
+            sublogic = filter_list[i]['sublogic']
+
+            if op == 'is': lookup = "%s__icontains" % field
+            if op == 'is_greater': lookup = "%s__gt" % field
+            if op == 'is_less': lookup = "%s__lt" % field
+            if op == 'is_greaterthan_or_equal': lookup = "%s__gte" % field
+            if op == 'is_lessthan_or_equal': lookup = "%s__lte" % field
+            if op == 'is_not': lookup = "%s__icontains" % field
+
+            if sublogic:
+                op1 = filter_list[i+1]['operator']
+                field1 = filter_list[i+1]['column']
+                value1 = filter_list[i+1]['value']
+
+                if op1 == 'is': lookup1 = "%s__icontains" % field1
+                if op1 == 'is_greater': lookup1 = "%s__gt" % field1
+                if op1 == 'is_less': lookup1 = "%s__lt" % field1
+                if op1 == 'is_greaterthan_or_equal': lookup1 = "%s__gte" % field1
+                if op1 == 'is_lessthan_or_equal': lookup1 = "%s__lte" % field1
+                if op1 == 'is_not': lookup1 = "%s__icontains" % field1
+
+                if sublogic =='and': subquery = query+"(Q("+lookup+"='"+value+"'),Q("+lookup1+"='"+value1+"'))"
+                elif sublogic == 'or': subquery = query+"(Q("+lookup+"='"+value+"')|Q("+lookup1+"='"+value1+"'))"
+            else:    
+                subquery = query+"Q("+lookup+"='"+value+"')"
+                
+            if filter_list[i] == filter_list[-1]:
+                subquery = subquery + ")"
+            else:
+                logic = filter_list[i+1]['logic']
+                if logic == 'and': subquery = subquery + ","
+                elif logic == 'or': subquery = subquery + "|"
+                else: print("Logic >", logic)
+            query = subquery
+
+        print(query)
+        result = eval(query)
+        result = CustomerSerializer(result, context={'request': request})
+        return Response(utils.success_msg(result.data))
