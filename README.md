@@ -1,1 +1,1 @@
-# erp_system
+# new_erp-django-backend
