@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7!2&=0ra#slpfrmediemjx)55z1=5u-ke7%gve5dr_63(t!_5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['159.65.225.205']
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -114,11 +114,11 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
     'default': {
        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': 'defaultdb',
-       'USER': 'doadmin',
-       'PASSWORD': 'AVNS_-Df0ctPeZMiFnZWBAYT',
-       'HOST': 'db-postgresql-nyc1-52247-do-user-6613485-0.b.db.ondigitalocean.com',
-       'PORT': '25060',
+       'NAME': 'erp',
+       'USER': 'postgres',
+       'PASSWORD': 'root',
+       'HOST': '127.0.0.1',
+       'PORT': '5432',
    }
 }
 
@@ -152,7 +152,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['*']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
