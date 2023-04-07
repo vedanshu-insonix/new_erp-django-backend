@@ -17,6 +17,13 @@ import openpyxl
 from system.utils import *
 from system.models.common import Choice, ListFilters, Currency, FormStage, Stage
 
+def check_parenthesis(self, query):
+    stack = list()
+    for i in query:
+        if i == '(': stack.append('(')
+        elif i == ')': stack.pop()
+    return stack 
+
 class CustomerViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Customers to be modified.
@@ -324,15 +331,17 @@ class CustomerViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path = "search")
     def search_result(self, request):
-        default_filter = ListFilters.objects.filter(list__system_name='Customers', default=True)
+        default_filter = ListFilters.objects.filter(list__system_name='Customers', default=True).order_by('sequence')
         query = "Customers.objects.filter("
         filter_list = []
+
         for filters in default_filter:
             filter_dict = {}
             logic = filters.logic
             if logic: logic = filters.logic.system_name   
             filter_dict['logic']=logic
             filter_dict['column']=filters.data.field
+            filter_dict['field_type']=filters.data.field_type.system_name
             operator = filters.operator
             if operator: operator = filters.operator.system_name    
             filter_dict['operator']=operator
@@ -341,46 +350,70 @@ class CustomerViewSet(viewsets.ModelViewSet):
             if sublogic: sublogic = filters.sublogic.system_name
             filter_dict['sublogic']=sublogic
             filter_list.append(filter_dict)
+
         for i in range(len(filter_list)):
             op = filter_list[i]['operator']
             field = filter_list[i]['column']
+            field_type = filter_list[i]['field_type']
             value = filter_list[i]['value']
             sublogic = filter_list[i]['sublogic']
 
-            if op == 'is': lookup = "%s__icontains" % field
-            if op == 'is_greater': lookup = "%s__gt" % field
-            if op == 'is_less': lookup = "%s__lt" % field
-            if op == 'is_greaterthan_or_equal': lookup = "%s__gte" % field
-            if op == 'is_lessthan_or_equal': lookup = "%s__lte" % field
-            if op == 'is_not': lookup = "%s__icontains" % field
+            if op == 'is' or op == 'is_not':
+                if field_type == 'dropdown': lookup = "%s__system_name__icontains" % field
+                if field_type == 'text': lookup = "%s__icontains" % field
+                if field_type == 'number': lookup = "%s" % field
+            if op == 'is_greater' and field_type == 'number': lookup = "%s__gt" % field
+            if op == 'is_less' and field_type == 'number': lookup = "%s__lt" % field
+            if op == 'is_greaterthan_or_equal' and field_type == 'number': lookup = "%s__gte" % field
+            if op == 'is_lessthan_or_equal' and field_type == 'number': lookup = "%s__lte" % field
 
-            if sublogic:
-                op1 = filter_list[i+1]['operator']
-                field1 = filter_list[i+1]['column']
-                value1 = filter_list[i+1]['value']
-
-                if op1 == 'is': lookup1 = "%s__icontains" % field1
-                if op1 == 'is_greater': lookup1 = "%s__gt" % field1
-                if op1 == 'is_less': lookup1 = "%s__lt" % field1
-                if op1 == 'is_greaterthan_or_equal': lookup1 = "%s__gte" % field1
-                if op1 == 'is_lessthan_or_equal': lookup1 = "%s__lte" % field1
-                if op1 == 'is_not': lookup1 = "%s__icontains" % field1
-
-                if sublogic =='and': subquery = query+"(Q("+lookup+"='"+value+"'),Q("+lookup1+"='"+value1+"'))"
-                elif sublogic == 'or': subquery = query+"(Q("+lookup+"='"+value+"')|Q("+lookup1+"='"+value1+"'))"
-            else:    
-                subquery = query+"Q("+lookup+"='"+value+"')"
-                
             if filter_list[i] == filter_list[-1]:
-                subquery = subquery + ")"
+                new_query = "Q("+lookup+"='"+value+"')"
+                if new_query in query:
+                    sq = check_parenthesis(self, query)
+                    if sq:
+                        for i in range(len(sq)):
+                            subquery = query+')'
+                else: 
+                    if op == 'is_not': subquery = query+"~Q("+lookup+"='"+value+"'))"
+                    else: subquery = query+"Q("+lookup+"='"+value+"'))"
             else:
+                if sublogic:
+                    op1 = filter_list[i+1]['operator']
+                    field1 = filter_list[i+1]['column']
+                    value1 = filter_list[i+1]['value']
+                    ft1 = filter_list[i+1]['field_type']
+
+                    if op == 'is_not': sub1 = "~Q("+lookup+"='"+value+"')"
+                    else: sub1 = "Q("+lookup+"='"+value+"')"
+
+                    if op1 == 'is' or op1 == 'is_not':
+                        if ft1 == 'dropdown': lookup1 = "%s__system_name__icontains" % field1
+                        if ft1 == 'text': lookup1 = "%s__icontains" % field1
+                        if ft1 == 'number': lookup1 = field1
+
+                    if op1 == 'is_greater' and ft1 == 'number': lookup1 = "%s__gt" % field1
+                    if op1 == 'is_less' and ft1 == 'number': lookup1 = "%s__lt" % field1
+                    if op1 == 'is_greaterthan_or_equal' and ft1 == 'number': lookup1 = "%s__gte" % field1
+                    if op1 == 'is_lessthan_or_equal' and ft1 == 'number': lookup1 = "%s__lte" % field1
+
+                    if op1 == 'is_not': sub2 = "~Q("+lookup1+"='"+value1+"')"
+                    else: sub2 = "Q("+lookup1+"='"+value1+"')"
+
+                    if sublogic =='and': subquery = query+"("+sub1+","+sub2+")"
+                    elif sublogic == 'or': subquery = query+"("+sub1+"|"+sub2+")"
+                else:    
+                    if op == 'is_not': subquery = query+"~Q("+lookup+"='"+value+"')"
+                    else: subquery = query+"Q("+lookup+"='"+value+"')"
+
                 logic = filter_list[i+1]['logic']
                 if logic == 'and': subquery = subquery + ","
                 elif logic == 'or': subquery = subquery + "|"
                 else: print("Logic >", logic)
             query = subquery
-
         print(query)
         result = eval(query)
-        result = CustomerSerializer(result, context={'request': request})
-        return Response(utils.success_msg(result.data))
+        if result: 
+            result = CustomerSerializer(result, many=True, context={'request': request})
+            result = result.data
+        return Response(utils.success_msg(result))
