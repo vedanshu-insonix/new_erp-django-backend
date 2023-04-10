@@ -335,7 +335,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         query = "Customers.objects.filter("
         filter_list = []
 
-        for filters in default_filter:
+        for filters in default_filter: 
             filter_dict = {}
             logic = filters.logic
             if logic: logic = filters.logic.system_name   
