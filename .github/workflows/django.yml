@@ -29,6 +29,7 @@ jobs:
         script: |
             cd erp_project 
             cd new_erp-django-backend
+            source venv/bin/activate
             git pull
             pip install -r requirement.txt
             python3 manage.py makemigrations
