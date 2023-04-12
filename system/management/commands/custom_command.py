@@ -242,8 +242,8 @@ def create_data():
                     if not datasel:
                         if gsel_id and dt_id:
                             DataSelector.objects.create(selector=gsel_id, data=dt_id)
-                except Exception as e:
-                    print(str(e))
+                except :
+                   pass
     except Exception as e:
         print("Data Error >", str(e))
         pass
@@ -508,9 +508,9 @@ def create_list():
                     TranslationList.objects.create(list=list_id, translation = label_rec)
                 gicon = Icons.objects.filter(system_name=i_name).first()
                 lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
-                if not lIcon_rec:
-                    if l_id and gicon: ListIcon.objects.create(list_id = l_id,icon =gicon)
-                
+                if  not lIcon_rec:
+                    if l_id and gicon:
+                        ListIcon.objects.create(list_id = l_id,icon =gicon)
             except Exception as e:
                 #print("List Error >", str(e))
                 pass
@@ -599,7 +599,7 @@ def create_columns():
             gcvsb = Choice.objects.filter(selector__system_name='visibility', system_name=vsb).first()
             gctble = DataTable .objects.filter(id =tbl_id).first()
             gcdata = Data.objects.filter(id =dt_id).first()
-            col_rec = Column.objects.filter(col_list = gclist,system_name = col)
+            col_rec= Column.objects.filter(col_list = gclist,system_name = col)
             try:
                 check=Translation.objects.filter(label=col, language_id=lang.id)
                 if not check:
@@ -871,13 +871,7 @@ def create_formdata():
                 fline=None
             else:
                 fline=int(templine)
-            head=is_heading.get(x)
-            valid = ['TRUE', 'true', 'True', 'yes', 'YES', 'Yes']
-            if head in valid:
-                head = True
-            else:
-                head =False
-            dt_type=utils.encode_api_name(data_type.get(x))
+            #dt_type=utils.encode_api_name(data_type.get(x))
             vis= utils.encode_api_name(visibility.get(x))
             tempsec=section.get(x)
             if tempsec == '':
