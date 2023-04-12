@@ -508,11 +508,8 @@ def create_list():
                     TranslationList.objects.create(list=list_id, translation = label_rec)
                 gicon = Icons.objects.filter(system_name=i_name).first()
                 lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
-                if  not lIcon_rec:
-                    ListIcon.objects.create(
-                        list_id = l_id,
-                        icon =gicon
-                    )
+                if not lIcon_rec:
+                    if l_id and gicon: ListIcon.objects.create(list_id = l_id,icon =gicon)
                 
             except Exception as e:
                 #print("List Error >", str(e))
