@@ -9,6 +9,8 @@ from system import utils
 from django.db.models import Q
 from system.service import get_rid_pkey, get_related_pkey
 from system.models.recordid import RecordIdentifiers
+from system.models.dataset import DataRequirements, Data, DataSelector
+from django.shortcuts import get_object_or_404
 
 
 #**************************Serializer For Button Model**************************# 
@@ -504,12 +506,13 @@ class RelatedListsSerializer(serializers.ModelSerializer): ## for menus only
             return data
         
     def get_icon(self,obj):
+        request = self.context['request']
         list = obj.id
         if list:
             queryset = ListIcon.objects.filter(list = list).first()
-            serializers = ListIconSerializer(queryset, many=False)
+            serializers = ListIconSerializer(queryset, many=False, context={'request': request}) 
             return serializers.data['icon'] 
-        return None  
+        return None   
     
     class Meta:
         model = List
@@ -517,7 +520,9 @@ class RelatedListsSerializer(serializers.ModelSerializer): ## for menus only
     
     # To return forign key values in detail
     def to_representation(self, instance):
+        request = self.context['request']
         response = super().to_representation(instance)
+
         data_source = instance.data_source
         if data_source:
             response['data_source'] = instance.data_source.system_name
@@ -593,12 +598,13 @@ class ListSerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_icon(self,obj):
+        request = self.context['request']
         list = obj.id
         if list:
             queryset = ListIcon.objects.filter(list = list).first()
-            serializers = ListIconSerializer(queryset, many=False)
+            serializers = ListIconSerializer(queryset, many=False, context={'request': request}) 
             return serializers.data['icon'] 
-        return None  
+        return None   
     
     class Meta:
         model = List
@@ -640,6 +646,23 @@ class ListFilterSerializer(serializers.ModelSerializer):
         if record_id:
             data['id']=get_rid_pkey('listfilters')
         return super().create(data)
+    
+#**************************Serializer For List Sorts Model**************************# 
+  
+class ListSortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListSorts
+        fields = ("__all__")
+        read_only_fields = ("created_time", "modified_time")
+        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
+
+    # pkey of new data will be created on the basis of recordidentifiers.
+    def create(self, data):
+        record_id = RecordIdentifiers.objects.filter(record='listsorts')
+        if record_id:
+            data['id']=get_rid_pkey('listsorts')
+        return super().create(data)
+
 
 #**************************Serializer For List Icon Model**************************# 
 class ListIconSerializer(serializers.ModelSerializer):
@@ -652,7 +675,12 @@ class ListIconSerializer(serializers.ModelSerializer):
         
     # To return forign key values in detail
     def to_representation(self, instance):
+        request = self.context['request']
         response = super().to_representation(instance)
+
+        base = request.build_absolute_uri('/')
+        icon = instance.icon
+        if icon: response['icon'] = base+str(instance.icon.icon_image)
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
@@ -662,7 +690,7 @@ class ListIconSerializer(serializers.ModelSerializer):
 class RelatedColumnsSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField()
     def get_label(self, obj):
-        data = obj.column
+        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__system_name = language).first()
@@ -683,14 +711,23 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
+
+        col_data = instance.col_data
+        if col_data:
+            response['col_data'] = instance.col_data.system_name
+            response['field'] = instance.col_data.field
+
+        col_table = instance.col_table
+        if col_table:
+            response['col_table'] = instance.col_table.system_name
         return response
 
 class ColumnsSerializer(serializers.ModelSerializer):
-    column = serializers.CharField(max_length = 255, required = True)
-    field = serializers.CharField(max_length = 255, required = True)
+    system_name = serializers.CharField(max_length = 255, required = True)
+    #field = serializers.CharField(max_length = 255, required = True)
     label = serializers.SerializerMethodField() 
     def get_label(self, obj):
-        data = obj.column
+        data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
         queryset = TranslationColumn.objects.filter(column = obj.id, translation__language__system_name = language).first()
@@ -719,6 +756,14 @@ class ColumnsSerializer(serializers.ModelSerializer):
         if visibility:
             response['visibility'] = instance.visibility.system_name
         
+        col_data = instance.col_data
+        if col_data:
+            response['col_data'] = instance.col_data.system_name
+            response['field'] = instance.col_data.field
+
+        col_table = instance.col_table
+        if col_table:
+            response['col_table'] = instance.col_table.system_name
         
         return response
     
@@ -866,7 +911,9 @@ class FormSerializer(serializers.ModelSerializer):
         icons = instance.icon
         if icons:
             response['icon']=base+str(instance.icon.icon_image)
-        request = self.context['request']
+        title = instance.title
+        if title:
+            response['title']=instance.title.system_name
         return response
 
     # pkey of new data will be created on the basis of recordidentifiers.
@@ -881,11 +928,11 @@ class RelatedFormListSerializer(serializers.ModelSerializer):
     icon = serializers.SerializerMethodField()
     display_records = serializers.SerializerMethodField()
     def get_icon(self,obj):
-        list = obj.list
         request = self.context['request']
+        list = obj.id
         if list:
-            queryset = ListIcon.objects.filter(list = obj.list.id).first()
-            serializers = ListIconSerializer(queryset, many=False, context={'request':request})
+            queryset = ListIcon.objects.filter(list = list).first()
+            serializers = ListIconSerializer(queryset, many=False, context={'request': request}) 
             return serializers.data['icon'] 
         return None  
         
@@ -956,7 +1003,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     choices = serializers.SerializerMethodField()
     
     def get_choices(self, obj):
-        data_type = obj.data_type
+        #data_type = obj.data_type
         request = self.context['request']
         return None
     
@@ -991,67 +1038,50 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        base = request.build_absolute_uri('/') + 'api/'
-        data = instance.data
 
+        # For Field Validation Based on Stage.
+        base = request.build_absolute_uri('/') + 'api/'
+        ins = list(DataRequirements.objects.filter(data=instance.data).values('requirement', 'stage'))
+        validations = {'requirements':None, 'stage': None}
+        if ins: 
+            req = list(Choice.objects.filter(id = ins[0]['requirement']).values('system_name'))
+            stage = list(Stage.objects.filter(id=ins[0]['stage']).values('system_name'))
+            validations['requirements']= req[0]['system_name']
+            validations['stage']= stage[0]['system_name']
+        response['validations'] = validations
+
+        # Passing Url In DropDown Fields.
+        data = instance.data
+        if data:
+            response['data'] = data.system_name
+            field = data.field
+            field_type = data.field_type
+            if field_type:
+                field_type = data.field_type.system_name
+            response['field']=field
+            response['type']=field_type
+
+            datatable_data = get_object_or_404(Data, id=instance.data_id).linked_ds
+            data_id = get_object_or_404(Data, id=instance.data_id).id
+            sel_id = list(DataSelector.objects.filter(data = data_id).values_list('selector'))
+            parent = instance.parent_field
+            if field and field_type=='dropdown':
+                if datatable_data:
+                    dt_sname = datatable_data.system_name.replace(' ', '').lower()
+                    link = base + dt_sname + '/'
+                    if parent:
+                        link = link + '?' + parent + '='
+                    response['link'] = link
+
+                if sel_id:
+                    add_link = 'choices/?selector='+sel_id[0][0]
+                    link = base+add_link
+                    response['link'] = link
+            
         section = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
         if 'id' in section:
             response['section'] = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
 
-        data = instance.data
-        if data:
-            response['data'] = instance.data.system_name
-            field = instance.data.field
-            field_type = instance.data.field_type
-            if field_type:
-                field_type = instance.data.field_type.system_name
-            response['field']=field
-            response['type']=field_type
-            if field and field_type=='dropdown':
-                if field == 'State' or field == 'state':
-                    add_link = 'states/?country='
-                    link = base+add_link
-                    response['link'] = link
-                elif field == 'Country' or field == 'country':
-                    add_link = 'countries/'
-                    link = base+add_link
-                    response['link'] = link
-                    response['child_field'] = 'state'
-                elif field == 'Language' or field == 'language':
-                    add_link = 'languages/'
-                    link = base+add_link
-                    response['link'] = link
-                elif field == 'Stage' or field == 'stage':
-                    add_link = 'formstages/?form=' 
-                    link = base+add_link
-                    response['link'] = link
-                elif 'currency'in field or 'Currency' in field:
-                    add_link = 'currencies/'
-                    link = base+add_link
-                    response['link'] = link
-                elif 'list' in field or 'List' in field:
-                    add_link = 'lists/'
-                    link = base+add_link
-                    response['link'] = link
-                elif 'form' in field or 'Form' in field:
-                    add_link = 'forms/'
-                    link = base+add_link
-                    response['link'] = link
-                elif 'column' in field or 'Column' in field:
-                    add_link = 'columns/'
-                    link = base+add_link
-                    response['link'] = link
-                else:
-                    sel_id = Selectors.objects.filter(system_name=field)
-                    if sel_id:
-                        add_link = 'choices/?selector='+sel_id.values()[0]['id']
-                        link = base+add_link
-                        response['link'] = link
-        validation_data = ['data_type', 'is_required', 'format', 'minimum', 'maximum'] 
-        validations = {} 
-        for i in validation_data:
-            validations[i]=response.pop(i)
-        response['validations'] = validations
         table = instance.table
         if table:
             response['table'] = instance.table.system_name  
@@ -1071,6 +1101,12 @@ class FormDataSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
+        ins = list(DataRequirements.objects.filter(data=instance.data).values('requirement', 'stage'))
+        if ins: 
+            req = list(Choice.objects.filter(id = ins[0]['requirement']).values('system_name'))
+            stage = list(Stage.objects.filter(id=ins[0]['stage']).values('system_name'))
+            validations = {'requirements': req[0]['system_name'], 'stage': stage[0]['system_name']}
+            response['validations'] = validations
                     
         form = RelatedFormSerializer(instance.form, context={'request': request}).data
         if 'id' in form:
@@ -1084,11 +1120,7 @@ class FormDataSerializer(serializers.ModelSerializer):
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name 
-        validation_data = ['data_type', 'is_required', 'format', 'minimum', 'maximum'] 
-        validations = {} 
-        for i in validation_data:
-            validations[i]=response.pop(i)
-        response['validations'] = validations                       
+                              
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
@@ -1215,3 +1247,24 @@ class ButtonStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ButtonStage
         fields = ("__all__")
+
+#**************************Serializer For Home Model**************************# 
+class HomeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Home
+        fields = ("__all__")
+
+    # To return forign key values in detail
+    def to_representation(self, instance):
+        request = self.context['request']
+        response = super().to_representation(instance)
+        list_data = RelatedListsSerializer(instance.list, context={'request': request}).data
+        if 'id' in list_data:
+            response['list'] = RelatedListsSerializer(instance.list, context={'request': request}).data
+        stage = instance.stage
+        if stage:
+            response['stage'] = instance.stage.system_name
+        status = instance.status
+        if status:
+            response['status'] = instance.status.system_name
+        return response

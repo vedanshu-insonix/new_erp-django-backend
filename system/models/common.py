@@ -174,6 +174,8 @@ class Form(BaseContent):
     system_name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True , blank=True)
     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
+    title = models.ForeignKey('data', on_delete=models.CASCADE, null=True, blank=True)
+    ftype = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.system_name
@@ -203,13 +205,14 @@ class FormData(BaseContent):
     visibility = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='visibility')
     sequence = models.IntegerField(null=True, blank=True)
     display_label = models.CharField(max_length=255, null = True, blank = True)
-    is_heading = models.BooleanField(default = False)
-    is_required = models.BooleanField(null=True, blank=True)
-    maximum = models.BigIntegerField(null=True, blank=True)
-    minimum = models.BigIntegerField(null=True, blank=True)
+    # is_heading = models.BooleanField(default = False)
+    # is_required = models.BooleanField(null=True, blank=True)
+    # maximum = models.BigIntegerField(null=True, blank=True)
+    # minimum = models.BigIntegerField(null=True, blank=True)
     child_field = models.CharField(max_length=255, null=True, blank=True)
-    format = models.CharField(max_length=255, null=True, blank=True)
-    data_type = models.CharField(max_length=255, null=True, blank=True)
+    parent_field = models.CharField(max_length=255, null=True, blank=True)
+    # format = models.CharField(max_length=255, null=True, blank=True)
+    # data_type = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.data.system_name
@@ -221,6 +224,16 @@ class FormSection(BaseContent):
     
     def __str__(self):
         return self.section_title
+    
+class FormPanels(BaseContent):
+    form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
+    flist = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
+    #block = models.ForeignKey('Block', on_delete=models.CASCADE, null=True, blank=True)
+    position = models.IntegerField(null=True, blank=True)
+    initial_view = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='initial_view')
+    line = models.IntegerField(null=True, blank=True)
+    total_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='total_type')
+    total_column = models.ForeignKey('Column', on_delete=models.SET_NULL, null=True, blank=True)
 
 class List(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -229,7 +242,7 @@ class List(BaseContent):
     data_source = models.ForeignKey('DataTable', on_delete=models.CASCADE, null=True, blank=True)
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
     default_view = models.CharField(max_length=255, null=True)
-    #sequence = models.IntegerField(null=True , blank=True)
+    sequence = models.IntegerField(null=True , blank=True)
 
     def __str__(self):
         return self.system_name
@@ -250,6 +263,7 @@ class ListSorts(BaseContent):
     column = models.ForeignKey('Column', on_delete=models.CASCADE, null=True, blank=True)
     sort_direction = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True , blank=True)
+    default = models.BooleanField(default=False)
 
 class ListIcon(BaseContent):
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
@@ -303,3 +317,10 @@ class FormStage(BaseContent):
 class ButtonStage(BaseContent):
     button = models.ForeignKey('Button', on_delete=models.CASCADE, null=True, blank=True)
     stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
+
+class Home(models.Model):
+    system_name = models.CharField(max_length=255, null=True, blank=True)
+    list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
+    view = models.CharField(max_length=255, null=True, blank=True)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
+    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)

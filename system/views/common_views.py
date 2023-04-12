@@ -576,6 +576,16 @@ class ListFiltersViewSet(viewsets.ModelViewSet):
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
 
+class ListSortsViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows ListSorts to be modified.
+    """
+    queryset = ListSorts.objects.all()
+    serializer_class = ListSortSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
+
 class ColumnsViewSet(viewsets.ModelViewSet):
     """
     API’s endpoint that allows Columns to be modified.
@@ -842,6 +852,16 @@ class ButtonStageViewSet(viewsets.ModelViewSet):
     """
     queryset = ButtonStage.objects.all()
     serializer_class = ButtonStageSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")
+
+class HomeViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows Button Stage to be modified.
+    """
+    queryset = Home.objects.all()
+    serializer_class = HomeSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")

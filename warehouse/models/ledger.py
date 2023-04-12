@@ -2,8 +2,8 @@ from django.db import models
 from system.models.common import BaseContent
 
 class Accounts(BaseContent):
-    type = models.ForeignKey('system.Choice', on_delete=models.CASCADE, null=True, blank=True)
-    category = models.ForeignKey('system.Category', on_delete = models.CASCADE, null = True, blank = True)
+    type = models.ForeignKey('system.Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='account_type')
+    category = models.ForeignKey('system.choice', on_delete = models.CASCADE, null = True, blank = True, related_name='account_category')
     code = models.CharField(max_length = 255, null = True, blank = True)
     system_name = models.CharField(max_length = 255, null = True, blank = True)
     system_description = models.TextField(null = True, blank = True)
