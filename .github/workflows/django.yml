@@ -28,7 +28,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
             cd erp_project 
-            cd erp-django-backend
+            cd new_erp-django-backend
             git pull
             pip install -r requirement.txt
             python3 manage.py makemigrations
