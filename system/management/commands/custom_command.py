@@ -600,9 +600,9 @@ def create_columns():
             dt = data.get(x)
             gclist = List.objects.filter(system_name=cl).first()
             gcvsb = Choice.objects.filter(selector__system_name='visibility', system_name=vsb).first()
-            gctble = DataTable .objects.filter(id =tbl_id,system_name=dts).first()
-            gcdata = Data.objects.filter(id =dt_id,system_name=dt).first()
-            col_rec= Column.objects.filter(id = col_id,system_name = col)
+            gctble = DataTable .objects.filter(id =tbl_id).first()
+            gcdata = Data.objects.filter(id =dt_id).first()
+            col_rec = Column.objects.filter(col_list = gclist,system_name = col)
             try:
                 check=Translation.objects.filter(label=col, language_id=lang.id)
                 if not check:
@@ -612,7 +612,7 @@ def create_columns():
             except Exception as e:
                 print(e)
             if not col_rec:
-                if col and dt and dts:
+                if col and dt:
                     Column.objects.create(id = col_id,col_list = gclist,system_name = col,visibility = gcvsb,col_table=gctble,col_data=gcdata,created_by_id = user)
             column_id = Column.objects.get(id = col_id)
             updatenextid('column',column_id.id)
