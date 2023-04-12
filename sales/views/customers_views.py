@@ -43,7 +43,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         }
     ordering_fields = ("__all__")
         
-    def create(self, request, *args, **kwargs):
+    """def create(self, request, *args, **kwargs):
         GetData = request.data
         HaveAddr = False
         HaveDefAdd = False
@@ -101,10 +101,71 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(returnData.data)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
-        
+            return Response(response)"""
+    
+    def create(self, request):
+        GetData = request.data
+        customer_fields = [f.name for f in Customers._meta.get_fields()]
+        address_fields = [f.name for f in Addresses._meta.get_fields()]
+        customer_data = {}
+        address_data = {}
+        for keys, values in GetData.items():
+            if keys in customer_fields:
+                customer_data[keys] = values
+            elif keys in address_fields:
+                address_data[keys] = values
+
+        if customer_data:
+            serializers = CustomerSerializer(data = customer_data, context={'request': request})
+            if serializers.is_valid(raise_exception=True):
+                serializers.save()
+            CustomerInstance = Customers.objects.get(id = serializers.data.get("id"))
+            if address_data:
+                address_serializers = AddressSerializer(data=address_data, context={'request': request})
+                if address_serializers.is_valid(raise_exception=True):
+                    address_serializers.save()
+                    
+                # Create Relation between Customer and Address
+                AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
+                CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
+            returnData = CustomerSerializer(CustomerInstance, context={'request': request})
+            return Response(returnData.data)
+        return None
+   
     def update(self, request, pk=None):
         GetData = request.data
+        try:
+            CustomerInstance = Customers.objects.get(id=pk)
+            customer_fields = [f.name for f in Customers._meta.get_fields()]
+            address_fields = [f.name for f in Addresses._meta.get_fields()]
+            customer_data = {}
+            address_data = {}
+            for keys, values in GetData.items():
+                if keys in customer_fields:
+                    customer_data[keys] = values
+                elif keys in address_fields:
+                    address_data[keys] = values
+
+            if customer_data:
+                serializers = CustomerSerializer(CustomerInstance, data = customer_data, context={'request': request})
+                if serializers.is_valid(raise_exception=True):
+                    serializers.save()
+                if address_data:
+                    ca_rec=CustomerAddress.objects.filter(customer = CustomerInstance).values('address')
+                    if ca_rec:
+                        address_id = ca_rec[0]['address']
+                        address_rec = Addresses.objects.get(id = address_id)
+                        address_serializers = AddressSerializer(address_rec, data=address_data, context={'request': request})
+                        if address_serializers.is_valid(raise_exception=True):
+                            address_serializers.save()
+                returnData = CustomerSerializer(CustomerInstance, context={'request': request})
+                return Response(returnData.data)
+            return None
+        except Exception as e:
+            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
+            return Response(response)
+        
+        """GetData = request.data
         HaveAddr = False
         HaveDefAdd = False
         try:
@@ -167,9 +228,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(serializers.data)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+            return Response(response)"""
     
-    def partial_update(self, request, pk=None):
+    """def partial_update(self, request, pk=None):
         GetData = request.data
         HaveAddr = False
         HaveDefAdd = False
@@ -227,7 +288,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(serializers.data)
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)
+            return Response(response)"""
     
     # Related List 
     @action(detail=True, methods=['get'], url_path = "addresses")
