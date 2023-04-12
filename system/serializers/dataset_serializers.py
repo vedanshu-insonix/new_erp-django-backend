@@ -67,6 +67,27 @@ class DataSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_time", "modified_time")
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
+    # To return forign key values in detail
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context['request']
+        
+        data_source = instance.data_source
+        if data_source:
+            response['data_source'] = instance.data_source.system_name
+        linked_ds = instance.linked_ds
+        if linked_ds:
+            response['linked_ds'] = instance.linked_ds.system_name             
+        linked_data = instance.linked_data
+        if linked_data:
+            response['linked_data'] = instance.linked_data.system_name 
+                              
+        created_by = RelatedUserSerilaizer(instance.created_by).data
+        if 'id' in created_by:
+            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+
+        return response
+
     # pkey of new data will be created on the basis of recordidentifiers.
     def create(self, data):
         datasource = data['data_source']

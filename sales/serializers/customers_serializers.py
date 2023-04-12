@@ -11,6 +11,36 @@ class RelatedAddressSerializer(serializers.ModelSerializer):
         model = Addresses
         exclude = ("created_time","modified_time","created_by")
 
+    # To return forign key values in detail 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+
+        state = instance.state
+        if state:
+            response['state'] = instance.state.system_name
+            
+        country = instance.country
+        if country:
+            response['country'] = instance.country.system_name
+            
+        language = instance.language
+        if language:
+            response['language'] = instance.language.system_name
+
+        stage = instance.stage
+        if stage:
+            response['stage'] = instance.stage.system_name
+
+        telephone_type = instance.telephone_type
+        if telephone_type:
+            response['telephone_type'] = instance.telephone_type.system_name
+
+        other_communication_type = instance.other_communication_type
+        if other_communication_type:
+            response['other_communication_type'] = instance.other_communication_type.system_name
+            
+        return response
+
 #**************************Serializer For Customers Model**************************#
 class RelatedCustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,27 +48,26 @@ class RelatedCustomerSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
 
 class CustomerSerializer(serializers.ModelSerializer):
-    address = serializers.SerializerMethodField()
-    other_address = serializers.SerializerMethodField()
+    # address = serializers.SerializerMethodField()
+    # other_address = serializers.SerializerMethodField()
     
-    def get_address(self,obj):
-        queryset = CustomerAddress.objects.filter(customer = obj.id)
-        address_ids = []
-        for ele in queryset:
-            address_ids.append(ele.address.id)
-        address_queryset = Addresses.objects.filter(Q(id__in = address_ids), Q(address_type = "customer") | Q(address_type = "Customer"))
-        serializer = RelatedAddressSerializer(address_queryset, many = True)         
-        return serializer.data[0] if serializer.data else None
+    # def get_address(self,obj):
+    #     queryset = CustomerAddress.objects.filter(customer = obj.id)
+    #     address_ids = []
+    #     for ele in queryset:
+    #         address_ids.append(ele.address.id)
+    #     address_queryset = Addresses.objects.filter(Q(id__in = address_ids), Q(address_type__system_name = "customer_contact"))
+    #     serializer = RelatedAddressSerializer(address_queryset, many = True)         
+    #     return serializer.data[0] if serializer.data else None
     
-    def get_other_address(self, obj):
-        queryset = CustomerAddress.objects.filter(customer = obj.id)
-        address_ids = []
-        for ele in queryset:
-            address_ids.append(ele.address.id)
-        address_queryset = Addresses.objects.filter(id__in = address_ids).exclude(Q(address_type = "customer") | Q(address_type = "Customer"),
-                                                                                default = True)  
-        serializer = RelatedAddressSerializer(address_queryset, many = True)         
-        return serializer.data
+    # def get_other_address(self, obj):
+    #     queryset = CustomerAddress.objects.filter(customer = obj.id)
+    #     address_ids = []
+    #     for ele in queryset:
+    #         address_ids.append(ele.address.id)
+    #     address_queryset = Addresses.objects.filter(id__in = address_ids).exclude(address_type__system_name = "customer_contact")  
+    #     serializer = RelatedAddressSerializer(address_queryset, many = True)         
+    #     return serializer.data
     
     class Meta:
         model = Customers 
@@ -57,6 +86,18 @@ class CustomerSerializer(serializers.ModelSerializer):
         # stage_data = RelatedStageSerializer(instance.stage, context={'request': request}).data
         # if 'id' in stage_data:
         #     response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
+        queryset = CustomerAddress.objects.filter(customer = instance.id)
+        if queryset:
+            address_ids = []
+            for ele in queryset:
+                address_ids.append(ele.address.id)
+            address_queryset = Addresses.objects.filter(Q(id__in = address_ids), Q(address_type__system_name = "customer_contact"))
+            serializer = RelatedAddressSerializer(address_queryset, many = True)
+            if serializer:
+                address_values = serializer.data
+                for key, value in address_values[0].items():
+                    if key == 'id': pass
+                    else: response[key] = value
 
         stage_data = instance.stage
         if stage_data:
@@ -99,7 +140,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             response['currency'] = instance.currency.system_name
 
         status_data = instance.status
-        if currency_data:
+        if status_data:
             response['status'] = instance.status.system_name
 
         return response
