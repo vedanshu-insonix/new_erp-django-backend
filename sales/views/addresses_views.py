@@ -29,7 +29,12 @@ class AddressViewSet(viewsets.ModelViewSet):
     queryset = Addresses.objects.all()
     serializer_class = AddressSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ("__all__")
+    filterset_fields = {
+            'address_type__system_name': ['exact', 'icontains'],'address_location_type__system_name': ['exact', 'icontains'],'first_name': ['icontains'],
+            'last_name': ['icontains'],'company_name': ['exact', 'icontains'],'city': ['exact', 'icontains'],'state__system_name': ['exact', 'icontains'],
+            'postal_code' : ['exact'],'country__system_name' : ['exact', 'contains'],'email' : ['exact']
+            }
+    #filterset_fields = ("__all__")
     ordering_fields = ("__all__")
     
     def create(self, request, *args, **kwargs):
