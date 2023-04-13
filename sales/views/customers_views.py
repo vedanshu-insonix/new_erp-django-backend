@@ -42,66 +42,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
             'customer_receivable_account': ['exact'],'stage': ['exact'],'stage_started': ['exact'],'status': ['exact'], 'used': ['exact']
         }
     ordering_fields = ("__all__")
-        
-    """def create(self, request, *args, **kwargs):
-        GetData = request.data
-        HaveAddr = False
-        HaveDefAdd = False
-        try:
-            #************* separating default address ************ 
-            if 'address' in GetData:
-                address = GetData.pop("address")
-                address['default'] = True
-                HaveDefAdd = True
-
-            #************ separating Other address **************
-            if 'other_address' in GetData:
-                OtherAddress = GetData.pop("other_address")
-                HaveAddr = True
-            
-            #************ Create Customer ***********************
-            serializers = CustomerSerializer(data = GetData, context={'request': request})
-            if serializers.is_valid(raise_exception=True):
-                serializers.save()
-                # customerId = serializers.data.get("id")
-                CustomerInstance = Customers.objects.get(id = serializers.data.get("id"))
-                #*************************** Creating/Updating default address ****************************
-                if HaveDefAdd == True:
-                    GetCustomerAddress = CustomerAddress.objects.filter(Q(customer = CustomerInstance),
-                                                                        Q(address__address_type = "customer") | Q(address__address_type = "Customer"),
-                                                                        Q(address__default = True)).first()
-                    if GetCustomerAddress:
-                        AddressInstance = Addresses.objects.get(id = GetCustomerAddress.address.id)
-                        address_serializers = AddressSerializer(AddressInstance,data=address, context={'request': request})
-                    else:
-                        address_serializers = AddressSerializer(data=address, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                                address_serializers.save()
-                                
-                        # Create Relation between Customer and Address
-                        AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                        CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-                
-                #*************************** Creating/Updating Other Addresses ***************************** 
-                if HaveAddr == True:
-                    for address in OtherAddress:
-                        if "id" in address:
-                            addressInstance = Addresses.objects.get(id= address.pop("id"))
-                            updateAddress = AddressSerializer(addressInstance,data=address, context={'request': request})
-                            if updateAddress.is_valid(raise_exception=True):
-                                    updateAddress.save()
-                        else:  
-                            address_serializers = AddressSerializer(data=address, context={'request': request})
-                            if address_serializers.is_valid(raise_exception=True):
-                                    address_serializers.save()
-                            # Create Relation between Customer and Address
-                            AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                            CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-            returnData = CustomerSerializer(CustomerInstance, context={'request': request})
-            return Response(returnData.data)
-        except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)"""
     
     def create(self, request):
         GetData = request.data
@@ -125,9 +65,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 if address_serializers.is_valid(raise_exception=True):
                     address_serializers.save()
                     
-                # Create Relation between Customer and Address
-                AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
+                    # Create Relation between Customer and Address
+                    AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
+                    CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
             returnData = CustomerSerializer(CustomerInstance, context={'request': request})
             return Response(returnData.data)
         return None
@@ -165,131 +105,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)
         
-        """GetData = request.data
-        HaveAddr = False
-        HaveDefAdd = False
-        try:
-            #************* separating default address ************ 
-            if 'address' in GetData:
-                address = GetData.pop("address")
-                HaveDefAdd = True
-
-            #************ separating Other address **************
-            if 'other_address' in GetData:
-                OtherAddress = GetData.pop("other_address")
-                HaveAddr = True
-
-            #************ Update Customer ******************
-            CustomerInstance = Customers.objects.get(id=pk)
-            serializers = CustomerSerializer(CustomerInstance, data=GetData,  context={'request': request})
-            if serializers.is_valid(raise_exception=True):
-                serializers.save()
-                print(HaveAddr)
-            #*************************** Creating/Updating default address ****************************
-                if HaveDefAdd == True:
-                    GetCustomerAddress = CustomerAddress.objects.filter(Q(customer = CustomerInstance),
-                                                                        Q(address__address_type = "customer") | Q(address__address_type = "Customer"),
-                                                                        Q(address__default = True)).first()
-                    
-                    if GetCustomerAddress:
-                        AddressInstance = Addresses.objects.get(id = GetCustomerAddress.address.id)
-                        address_serializers = AddressSerializer(AddressInstance,data=address, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                                address_serializers.save()
-                                print(address_serializers.data)
-                    else:
-                        address_serializers = AddressSerializer(data=address, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                                address_serializers.save()
-                                
-                        # Create Relation between Customer and Address
-                        AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                        CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-    
-            
-            #*************************** Creating/Updating Other Addresses ***************************** 
-                if HaveAddr == True:
-                    
-                    for address in OtherAddress:
-                        
-                        if 'id' in OtherAddress:
-                            addressInstance = Addresses.objects.get(id= address.pop("id"))
-                            updateAddress = AddressSerializer(addressInstance,data=address, context={'request': request})
-                            if updateAddress.is_valid(raise_exception=True):
-                                    updateAddress.save()
-                        else:  
-                            address_serializers = AddressSerializer(data=address, context={'request': request})
-                            
-                            if address_serializers.is_valid(raise_exception=True):
-                                    address_serializers.save()
-                            # Create Relation between Customer and Address
-                            AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                            CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-            return Response(serializers.data)
-        except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)"""
-    
-    """def partial_update(self, request, pk=None):
-        GetData = request.data
-        HaveAddr = False
-        HaveDefAdd = False
-        try:
-            #************* separating default address ************ 
-            if 'address' in GetData:
-                address = GetData.pop("address")
-                HaveDefAdd = True
-
-            #************ separating Other address **************
-            if 'other_address' in GetData:
-                OtherAddress = GetData.pop("other_address")
-                HaveAddr = True
-
-            #************ Update Customer ******************
-            CustomerInstance = Customers.objects.get(id=pk)
-            serializers = CustomerSerializer(CustomerInstance, data=GetData,  context={'request': request})
-            if serializers.is_valid(raise_exception=True):
-                serializers.save()
-                
-            #*************************** Creating/Updating default address ****************************
-                if HaveDefAdd == True:
-                    GetCustomerAddress = CustomerAddress.objects.filter(Q(customer = CustomerInstance),
-                                                                        Q(address__address_type = "customer") | Q(address__address_type = "Customer"),
-                                                                        Q(address__default = True)).first()
-                    if GetCustomerAddress:
-                        AddressInstance = Addresses.objects.get(id = GetCustomerAddress.address.id)
-                        address_serializers = AddressSerializer(GetCustomerAddress,data=address, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                                address_serializers.save()
-                    else:
-                        address_serializers = AddressSerializer(data=address, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                                address_serializers.save()
-                                
-                        # Create Relation between Customer and Address
-                        AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                        CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-                        
-            #*************************** Creating/Updating Other Addresses ***************************** 
-                if HaveAddr == True:
-                    for address in OtherAddress:
-                        if 'id' in OtherAddress:
-                            addressInstance = Addresses.objects.get(id= address.pop("id"))
-                            updateAddress = AddressSerializer(addressInstance,data=address, context={'request': request})
-                            if updateAddress.is_valid(raise_exception=True):
-                                    updateAddress.save()
-                        else:  
-                            address_serializers = AddressSerializer(data=address, context={'request': request})
-                            if address_serializers.is_valid(raise_exception=True):
-                                    address_serializers.save()
-                            # Create Relation between Customer and Address
-                            AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                            CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
-            return Response(serializers.data)
-        except Exception as e:
-            response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
-            return Response(response)"""
-    
     # Related List 
     @action(detail=True, methods=['get'], url_path = "addresses")
     def get_addresses(self, request, pk=None): 
