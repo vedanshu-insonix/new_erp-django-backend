@@ -102,6 +102,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
                         address_serializers = AddressSerializer(data=address_data, context={'request': request})
                         if address_serializers.is_valid(raise_exception=True):
                             address_serializers.save()
+                            
+                            # Create Relation between Customer and Address
+                            AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
+                            CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
                 returnData = CustomerSerializer(CustomerInstance, context={'request': request})
                 return Response(returnData.data)
             return None
