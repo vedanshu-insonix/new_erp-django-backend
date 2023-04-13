@@ -98,6 +98,10 @@ class CustomerViewSet(viewsets.ModelViewSet):
                         address_serializers = AddressSerializer(address_rec, data=address_data, context={'request': request})
                         if address_serializers.is_valid(raise_exception=True):
                             address_serializers.save()
+                    else:
+                        address_serializers = AddressSerializer(data=address_data, context={'request': request})
+                        if address_serializers.is_valid(raise_exception=True):
+                            address_serializers.save()
                 returnData = CustomerSerializer(CustomerInstance, context={'request': request})
                 return Response(returnData.data)
             return None
