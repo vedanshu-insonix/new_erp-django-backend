@@ -95,9 +95,10 @@ class CustomerSerializer(serializers.ModelSerializer):
             serializer = RelatedAddressSerializer(address_queryset, many = True)
             if serializer:
                 address_values = serializer.data
-                for key, value in address_values[0].items():
-                    if key == 'id': pass
-                    else: response[key] = value
+                if address_values:
+                    for key, value in address_values[0].items():
+                        if key == 'id': pass
+                        else: response[key] = value
 
         stage_data = instance.stage
         if stage_data:
