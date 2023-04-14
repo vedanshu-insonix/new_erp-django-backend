@@ -1060,23 +1060,25 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                 field_type = data.field_type.system_name
             response['field']=field
             response['type']=field_type
-
+            linked_data = data.linked_data
+            if linked_data:
+                linked_data = data.linked_data.field
+            response['linked_data']=linked_data
             datatable_data = get_object_or_404(Data, id=instance.data_id).linked_ds
             data_id = get_object_or_404(Data, id=instance.data_id).id
             sel_id = list(DataSelector.objects.filter(data = data_id).values_list('selector'))
             parent = instance.parent_field
-            if field and field_type=='dropdown':
-                if datatable_data:
-                    dt_sname = datatable_data.system_name.replace(' ', '').lower()
-                    link = base + dt_sname + '/'
-                    if parent:
-                        link = link + '?' + parent + '='
-                    response['link'] = link
+            if datatable_data:
+                dt_sname = datatable_data.system_name.replace(' ', '').lower()
+                link = base + dt_sname + '/'
+                if parent:
+                    link = link + '?' + parent + '='
+                response['link'] = link
 
-                if sel_id:
-                    add_link = 'choices/?selector='+sel_id[0][0]
-                    link = base+add_link
-                    response['link'] = link
+            if sel_id:
+                add_link = 'choices/?selector='+sel_id[0][0]
+                link = base+add_link
+                response['link'] = link
             
         section = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
         if 'id' in section:
