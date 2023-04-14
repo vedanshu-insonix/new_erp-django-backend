@@ -731,6 +731,7 @@ class FormListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
+    paginator = None 
 
     @action(detail=False, methods=['post'], name='import_data', url_path = "import")
     def import_data(self, request):

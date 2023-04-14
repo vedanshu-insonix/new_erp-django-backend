@@ -1,6 +1,4 @@
-from ast import Add
 import json
-from django.shortcuts import render
 from rest_framework import viewsets
 from system import utils
 from ..models.customers import Customers, CustomerAddress
@@ -14,7 +12,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from rest_framework import filters
 import openpyxl
-from system import utils
 from system.models.common import Choice, ListFilters, Currency, FormStage, Stage
 
 def check_parenthesis(self, query):
