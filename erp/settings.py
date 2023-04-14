@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7!2&=0ra#slpfrmediemjx)55z1=5u-ke7%gve5dr_63(t!_5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['103.190.242.56']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -43,11 +43,25 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         
     ),
-    'DEFAULT_PERMISSION_CLASSES':(
+    'DEFAULT_PAGINATION_CLASS': 'erp.pagination.CustomPagination',
+    'DEFAULT_PERMISSION_CLASSES': (
                 'rest_framework.permissions.IsAuthenticated',
                 'rest_framework.permissions.IsAdminUser'  
     ),
 }
+# REST_FRAMEWORK = {
+#     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+#     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.BasicAuthentication',
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES':(
+#                 'rest_framework.permissions.IsAuthenticated',
+#                 'rest_framework.permissions.IsAdminUser'  
+#     ),
+# }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -117,7 +131,7 @@ DATABASES = {
        'NAME': 'erp_db',
        'USER': 'erp_db',
        'PASSWORD': 'admin',
-       #'HOST': 'localhost',
+       'HOST': 'localhost',
        'PORT': '5432',
    }
 }
