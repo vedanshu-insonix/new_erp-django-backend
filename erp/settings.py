@@ -43,25 +43,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         
     ),
-    'DEFAULT_PAGINATION_CLASS': 'erp.pagination.CustomPagination',
-    'DEFAULT_PERMISSION_CLASSES': (
+    'DEFAULT_PERMISSION_CLASSES':(
                 'rest_framework.permissions.IsAuthenticated',
                 'rest_framework.permissions.IsAdminUser'  
     ),
 }
-# REST_FRAMEWORK = {
-#     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
-#     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework.authentication.BasicAuthentication',
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        
-#     ),
-#     'DEFAULT_PERMISSION_CLASSES':(
-#                 'rest_framework.permissions.IsAuthenticated',
-#                 'rest_framework.permissions.IsAdminUser'  
-#     ),
-# }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
