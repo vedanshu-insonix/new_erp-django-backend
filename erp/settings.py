@@ -43,6 +43,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         
     ),
+    'DEFAULT_PAGINATION_CLASS': 'erp.pagination.CustomPagination',
     'DEFAULT_PERMISSION_CLASSES':(
                 'rest_framework.permissions.IsAuthenticated',
                 'rest_framework.permissions.IsAdminUser'  
