@@ -622,7 +622,10 @@ class ListSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         data_source = instance.data_source
         if data_source:
-            response['data_source'] = instance.data_source.system_name        
+            response['data_source'] = instance.data_source.system_name
+        list_type = instance.list_type
+        if list_type:
+            response['list_type'] = instance.list_type.system_name        
         return response
     
     # pkey of new data will be created on the basis of recordidentifiers.

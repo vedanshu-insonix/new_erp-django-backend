@@ -15,28 +15,22 @@ class RelatedAddressSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
 
-        state = instance.state
-        if state:
+        if 'state' in instance:
             response['state'] = instance.state.system_name
-            
-        country = instance.country
-        if country:
+        
+        if 'country' in instance:
             response['country'] = instance.country.system_name
-            
-        language = instance.language
-        if language:
+        
+        if 'language' in instance:
             response['language'] = instance.language.system_name
 
-        stage = instance.stage
-        if stage:
+        if 'stage' in instance:
             response['stage'] = instance.stage.system_name
 
-        telephone_type = instance.telephone_type
-        if telephone_type:
+        if 'telephone_type' in instance:
             response['telephone_type'] = instance.telephone_type.system_name
 
-        other_communication_type = instance.other_communication_type
-        if other_communication_type:
+        if 'other_communication_type' in instance:
             response['other_communication_type'] = instance.other_communication_type.system_name
             
         return response
@@ -87,17 +81,15 @@ class CustomerSerializer(serializers.ModelSerializer):
         # if 'id' in stage_data:
         #     response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
         queryset = CustomerAddress.objects.filter(customer = instance.id)
-        if queryset:
-            address_ids = []
-            for ele in queryset:
-                address_ids.append(ele.address.id)
-            address_queryset = Addresses.objects.filter(id__in = address_ids)
-            serializer = RelatedAddressSerializer(address_queryset, many = True)
-            address_values = serializer.data
-            if address_values:
-                for key, value in address_values[0].items():
-                    if key == 'id': pass
-                    else: response[key] = value
+        address_ids = []
+        for ele in queryset:
+            address_ids.append(ele.address.id)
+        address_queryset = Addresses.objects.filter(id__in = address_ids, address_type__system_name__icontains = 'customer_contact')
+        serializer = RelatedAddressSerializer(address_queryset)
+        address_values = serializer.data
+        for key, value in address_values.items():
+            if key == 'id': pass
+            else: response[key] = value
 
         stage_data = instance.stage
         if stage_data:
