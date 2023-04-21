@@ -711,6 +711,9 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        list_data = instance.col_list
+        if list_data:
+            response['col_list'] = list_data.system_name
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
