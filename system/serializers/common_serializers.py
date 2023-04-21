@@ -747,11 +747,11 @@ class ColumnsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super().to_representation(instance)
         request = self.context['request']
-        list_data = RelatedListsSerializer(instance.col_list, context={'request': request}).data        
-        if 'id' in list_data:
-            data = RelatedListsSerializer(instance.col_list, context={'request': request}).data
+        list_data = instance.col_list#RelatedListsSerializer(instance.col_list, context={'request': request}).data        
+        if list_data:
+            #data = RelatedListsSerializer(instance.col_list, context={'request': request}).data
             #list = data.pop('columns')
-            response['col_list'] = data
+            response['col_list'] = list_data.system_name
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
@@ -1075,10 +1075,10 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
                     link = link + '?' + parent + '='
                 response['link'] = link
 
-            if sel_id:
-                add_link = 'choices/?selector='+sel_id[0][0]
-                link = base+add_link
-                response['link'] = link
+                if sel_id:
+                    add_link = 'choices/?selector='+sel_id[0][0]
+                    link = base+add_link
+            response['link'] = link
             
         section = RelatedFormSectionSerializer(instance.section, context={'request':request}).data
         if 'id' in section:
