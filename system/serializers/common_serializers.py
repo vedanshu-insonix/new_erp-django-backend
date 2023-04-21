@@ -1048,6 +1048,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         # For Field Validation Based on Stage.
         base = request.build_absolute_uri('/') + 'api/'
         ins = list(DataRequirements.objects.filter(data=instance.data).values('requirement', 'stage'))
+        link = ""
         validations = {'requirements':None, 'stage': None}
         if ins: 
             req = list(Choice.objects.filter(id = ins[0]['requirement']).values('system_name'))
