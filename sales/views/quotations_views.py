@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from sales.models.quotations import SalesQuotations
-from sales.serializers.quotations_serializers import SalesQuotationsSerializer
+from sales.models.quotations import SalesQuotations, SalesQuotationLines
+from sales.serializers.quotations_serializers import SalesQuotationsSerializer, SalesQuotationLinesSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.crypto import get_random_string
@@ -74,3 +74,13 @@ class SalesQuotationsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             response = {'status': 'error','code': status.HTTP_400_BAD_REQUEST,'message': str(e)}
             return Response(response)
+        
+class SalesQuotationLineViewSet(viewsets.ModelViewSet):
+    """
+    API’s endpoint that allows quotations to be modified.
+    """
+    queryset = SalesQuotationLines.objects.all()
+    serializer_class = SalesQuotationLinesSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ("__all__")
+    ordering_fields = ("__all__")

@@ -17,6 +17,7 @@ from rest_framework import filters
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import Q
+from system.service import get_rid_pkey
 
 from system import utils
 import openpyxl
@@ -351,7 +352,8 @@ def update_comm(created, sender,instance,**kwargs):
                 get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
                                                 Q(system_name = "email") | Q(selector__system_name = "Email")).first()
                 if get_choice:
-                    create_comm = Communication.objects.create(value = email, communication_channel = get_choice.id, primary = True)
+                    comm_id = get_rid_pkey('communication')
+                    create_comm = Communication.objects.create(id = comm_id, value = email, communication_channel = get_choice.id, primary = True)
                     CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
             
             if telephone != None and telephone_type != None:
@@ -360,7 +362,8 @@ def update_comm(created, sender,instance,**kwargs):
                 type_choice = Choice.objects.filter(Q(selector__system_name = "communication_type") | Q(selector__system_name = "communication type"), 
                                                 Q(system_name = telephone_type) | Q(selector__system_name = telephone_type)).first()
                 if get_choice and type_choice:
-                    create_comm = Communication.objects.create(value = telephone,
+                    comm_id = get_rid_pkey('communication')
+                    create_comm = Communication.objects.create(id = comm_id, value = telephone,
                                                             communication_channel = get_choice.id,
                                                             communication_type = type_choice.id,
                                                             primary = True)
@@ -370,7 +373,8 @@ def update_comm(created, sender,instance,**kwargs):
                 get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
                                                 Q(system_name = "telephone") | Q(selector__system_name = "Telephone")).first()
                 if get_choice:
-                    create_comm = Communication.objects.create(value = telephone,
+                    comm_id = get_rid_pkey('communication')
+                    create_comm = Communication.objects.create(id = comm_id, value = telephone,
                                                         communication_channel = get_choice.id,
                                                         primary = True)
                     CommunicationAddress.objects.create(address = address_instance, communication = create_comm, primary = True)

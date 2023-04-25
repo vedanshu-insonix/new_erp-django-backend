@@ -1,7 +1,7 @@
 # Custom Command to seed database with basic data for further operations.
 from django.core.management.base import BaseCommand
 from warehouse.models import ContainerTypes,Accounts
-from system.models import Choice,DataRequirements,Button,RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon
+from system.models import Choice,DataRequirements,Button,RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon, SchemaRelation
 import pandas as pd
 import os
 from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
@@ -35,6 +35,47 @@ def  extract_data(file):
     file_path = f'{folder}{file}'
     data = pd.read_excel(file_path).fillna('').to_dict() 
     global_data = data
+
+def create_schemaRelation():
+    try:
+        primary=global_data.get("Primary")
+        related = global_data.get("Related")
+        relation=global_data.get("Relation")
+        primary_field=global_data.get("Primary Field")
+        related_field=global_data.get("Related Field")
+        primay_rec= global_data.get("Primay Record")
+        primay_rec_field=global_data.get("Primary Record Field")
+        
+        scList=list(related.keys())
+        for x in scList:
+            prmry=primary.get(x)
+            rel=related.get(x)
+            relt=relation.get(x)
+            prmField=primary_field.get(x)
+            relField=related_field.get(x)
+            
+            tempprimRec=primay_rec.get(x)
+            if tempprimRec == '':
+                primRec= None
+            else:
+                primRec = tempprimRec
+                
+            if primRec == 'yes' or 'YES':
+                primRec= True
+            else:
+                primRec= False
+            
+            tempprimRecField=primay_rec_field.get(x)
+            if tempprimRecField == '':
+                primRecField= None
+            else:
+                primRecField = tempprimRecField
+            schemaRec=SchemaRelation.objects.filter(primary=prmry,related=rel,relation=relt)
+            if not schemaRec:
+                SchemaRelation.objects.create(primary=prmry,related=rel,relation=relt,primary_field=prmField,related_field=relField,primay_rec=primRec,primay_rec_field=primRecField)
+    except Exception as e:
+        print("SchemaRelation Error >",e)
+        pass   
 
 # Function to seed recordidentifier model     
 def create_recordIdentifiers():
@@ -173,7 +214,7 @@ def create_data():
         #disp_data =global_data.get('Linked Data')
         description = global_data.get('System Description')
         field = global_data.get('Field')
-        field_type = global_data.get('DTYPE')
+        field_type = global_data.get('Field Type')
         data_type=global_data.get("Data Type")
         #comment= global_data.get('Comment')
         lang = Language.objects.get(system_name='English (US)')

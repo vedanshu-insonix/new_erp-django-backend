@@ -622,7 +622,10 @@ class ListSerializer(serializers.ModelSerializer):
             response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         data_source = instance.data_source
         if data_source:
-            response['data_source'] = instance.data_source.system_name        
+            response['data_source'] = instance.data_source.system_name
+        list_type = instance.list_type
+        if list_type:
+            response['list_type'] = instance.list_type.system_name        
         return response
     
     # pkey of new data will be created on the basis of recordidentifiers.
@@ -708,6 +711,9 @@ class RelatedColumnsSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        list_data = instance.col_list
+        if list_data:
+            response['col_list'] = list_data.system_name
         visibility = instance.visibility
         if visibility:
             response['visibility'] = instance.visibility.system_name
@@ -1042,6 +1048,7 @@ class RelatedFormDataSerializer(serializers.ModelSerializer):
         # For Field Validation Based on Stage.
         base = request.build_absolute_uri('/') + 'api/'
         ins = list(DataRequirements.objects.filter(data=instance.data).values('requirement', 'stage'))
+        link = ""
         validations = {'requirements':None, 'stage': None}
         if ins: 
             req = list(Choice.objects.filter(id = ins[0]['requirement']).values('system_name'))

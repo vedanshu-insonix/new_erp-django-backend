@@ -40,7 +40,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         }
     ordering_fields = ("__all__")
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, args, *kwargs):
         try:
             GetData = request.data
             customer_fields = [f.name for f in Customers._meta.get_fields()]
@@ -91,22 +91,22 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 serializers = CustomerSerializer(CustomerInstance, data = customer_data, context={'request': request})
                 if serializers.is_valid(raise_exception=True):
                     serializers.save()
-                if address_data:
-                    ca_rec=CustomerAddress.objects.filter(customer = CustomerInstance).values('address')
-                    if ca_rec:
-                        address_id = ca_rec[0]['address']
-                        address_rec = Addresses.objects.get(id = address_id)
-                        address_serializers = AddressSerializer(address_rec, data=address_data, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                            address_serializers.save()
-                    else:
-                        address_serializers = AddressSerializer(data=address_data, context={'request': request})
-                        if address_serializers.is_valid(raise_exception=True):
-                            address_serializers.save()
-                            
-                            # Create Relation between Customer and Address
-                            AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
-                            CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
+            if address_data:
+                ca_rec=CustomerAddress.objects.filter(customer = CustomerInstance).values('address')
+                if ca_rec:
+                    address_id = ca_rec[0]['address']
+                    address_rec = Addresses.objects.get(id = address_id)
+                    address_serializers = AddressSerializer(address_rec, data=address_data, context={'request': request})
+                    if address_serializers.is_valid(raise_exception=True):
+                        address_serializers.save()
+                else:
+                    address_serializers = AddressSerializer(data=address_data, context={'request': request})
+                    if address_serializers.is_valid(raise_exception=True):
+                        address_serializers.save()
+                        
+                        # Create Relation between Customer and Address
+                        AddressInstance = Addresses.objects.get(id = address_serializers.data.get("id"))
+                        CreateCustomerAddress = CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
             returnData = CustomerSerializer(CustomerInstance, context={'request': request})
             return Response(utils.success_msg(returnData.data))
         except Exception as e:
