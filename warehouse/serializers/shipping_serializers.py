@@ -9,7 +9,7 @@ from system.models import Translation
 
 #**************************Serializer For Deliveries Model**************************#
 class DeliveriesSerializer(serializers.ModelSerializer):
-    class meta:
+    class Meta:
         model = Deliveries
         fields = ('__all__')
         read_only_fields = ("created_time", "modified_time")
