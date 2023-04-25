@@ -52,6 +52,10 @@ class GlobalViewsets(viewsets.ViewSet):
     """
     API’s endpoint that allows Customers to be modified.
     """
+    def create(self, request):
+        print("request", request.data)
+        pass
+
     def retrieve(self, request, pk=None):
         lid = request.GET.get('l')
         primarySchema = List.objects.get(id=lid).data_source.link_source
@@ -118,7 +122,8 @@ class GlobalViewsets(viewsets.ViewSet):
                             new_key = response_function(rec, 0)
                             if rec != 'id':
                                 relPrimaryData[new_key]= None
-
+        lf = ListFilters.objects.filter(list=lid)
+        print(lf)
         return Response({"message": resData,
                     "status" : "success",
                     "code"   : status.HTTP_201_CREATED})
