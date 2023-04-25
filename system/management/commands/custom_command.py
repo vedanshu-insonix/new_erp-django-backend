@@ -214,7 +214,7 @@ def create_data():
         #disp_data =global_data.get('Linked Data')
         description = global_data.get('System Description')
         field = global_data.get('Field')
-        field_type = global_data.get('Field Type')
+        field_type = global_data.get('DTYPE')
         data_type=global_data.get("Data Type")
         #comment= global_data.get('Comment')
         lang = Language.objects.get(system_name='English (US)')
@@ -1055,6 +1055,34 @@ def create_entities():
 #         pass
 
 
+# # Function to seed account model
+# def create_account():
+#     try:
+#        #account=global_data.get("Account ID")
+#        typ=global_data.get("Type")
+#        type_id=global_data.get("Type ID")
+#        category=global_data.get("Category")
+#        cat_id=global_data.get("Category ID")
+#        code=global_data.get("Code")
+#        system_name=global_data.get("System Name")
+#        #profit_loss_cat=global_data.get("Profit/Loss Category")
+#        acList=list(system_name.keys())
+#        for x in acList:
+#            #acc=account.get(x)
+#            tp=utils.encode_api_name(typ.get(x))
+#            typ_id=type_id.get(x)
+#            cat=utils.encode_api_name(category.get(x))
+#            ct_id=cat_id.get(x)
+#            cd=code.get(x)
+#            acName=system_name.get(x)
+#            gtype=Choice.objects.filter(selector__system_name='account_type',system_name=tp).first()
+#            gcatg=Choice.objects.filter(selector__system_name='account_category',system_name =cat).first()
+#            acc_rec=Accounts.objects.filter(system_name=acName)
+#            if not acc_rec:
+#                 Accounts.objects.create(system_name=acName,account_type=gtype,account_category=gcatg,code=cd,created_by_id = user)
+#     except Exception as e:
+#         print("account Error >",e)
+#         pass
 # Function to seed account model
 def create_account():
     try:
@@ -1079,35 +1107,7 @@ def create_account():
            gcatg=Choice.objects.filter(selector__system_name='account_category',system_name =cat).first()
            acc_rec=Accounts.objects.filter(system_name=acName)
            if not acc_rec:
-                Accounts.objects.create(system_name=acName,type=gtype,category=gcatg,code=cd,created_by_id = user)
-    except Exception as e:
-        print("account Error >",e)
-        pass
-# Function to seed account model
-def create_account():
-    try:
-       #account=global_data.get("Account ID")
-       typ=global_data.get("Type")
-       type_id=global_data.get("Type ID")
-       category=global_data.get("Category")
-       cat_id=global_data.get("Category ID")
-       code=global_data.get("Code")
-       system_name=global_data.get("System Name")
-       #profit_loss_cat=global_data.get("Profit/Loss Category")
-       acList=list(system_name.keys())
-       for x in acList:
-           #acc=account.get(x)
-           tp=utils.encode_api_name(typ.get(x))
-           typ_id=type_id.get(x)
-           cat=utils.encode_api_name(category.get(x))
-           ct_id=cat_id.get(x)
-           cd=code.get(x)
-           acName=system_name.get(x)
-           gtype=Choice.objects.filter(selector__system_name='account_type',system_name=tp).first()
-           gcatg=Choice.objects.filter(selector__system_name='account_category',system_name =cat).first()
-           acc_rec=Accounts.objects.filter(system_name=acName)
-           if not acc_rec:
-                Accounts.objects.create(system_name=acName,type=gtype,category=gcatg,code=cd,created_by_id = user)
+                Accounts.objects.create(system_name=acName,account_type=gtype,account_category=gcatg,code=cd,created_by_id = user)
     except Exception as e:
         print("account Error >",e)
         pass
