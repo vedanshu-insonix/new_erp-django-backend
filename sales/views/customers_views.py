@@ -40,7 +40,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         }
     ordering_fields = ("__all__")
 
-    def create(self, request, args, *kwargs):
+    def create(self, request, *args, **kwargs):
         try:
             GetData = request.data
             customer_fields = [f.name for f in Customers._meta.get_fields()]
