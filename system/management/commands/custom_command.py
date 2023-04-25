@@ -361,7 +361,7 @@ def create_conf():
         
 # Function to seed Currency model           
 def create_currencies():
-    try:
+    try: 
         id = global_data.get("Currency ID")
         system_name = global_data.get('System Name')
         code = global_data.get('Code')
