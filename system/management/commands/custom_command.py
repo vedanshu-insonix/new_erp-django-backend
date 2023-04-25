@@ -186,14 +186,16 @@ def create_dataset():
         id = global_data.get("Dataset ID")
         system_name = global_data.get('System Name')
         description = global_data.get('System Description')
+        linkSource = global_data.get("Original Model")
         dList = list(system_name.keys())
         for x in dList:
             tbl_id = id.get(x)
             dName = system_name.get(x)
             desc = description.get(x)
+            linkSrc=linkSource.get(x)
             dataset_rec = DataTable.objects.filter(id= tbl_id,system_name=dName)
             if not dataset_rec:
-                DataTable.objects.create(id= tbl_id,system_name=dName,description=desc,created_by_id = user)
+                DataTable.objects.create(id= tbl_id,system_name=dName,description=desc,link_source=linkSrc,created_by_id = user)
                 updatenextid('datatable',tbl_id)
     except Exception as e:
         #print("Dataset Error >", str(e))

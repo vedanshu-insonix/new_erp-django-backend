@@ -6,7 +6,6 @@ class DataTable(BaseContent):
     system_name = models.CharField(max_length=255, unique=True)
     description=models.TextField(null=True, blank=True)
     link_source = models.CharField(max_length=255, null=True, blank=True)
-    link_serializer = models.CharField(max_length=255, null=True, blank=True)
 
 class Data(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
