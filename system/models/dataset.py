@@ -6,6 +6,7 @@ class DataTable(BaseContent):
     system_name = models.CharField(max_length=255, unique=True)
     description=models.TextField(null=True, blank=True)
     link_source = models.CharField(max_length=255, null=True, blank=True)
+    link_serializer = models.CharField(max_length=255, null=True, blank=True)
 
 class Data(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -28,3 +29,12 @@ class DataRequirements(BaseContent):
     data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
     stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
     requirement = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+
+class SchemaRelation(BaseContent):
+    primary = models.CharField(max_length=255, null=True, blank=True)
+    related = models.CharField(max_length=255, null=True, blank=True)
+    relation = models.CharField(max_length=255, null=True, blank=True)
+    primary_field = models.CharField(max_length=255, null=True, blank=True)
+    related_field = models.CharField(max_length=255, null=True, blank=True)
+    primay_rec = models.BooleanField(default=False)
+    primay_rec_field = models.CharField(max_length=255, null=True, blank=True)

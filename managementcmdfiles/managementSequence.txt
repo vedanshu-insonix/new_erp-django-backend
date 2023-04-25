@@ -22,3 +22,4 @@ fdata.xlsx|create_formdata
 fdrequirements.xlsx|create_fdrequirements
 entity.xlsx|create_entities
 accounts.xlsx|create_account
+SchemaRelation.xlsx|create_schemaRelation

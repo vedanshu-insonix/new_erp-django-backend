@@ -12,4 +12,4 @@ class Receipts(BaseContent):
     #vendor_refund = models.ForeignKey('VendorRefunds', on_delete = models.SET_NULL, null= True, blank = True)
     stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
     stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=255, null=True, blank=True)
+    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="receipt_status")

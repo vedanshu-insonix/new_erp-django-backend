@@ -294,14 +294,13 @@ class Icons(BaseContent):
 
 class Action(BaseContent):
     system_name = models.CharField(max_length=255, null=False, blank=False, unique=True) #required field in post
-    form = models.ManyToManyField(Form, blank=True)
-    button = models.ManyToManyField(Button, blank=True)
-    dataset = models.ForeignKey('DataTable', on_delete=models.CASCADE, null=True, blank=True)
-    data = models.ForeignKey('Data', on_delete=models.CASCADE, null=True, blank=True)
-    operator = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
-    value = models.CharField(max_length=255, null=True, blank=True)
-    stage= models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
-    status_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
+    form = models.ForeignKey('Form', on_delete=models.SET_NULL, null=True, blank=True)
+    list = models.ForeignKey('List', on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    stage= models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='action_status')
+    system_description = models.CharField(max_length=255, null=True, blank=True)
+    sequence = models.IntegerField(null=True , blank=True)
 
 class FormStage(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
@@ -317,4 +316,4 @@ class Home(models.Model):
     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
     view = models.CharField(max_length=255, null=True, blank=True)
     stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
-    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name='home_status')
