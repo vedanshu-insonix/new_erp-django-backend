@@ -19,7 +19,8 @@ class SalesQuotationsSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
 
     # To return forign key values in detail
-    def to_representation(self, instance): 
+    def to_representation(self, instance):
+        print("demo")
         response = super().to_representation(instance)
         request = self.context['request']
         customer = RelatedCustomerSerializer(instance.customer,context={'request': request}).data
