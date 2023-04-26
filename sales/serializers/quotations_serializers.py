@@ -58,9 +58,9 @@ class SalesQuotationsSerializer(serializers.ModelSerializer):
         if 'id' in accepted_currency:
             response['accepted_currency'] = RelatedCurrencySerializer(instance.accepted_currency, context={'request': request}).data
 
-        quotation_stage = RelatedStageSerializer(instance.quotation_stage, context={'request': request}).data
+        quotation_stage = RelatedStageSerializer(instance.stage, context={'request': request}).data
         if 'id' in quotation_stage:
-            response['quotation_stage'] = RelatedStageSerializer(instance.quotation_stage, context={'request': request}).data
+            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
 
         created_by = RelatedUserSerilaizer(instance.created_by).data
         if 'id' in created_by:
