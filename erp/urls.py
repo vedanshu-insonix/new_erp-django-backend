@@ -41,6 +41,7 @@ schema_view = swagger_get_schema_view(
 router = routers.DefaultRouter()
 ##****************************************SYSTEM APP URL'S****************************************##
 router.register(r'commonlists', common_list_view.GlobalViewsets, basename='commonlists')
+router.register(r'features', common_list_view.FeatureViewsets, basename='features')
 router.register(r'hometiles', common_views.HomeViewSet)
 router.register(r'users', user_views.UserViewSet)
 router.register(r'datasets', dataset_views.TableViewSet)
