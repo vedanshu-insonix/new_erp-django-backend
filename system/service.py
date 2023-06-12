@@ -22,7 +22,10 @@ def get_rid_pkey(sender):
         primary_id = f'{code}{new_id}'
     else:
         primary_id = f'{new_id}'
-    next_id=new_id+1
+    if sender == 'datatable':
+        next_id=new_id+10
+    else:
+        next_id=new_id+1
     record_id.next=next_id
     record_id.save()
     return primary_id
@@ -30,6 +33,9 @@ def get_rid_pkey(sender):
 # used to update next pkey for a model in recordidentifier model.(Note:- Currently used in custom_command only.)
 def updatenextid(sender, pid):
     record_id = RecordIdentifiers.objects.get(record=sender)
-    record_id.next = int(pid)+1
+    if sender == 'datatable':
+        record_id.next = int(pid)+10
+    else:
+        record_id.next = int(pid)+1
     record_id.save()
     return None

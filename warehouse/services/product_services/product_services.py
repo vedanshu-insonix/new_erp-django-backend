@@ -1,6 +1,6 @@
 from warehouse.models.products import Product
 from warehouse.serializers.products_serializer import ProductSerializer
-from warehouse.models.general import Images, ProductImages
+from warehouse.models.general import Images#, ProductImages
 from .product_common_services import create_attribute
 from system.views.common_views import extracting_data
 
@@ -40,13 +40,14 @@ def create_product(self, req):
                     serializer = ProductSerializer(data=data, context={'request':req})
                     if serializer.is_valid(raise_exception=True):
                         serializer.save()
-                    product_id = Product.objects.get(id = serializer.data.get("id"))
+                    newProduct = Product.objects.get(id = serializer.data.get("id"))
                     if have_images == True:
                         for image in image_data:
-                            image_rec = Images.objects.create(image=image, title=template_name, file=image)
-                            ProductImages.objects.create(product= product_id, image=image_rec)
-                    create_attribute(variant_values,product_id.id)
-                    template = Product.objects.get(id=product_id.id)
+                            imageRec = Images.objects.create(image=image, title=template_name, file=image)
+                            newProduct.images.add(imageRec)
+                            # ProductImages.objects.create(product= product_id, image=image_rec)
+                    create_attribute(variant_values,newProduct.id)
+                    template = Product.objects.get(id=newProduct.id)
                     response=ProductSerializer(template, context={'request': req})
                     result.append(response.data)
             else:

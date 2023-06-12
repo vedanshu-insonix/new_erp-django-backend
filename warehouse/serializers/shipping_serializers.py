@@ -3,7 +3,7 @@ from warehouse.models.shipping_models import *
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
 from system.models.users import get_current_user_language
-from system.models.translations import TranslationContainerType
+# from system.models.translations import TranslationContainerType
 from system.serializers.common_serializers import RelatedTranslationSerializer
 from system.models import Translation
 
@@ -59,14 +59,19 @@ class ContainerTypesSerializer(serializers.ModelSerializer):
         data = obj.id
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationContainerType.objects.filter(containerType = obj.id, translation__language__system_name = language).first()
+        queryset = Translation.objects.filter(containerType = obj.id, language__system_name = language).first()
         if queryset:
-            translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
-            serializers = RelatedTranslationSerializer(translation, many=False)
+            serializers = RelatedTranslationSerializer(queryset, many=False)
             return serializers.data['label']
         else:
             return data
+        # if queryset:
+        #     translation_id = queryset.translation.id
+        #     translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
+        #     serializers = RelatedTranslationSerializer(translation, many=False)
+        #     return serializers.data['label']
+        # else:
+        #     return data
     class Meta:
         model = ContainerTypes
         fields = ('__all__')

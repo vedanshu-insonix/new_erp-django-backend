@@ -17,11 +17,13 @@ class Data(BaseContent):
     field = models.CharField(max_length=255, null=True, blank=True)
     description=models.TextField(null=True, blank=True)
     sequence = models.IntegerField(null=True, blank=True)
-    field_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    # field_type = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    field_type = models.CharField(max_length=255, null=True, blank=True)
+    selector = models.ManyToManyField('Selectors', blank=True, related_name='data')
 
-class DataSelector(BaseContent):
-    selector = models.ForeignKey('Selectors', on_delete=models.SET_NULL, null=True, blank=True)
-    data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
+# class DataSelector(BaseContent):
+#     selector = models.ForeignKey('Selectors', on_delete=models.SET_NULL, null=True, blank=True)
+#     data = models.ForeignKey('Data', on_delete=models.SET_NULL, null=True, blank=True)
 
 class DataRequirements(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.SET_NULL, null=True, blank=True)
@@ -29,11 +31,11 @@ class DataRequirements(BaseContent):
     stage = models.ForeignKey('Stage', on_delete=models.SET_NULL, null=True, blank=True)
     requirement = models.ForeignKey('Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
-class SchemaRelation(BaseContent):
-    primary = models.CharField(max_length=255, null=True, blank=True)
-    related = models.CharField(max_length=255, null=True, blank=True)
-    relation = models.CharField(max_length=255, null=True, blank=True)
-    primary_field = models.CharField(max_length=255, null=True, blank=True)
-    related_field = models.CharField(max_length=255, null=True, blank=True)
-    primay_rec = models.BooleanField(default=False)
-    primay_rec_field = models.CharField(max_length=255, null=True, blank=True)
+# class SchemaRelation(BaseContent):
+#     primary = models.CharField(max_length=255, null=True, blank=True)
+#     related = models.CharField(max_length=255, null=True, blank=True)
+#     relation = models.CharField(max_length=255, null=True, blank=True)
+#     primary_field = models.CharField(max_length=255, null=True, blank=True)
+#     related_field = models.CharField(max_length=255, null=True, blank=True)
+#     primay_rec = models.BooleanField(default=False)
+#     primay_rec_field = models.CharField(max_length=255, null=True, blank=True)

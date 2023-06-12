@@ -1,6 +1,5 @@
 from django.db import models
 from system.models.common import BaseContent
-from system.utils import LocationChoice, StatusChoice
 
 class Journal(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -20,18 +19,21 @@ class Attributes(BaseContent):
 
     def __str__(self):
         return str(self.attribute)
+    
+class Values(BaseContent):
+    id = models.CharField(max_length=255, primary_key=True, editable=False)
+    value = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
+    attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True, related_name='values')
         
-class ProductAttribute(BaseContent):
-    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
-    attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True)
+# class ProductAttribute(BaseContent):
+#     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+#     attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True)
 
 class Images(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     image = models.FileField(upload_to='products', max_length=255)
     title = models.CharField(max_length=255, null=True, blank=True)
     file = models.CharField(max_length=255, null=True, blank=True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)
 
     def __str__(self):
         return str(self.image)
@@ -40,6 +42,6 @@ class Images(BaseContent):
         verbose_name = "Image"
         verbose_name_plural = "Images"
 
-class ProductImages(BaseContent):
-    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
-    image = models.ForeignKey('Images', on_delete=models.SET_NULL, null=True, blank=True)
+# class ProductImages(BaseContent):
+#     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+#     image = models.ForeignKey('Images', on_delete=models.SET_NULL, null=True, blank=True)

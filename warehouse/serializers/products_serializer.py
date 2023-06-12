@@ -20,27 +20,45 @@ class ProductSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     def get_attribute(self, obj):
-        queryset = ProductAttribute.objects.filter(product=obj.id)
-        serializer = ProductAttributeSerializer(queryset, many=True)
+        attrIds = obj.attributes.all()
+        queryset = Attributes.objects.filter(id__in=attrIds)
         result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['attribute']) if serializer.data else None
+        for attributes in queryset:
+            result.append(attributes.attribute)
+        # queryset = ProductAttribute.objects.filter(product=obj.id)
+        # serializer = ProductAttributeSerializer(queryset, many=True)
+        # result=[]
+        # for i in range(len(serializer.data)):
+        #     result.append(serializer.data[i]['attribute']) if serializer.data else None
         return result
 
     def get_value(self, obj):
-        queryset = ProductValues.objects.filter(product = obj.id)
-        serializer = ProductValueSerializer(queryset, many=True)
+        valIds = obj.values.all()
+        queryset = Values.objects.filter(id__in=valIds)
         result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['value']) if serializer.data else None
+        for values in queryset:
+            result.append(values.value)
+        # queryset = ProductValues.objects.filter(product = obj.id)
+        # serializer = ProductValueSerializer(queryset, many=True)
+        # result=[]
+        # for i in range(len(serializer.data)):
+        #     result.append(serializer.data[i]['value']) if serializer.data else None
         return result
 
     def get_image(self, obj):
-        queryset = ProductImages.objects.filter(product = obj.id)
-        serializer = ProductImagesSerializer(queryset, many=True)
+        img = obj.images.all()
+        req = self.context['request']
+        queryset = Images.objects.filter(id__in=img)
         result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['image']) if serializer.data else None
+        base = req.build_absolute_uri('/') + 'api/'
+        for image in queryset:
+            baseUri = base+str(image.image)
+            result.append(baseUri)
+        # queryset = ProductImages.objects.filter(product = obj.id)
+        # serializer = ProductImagesSerializer(queryset, many=True)
+        # result=[]
+        # for i in range(len(serializer.data)):
+        #     result.append(serializer.data[i]['image']) if serializer.data else None
         return result
 
     class Meta:
@@ -126,41 +144,12 @@ class CharacteristicsSerializer(serializers.ModelSerializer):
             data['id']=get_rid_pkey('characteristics')
         return super().create(data)
 
-#**************************Serializer For Value Model**************************#
-class RelatedValueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Value
-        exclude = ("created_time","modified_time","created_by")
-
-class ValueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Value
-        fields = ('__all__')
-        read_only_fields = ("created_time", "modified_time")
-        extra_kwargs = {'created_by': {'default': serializers.CurrentUserDefault()}}
-    
-    # To return forign key values in detail
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-
-        created_by = RelatedUserSerilaizer(instance.created_by).data
-        if 'id' in created_by:
-            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
-        return response
-    
-    # pkey of new data will be created on the basis of recordidentifiers.
-    def create(self, data):
-        record_id = RecordIdentifiers.objects.filter(record='value')
-        if record_id:
-            data['id']=get_rid_pkey('value')
-        return super().create(data)
-
 #**************************Serializer For Product Values Model**************************#
-class ProductValueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductValues
-        fields = ('value',)
-        depth = 1
+# class ProductValueSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ProductValues
+#         fields = ('value',)
+#         depth = 1
 
 #**************************Serializer For Product Category Model**************************#
 class ProductCategorySerializer(serializers.ModelSerializer):

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7!2&=0ra#slpfrmediemjx)55z1=5u-ke7%gve5dr_63(t!_5f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['103.190.242.56']
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # newly installed applications.
     'sales',
     'corsheaders',
     'system',
@@ -115,9 +117,9 @@ WSGI_APPLICATION = 'erp.wsgi.application'
 DATABASES = {
     'default': {
        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': 'erp_db',
-       'USER': 'erp_db',
-       'PASSWORD': 'admin',
+       'NAME': 'ERP',
+       'USER': 'postgres',
+       'PASSWORD': 'root',
        'HOST': 'localhost',
        'PORT': '5432',
    }
@@ -152,7 +154,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-#ALLOWED_HOSTS = ['*']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

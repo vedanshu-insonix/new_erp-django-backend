@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
-from ..models.vendors import Vendors, VendorAddress, VendorProducts
-from ..serializers.vendors_serializers import VendorAddressSerializer, VendorProductsSerializer, VendorSerializer
+from ..models.vendors import Vendors, VendorProducts
+from ..serializers.vendors_serializers import VendorProductsSerializer, VendorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
@@ -18,9 +18,9 @@ class VendorViewSet(viewsets.ModelViewSet):
     ordering_fields = ("__all__")
     
 
-class VendorAddressViewSet(viewsets.ModelViewSet):
-    queryset = VendorAddress.objects.all()
-    serializer_class = VendorAddressSerializer
+# class VendorAddressViewSet(viewsets.ModelViewSet):
+#     queryset = VendorAddress.objects.all()
+#     serializer_class = VendorAddressSerializer
 
 class VendorProductsViewSet(viewsets.ModelViewSet):
     queryset = VendorProducts.objects.all()

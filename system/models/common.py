@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from system.utils import StatusChoice
-#from django_countries.fields import CountryField
+from django_countries.fields import CountryField
 
 # Create your models here.
 # Base class for all models
@@ -13,6 +13,13 @@ class BaseContent(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name="%(class)s_created_by")
+    class Meta:
+        abstract = True
+
+class BaseStatus(BaseContent):
+    status = models.ForeignKey('system.Choice', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_status")
+    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_stage")
+    stage_started = models.DateTimeField(null=True, blank=True)
     class Meta:
         abstract = True
 
@@ -36,7 +43,7 @@ class Currency(BaseContent):
     updated = models.DateTimeField(null=True, unique=True)
     
     def __str__(self):
-        return self.system_name
+        return self.id
 
     class Meta:
         verbose_name = "Currency"
@@ -59,8 +66,8 @@ class Language(BaseContent):
     code = models.CharField(max_length=255, null=True, unique=True)
     direction = models.ForeignKey('Choice', on_delete= models.SET_NULL, null=True, related_name="language_direction")
     
-    def __str__(self):
-        return self.system_name
+    # def __str__(self):
+    #     return self.system_name
     
 class Country(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -131,7 +138,7 @@ class Territories(BaseContent):
     description = models.TextField(null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return self.system_name
     
     class Meta:
         verbose_name = "Territory"
@@ -179,10 +186,6 @@ class Form(BaseContent):
     
     def __str__(self):
         return self.system_name
-    
-# class FormIcon(BaseContent):
-#     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
-#     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
 class FormList(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -237,6 +240,7 @@ class List(BaseContent):
     list_type = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True, related_name='list_type')
     default_view = models.CharField(max_length=255, null=True)
     sequence = models.IntegerField(null=True , blank=True)
+    icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.system_name
@@ -254,14 +258,16 @@ class ListFilters(BaseContent):
 
 class ListSorts(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
+    list = models.ForeignKey('List', on_delete=models.CASCADE)
     column = models.ForeignKey('Column', on_delete=models.CASCADE, null=True, blank=True)
     sort_direction = models.ForeignKey('Choice', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True , blank=True)
     default = models.BooleanField(default=False)
+    group = models.BooleanField(default=False)
 
-class ListIcon(BaseContent):
-    list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
-    icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
+# class ListIcon(BaseContent):
+#     list = models.ForeignKey('List', on_delete=models.CASCADE, null=True, blank=True)
+#     icon = models.ForeignKey('Icons', on_delete=models.CASCADE, null=True, blank=True)
 
 class Help(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -306,10 +312,6 @@ class FormStage(BaseContent):
     form = models.ForeignKey('Form', on_delete=models.CASCADE, null=True, blank=True)
     stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
     sequence = models.IntegerField(null=True , blank=True)
-
-class ButtonStage(BaseContent):
-    button = models.ForeignKey('Button', on_delete=models.CASCADE, null=True, blank=True)
-    stage = models.ForeignKey('Stage', on_delete=models.CASCADE, null=True, blank=True)
 
 class Home(models.Model):
     system_name = models.CharField(max_length=255, null=True, blank=True)

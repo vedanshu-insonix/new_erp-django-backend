@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from system.serializers.common_serializers import *
-from ..models.vendors import Vendors, VendorAddress, VendorProducts, VendorPrices
+from ..models.vendors import Vendors, VendorProducts, VendorPrices
 from system.serializers.user_serializers import RelatedUserSerilaizer
 
 #**************************Serializer For Vendor Address Model**************************#
-class VendorAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VendorAddress
-        exclude = ("address","id")
-        depth = 1
+# class VendorAddressSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = VendorAddress
+#         exclude = ("address","id")
+#         depth = 1
 
 #**************************Serializer For Vendors Model**************************#    
 class RelatedVendorSerializer(serializers.ModelSerializer):

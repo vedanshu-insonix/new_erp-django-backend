@@ -73,10 +73,6 @@ class CharacteristicsViewSet(viewsets.ModelViewSet):
     queryset = Characteristics.objects.all()
     serializer_class = CharacteristicsSerializer
 
-class ValueViewSet(viewsets.ModelViewSet):
-    queryset = Value.objects.all()
-    serializer_class = ValueSerializer
-
 class ProductCategoryViewSet(viewsets.ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer

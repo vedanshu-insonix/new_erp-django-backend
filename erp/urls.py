@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from django.urls import include, path
 from rest_framework import routers
 from system.views import user_views, common_views,common_list_view, communication_views, entity_views, translation_views, team_views, role_permission_views, dataset_views, recordid_views
 from sales.views import customers_views, vendors_views, addresses_views, invoices_views, receipts_views, pricelists_views, orders_views, quotations_views, credits_views, cart_views, return_views
@@ -105,7 +104,7 @@ router.register(r'productcounts', products_views.ProductCountsViewSet)
 router.register(r'locations', products_views.LocationsViewSet)
 router.register(r'deliveries',shipping_views.DeliveriesViewSet)
 #router.register(r'bom', products_views.BOMViewSet)
-router.register(r'values', products_views.ValueViewSet)
+# router.register(r'values', products_views.ValueViewSet)
 router.register(r'unitsofmeasure', products_views.UOMViewSet)
 router.register(r'journals', general_views.JournalViewSet)
 router.register(r'journalentrytemplates', general_views.JournalTemplateViewSet)

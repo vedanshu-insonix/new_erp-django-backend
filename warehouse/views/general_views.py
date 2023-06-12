@@ -17,3 +17,7 @@ class AttributeViewSet(viewsets.ModelViewSet):
 class ImagesViewSet(viewsets.ModelViewSet):
     queryset = Images.objects.all()
     serializer_class = ImagesSerializer
+
+class ValueViewSet(viewsets.ModelViewSet):
+    queryset = Values.objects.all()
+    serializer_class = ValueSerializer

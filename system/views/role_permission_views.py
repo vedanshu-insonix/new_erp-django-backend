@@ -41,14 +41,14 @@ class RoleViewSet(viewsets.ModelViewSet):
                         check = Permission.objects.filter(permission=permission_name)
                         if check:
                             permission_id = Permission.objects.get(permission=permission_name)
-                            create_role_permission=RolePermissions.objects.create(role=new_role, permissions=permission_id)
+                            # create_role_permission=RolePermissions.objects.create(role=new_role, permissions=permission_id)
                         else:
                             new_permission = PermissionSerializer(data=permission, context={'request':request})
                             if new_permission.is_valid(raise_exception=True):
                                 new_permission.save()
                                 permission_id=new_permission.data.get('id')
                                 permission_id=Permission.objects.get(id=permission_id)
-                                create_role_permission=RolePermissions.objects.create(role=new_role, permissions=permission_id)
+                                # create_role_permission=RolePermissions.objects.create(role=new_role, permissions=permission_id)
                 new_role = Role.objects.get(id=role_id)
                 result = RoleSerializer(new_role, context={'request':request})
             return Response(utils.success_msg(result.data))
@@ -76,49 +76,49 @@ class RoleViewSet(viewsets.ModelViewSet):
                         find = Permission.objects.filter(permission=permission_name)
                         if find:
                             permission_id = Permission.objects.get(permission=permission_name)
-                            check = RolePermissions.objects.filter(role=role_rec, permissions=permission_id)
-                            if not check:
-                                create_role_permission=RolePermissions.objects.create(role=role_rec, permissions=permission_id)
+                            # check = RolePermissions.objects.filter(role=role_rec, permissions=permission_id)
+                            # if not check:
+                                # create_role_permission=RolePermissions.objects.create(role=role_rec, permissions=permission_id)
                         else:
                             new_permission = PermissionSerializer(data=permission, context={'request':request})
                             if new_permission.is_valid(raise_exception=True):
                                 new_permission.save()
                                 permission_id=new_permission.data.get('id')
                                 permission_id=Permission.objects.get(id=permission_id)
-                                create_role_permission=RolePermissions.objects.create(role=role_rec, permissions=permission_id)
+                                # create_role_permission=RolePermissions.objects.create(role=role_rec, permissions=permission_id)
                 if removePermission == True:
                     for permission in remove_permissions:
                         permission_name = permission.get('permission')
                         find = Permission.objects.filter(permission=permission_name)
                         if find:
                             permission_id = Permission.objects.get(permission=permission_name)
-                            check = RolePermissions.objects.filter(role=role_rec, permissions=permission_id)
-                            if check:
-                                RolePermissions.objects.get(role=role_rec, permissions=permission_id).delete()
-                            else:
-                                pass
+                            # check = RolePermissions.objects.filter(role=role_rec, permissions=permission_id)
+                            # if check:
+                            #     RolePermissions.objects.get(role=role_rec, permissions=permission_id).delete()
+                            # else:
+                            #     pass
                 msg = "Role Updation Successful."
             return Response(utils.success_msg(msg))
         except Exception as e:
             return Response(utils.error(str(e)))
 
-class RolePermissionViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows TeamUser to be modified.
-    """
-    queryset = RolePermissions.objects.all()
-    serializer_class = RolePermissionSerializer
+# class RolePermissionViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows TeamUser to be modified.
+#     """
+#     queryset = RolePermissions.objects.all()
+#     serializer_class = RolePermissionSerializer
 
-class RoleCategoriesViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows TeamUser to be modified.
-    """
-    queryset = RoleCategories.objects.all()
-    serializer_class = RoleCategoriesSerializer
+# class RoleCategoriesViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows TeamUser to be modified.
+#     """
+#     queryset = RoleCategories.objects.all()
+#     serializer_class = RoleCategoriesSerializer
 
-class RoleTerritoriesViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows TeamUser to be modified.
-    """
-    queryset = RoleTerritories.objects.all()
-    serializer_class = RoleTerritoriesSerializer
+# class RoleTerritoriesViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows TeamUser to be modified.
+#     """
+#     queryset = RoleTerritories.objects.all()
+#     serializer_class = RoleTerritoriesSerializer

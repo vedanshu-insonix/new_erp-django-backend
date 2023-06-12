@@ -1,8 +1,7 @@
 from django.db import models
-from system.utils import ShippingTermsChoice, StatusChoice
-from system.models.common import *
+from system.models.common import BaseStatus
 
-class PurchaseOrder(BaseContent):
+class PurchaseOrder(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     purchase_order_id = models.CharField(max_length = 10, unique=True)
     vendor = models.ForeignKey('sales.Vendors', on_delete=models.CASCADE, null=True)
@@ -41,15 +40,12 @@ class PurchaseOrder(BaseContent):
     shipping_note = models.TextField(null=True,blank=True)
     date = models.DateTimeField(null=True,blank=True)
     reference = models.CharField(max_length = 255, null=True, blank=True)
-    # payment_terms_choices = 
-    shipping_terms_choices = models.CharField(max_length=1, choices=ShippingTermsChoice, null=True, blank=True)
+    payment_terms = models.ForeignKey('system.Choice', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_payment_terms")
+    shipping_terms = models.ForeignKey('system.Choice', on_delete = models.SET_NULL, null = True, blank = True, related_name="%(class)s_shipping_terms")
     Priority = models.CharField(max_length = 255, null = True, blank = True)
-    authorized_by_id = models.ForeignKey('system.UserAddress', on_delete=models.SET_NULL, null=True, blank=True)
-    stage_id = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
-    stage_started = models.DateTimeField(auto_now_add=True)
-    status_choices_id = models.CharField(max_length=1, choices=StatusChoice, null=True, blank=True)
+    # authorized_by_id = models.ForeignKey('system.UserAddress', on_delete=models.SET_NULL, null=True, blank=True)
 
-class PurchaseOrderLines(BaseContent):
+class PurchaseOrderLines(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     purchase_order = models.ForeignKey('PurchaseOrder', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_product = models.ForeignKey('sales.VendorProducts', on_delete=models.SET_NULL, null=True, blank=True)
@@ -70,20 +66,16 @@ class PurchaseOrderLines(BaseContent):
     sequence = models.IntegerField(null=True,blank=True)
     comment = models.TextField(null=True,blank=True)
     product = models.TextField(null=True,blank=True)
-    delivery_id = models.ForeignKey('warehouse.Deliveries', on_delete=models.SET_NULL, null=True, blank=True)
+    delivery = models.ForeignKey('warehouse.Deliveries', on_delete=models.SET_NULL, null=True, blank=True)
     #bill_id = Fkey
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
 
 
-class Disbursment(BaseContent):
+class Disbursment(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     amount = models.DecimalField( max_digits= 30, decimal_places=2,blank=True,default=0.0)
-    currency_id = models.ForeignKey('system.Currency', on_delete=models.SET_NULL, null=True, blank=True)
+    currency = models.ForeignKey('system.Currency', on_delete=models.SET_NULL, null=True, blank=True)
     disbursment_for = models.CharField(max_length=100, null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
     sales_credit = models.ForeignKey('sales.SalesCredits', on_delete=models.SET_NULL, null=True, blank=True)
     #vendor_bill = models.ForeignKey('sales.VendorBill', on_delete=models.SET_NULL, null=True, blank=True)
-    stage = models.ForeignKey(Stage, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=255, choices=StatusChoice, null=True, blank=True)
-    stage_started =  models.DateTimeField(null=True, blank=True)
 

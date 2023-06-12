@@ -14,10 +14,9 @@ from .models.teams import *
 
 # Register your models here.
 admin.site.register([State, Country, Menu, Form, Tag, Language, List, Translation,
-                     TranslationFromData, Choice, FormData, FormList, Column, TranslationChoice,
-                     UserAddress, TranslationColumn, TranslationForm, FormSection, StageAction,
-                     Configuration, ListIcon, TranslationList, Communication, CommunicationAddress,
-                     Button, Currency, Stage, Territories, Selectors, ListFilters, ListSorts, Help, Category,
-                     Tile, Icons, Channel, DataTable, Data, Entity, RecordIdentifiers, Permission, Role, Rules,
-                     Team])
+                     Choice, FormData, FormList, Column, FormSection, StageAction,
+                     Configuration, Communication,Button, Currency, Stage, Team,
+                     Territories, Selectors, ListFilters, ListSorts, Help, Category,
+                     Tile, Icons, Channel, DataTable, Data, Entity, RecordIdentifiers,
+                     Permission, Role, Rules])
 

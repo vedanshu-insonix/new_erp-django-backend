@@ -1,7 +1,7 @@
 from django.db import models
-from system.models.common import BaseContent
+from system.models.common import BaseStatus
 
-class SalesOrders(BaseContent):
+class SalesOrders(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     order_id = models.CharField(max_length = 255, unique=True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
@@ -50,14 +50,11 @@ class SalesOrders(BaseContent):
     tax = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     shipping = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     total = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    order_stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.order_id
     
-class SalesOrderLines(BaseContent):
+class SalesOrderLines(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     order = models.ForeignKey('SalesOrders', on_delete=models.SET_NULL, null=True, blank=True)
     stock_id = models.CharField(max_length = 255, null = True, blank = True)#Fkey
@@ -77,11 +74,9 @@ class SalesOrderLines(BaseContent):
     route = models.ForeignKey('warehouse.Routes', on_delete=models.SET_NULL, null=True, blank=True)
     via_choice = models.CharField(max_length = 255, null = True, blank = True)
     date = models.DateTimeField(null = True, blank = True)
-    bundle_line_id =models.CharField(max_length = 255, null = True, blank = True)#references primary key of orderline that is a bundle
-    shipment_id = models.CharField(max_length = 255, null = True, blank = True)# FKEY
-    invoice_id = models.CharField(max_length = 255, null = True, blank = True)# FKEY
+    bundle_line =models.CharField(max_length = 255, null = True, blank = True)#references primary key of orderline that is a bundle
+    shipment = models.CharField(max_length = 255, null = True, blank = True)# FKEY
+    invoice = models.CharField(max_length = 255, null = True, blank = True)# FKEY
     sequence = models.IntegerField(null=True, blank=True)
     comment = models.TextField(null = True, blank = True)
     product = models.TextField(null = True, blank = True)
-    orderline_stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=255, null=True, blank=True)

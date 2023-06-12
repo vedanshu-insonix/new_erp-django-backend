@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.response import Response
 from rest_framework import status
+from system import utils
 
 
 class ChannelViewSet(viewsets.ModelViewSet):
@@ -29,34 +30,26 @@ class CommunicationViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         try:
-            new_comm = request.data
+            newComm = request.data
             address = None
-            if 'address' in new_comm:
-                address = new_comm.pop('address')
-            serializer = CommunicationSerializer(data=new_comm, context={'request': request})
+            if 'address' in newComm:
+                address = newComm.pop('address')
+            serializer = CommunicationSerializer(data=newComm, context={'request': request})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            if address != None:
-                addr = Addresses.objects.filter(id=address)
+            commId = Communication.objects.get(id=serializer.data.get('id'))
+            addrID = commId.address.all()
+            if (newComm.get('primary') == True) and addrID:
+                addr = Addresses.objects.filter(id__in=addrID)
                 if addr:
-                    new_comm_addr = CommunicationAddress.objects.create(created_by_id = request.user.id,
-                                                                        communication_id = serializer.data.get('id'),
-                                                                        address_id=address)
-                    if new_comm.get('primary') == True:
-                        new_comm_addr = CommunicationAddress.objects.get(id=new_comm_addr.id)
-                        channel_type=new_comm.get('communication_channel')
-                        if channel_type=='telephone':
-                            address_rec = Addresses.objects.filter(id=new_comm_addr.address_id).update(telephone = new_comm.get('external_routing'),
-                                                                                                telephone_type = new_comm.get('communication_type'))
-                        elif channel_type=='email':
-                            address_rec = Addresses.objects.filter(id=new_comm_addr.address_id).update(email = new_comm.get('external_routing'))
-                        else:
-                            pass                                        
-            return Response({"msg":serializer.data,
-                            "status":"success",
-                            "code":status.HTTP_201_CREATED})
+                    channelType=newComm.get('communication_channel')
+                    if channelType=='telephone':
+                        addressRec = addr.update(telephone = newComm.get('external_routing'), telephone_type = newComm.get('communication_type'))
+                    elif channelType=='email':
+                        addressRec = addr.update(email = newComm.get('external_routing'))
+                    else:
+                        pass    
+            result = serializer.data                                    
+            return Response(utils.success_msg(result))
         except Exception as e:
-            return Response({"msg":"Unable to create new communication record",
-                            "reason":str(e),
-                            "status":"failed",
-                            "code":status.HTTP_400_BAD_REQUEST})
+            return Response(utils.error(str(e)))

@@ -10,10 +10,14 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from system.utils import send_email
-from system.models.teams import TeamUser
-from system.serializers.team_serializer import TeamUserSerializer
-from system.models.users import UserAddress, UserRoles
-
+from system.models.teams import Team
+from system.serializers.team_serializer import TeamSerializer
+from system.models.roles_permissions import Role
+from system.serializers.role_permission_serializer import RoleSerializer
+from sales.serializers.addresses_serializers import AddressSerializer
+from sales.models import Addresses
+from system.models import Communication
+from system.serializers.communication_serializers import CommunicationSerializer
 #**************************Serializer For User Model**************************#
 class RelatedUserSerilaizer(serializers.ModelSerializer):
     class Meta:
@@ -23,28 +27,33 @@ class RelatedUserSerilaizer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length = 255)
     teams = serializers.SerializerMethodField()
-    address = serializers.SerializerMethodField()
+    communications = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
 
     def get_teams(self, obj):
-        queryset = TeamUser.objects.filter(user=obj.id)
-        serializer = TeamUserSerializer(queryset, many=True)
+        userID = obj.id
+        queryset = Team.objects.filter(user=userID)
+        serializer = TeamSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
             result.append(serializer.data[i]['team']) if serializer.data else None
         return result
 
-    def get_address(self, obj):
-        queryset = UserAddress.objects.filter(user=obj.id)
-        serializer = UserAddressSerilaizer(queryset, many=True)
-        result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['address']) if serializer.data else None
+    def get_communications(self, obj):
+        userID =obj.id
+        req = self.context['request']
+        userAddr = Addresses.objects.filter(company__user=userID, default=True).first()
+        result = []
+        if userAddr:
+            addrID = userAddr.id
+            userComm = Communication.objects.filter(address = addrID)
+            result = CommunicationSerializer(userComm, many=True, context={'request':req})
         return result
         
     def get_roles(self, obj):
-        queryset = UserRoles.objects.filter(user = obj.id)
-        serializer = UserRoleSerilaizer(queryset, many=True)
+        userID = obj.id
+        queryset = Role.objects.filter(user = userID)
+        serializer = RoleSerializer(queryset, many=True)
         result=[]
         for i in range(len(serializer.data)):
             result.append(serializer.data[i]['role']) if serializer.data else None
@@ -53,24 +62,47 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("__all__")
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        req = self.context['request']
+        userID =instance.id
+        address_queryset = Addresses.objects.filter(company__user=userID, default=True).first()
+        if address_queryset:
+            response['address_id'] = address_queryset.id
+        else:
+            response['address_id'] = None
+        serializer = AddressSerializer(address_queryset, context={'request':req})
+        address_values = serializer.data
+        for key, value in address_values.items():
+            if key == 'id' or key == 'user': pass
+            else:
+                if key == 'email': 
+                    key = 'address__'+key
+                if value:
+                    response[key] = value
+                else:
+                    response[key] = '___'
+
+        return response
     
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
         return super(UserSerializer, self).create(validated_data)
 
 #**************************Serializer For User Address Model**************************#
-class UserAddressSerilaizer(serializers.ModelSerializer):
-    class Meta:
-        model = UserAddress
-        exclude =("id","user", "created_time", "modified_time", "created_by")
-        depth = 1
+# class UserAddressSerilaizer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserAddress
+#         exclude =("id","user", "created_time", "modified_time", "created_by")
+#         depth = 1
 
 #**************************Serializer For User Roles Model**************************#
-class UserRoleSerilaizer(serializers.ModelSerializer):
-    class Meta:
-        model = UserRoles
-        exclude =("id","user", "created_time", "modified_time", "created_by")
-        depth = 1
+# class UserRoleSerilaizer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserRoles
+#         exclude =("id","user", "created_time", "modified_time", "created_by")
+#         depth = 1
 
 #**************************Serializer For Group Model**************************#
 class GroupSerializer(serializers.ModelSerializer):

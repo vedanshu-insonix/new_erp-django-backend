@@ -1,7 +1,7 @@
 from django.db import models
-from system.models.common import BaseContent
+from system.models.common import BaseStatus, BaseContent
 
-class Product(BaseContent):
+class Product(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     template = models.ForeignKey('self', on_delete = models.SET_NULL, null=True, blank=True)
     template_name = models.CharField(max_length = 255, null=True, blank=True)
@@ -55,8 +55,9 @@ class Product(BaseContent):
     # price_difference_account = models.ForeignKey('ChartOfAccounts', on_delete = models.SET_NULL, null=True, blank=True)
     deferred_revenue_type = models.CharField(max_length=255, null=True, blank=True)
     asset_type = models.CharField(max_length=255, null=True, blank=True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
+    images = models.ManyToManyField('Images', blank=True, related_name='products')
+    attributes = models.ManyToManyField('Attributes', blank=True, related_name='products')
+    values = models.ManyToManyField('Values', blank=True, related_name='products')
 
 class Bom(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
@@ -87,14 +88,11 @@ class Characteristics(BaseContent):
     before = models.CharField(max_length=255, null=True, blank=True)
     after = models.CharField(max_length=255, null=True, blank=True)
 
-class Value(BaseContent):
-    id = models.CharField(max_length=255, primary_key=True, editable=False)
-    value = models.CharField(max_length=255, null=True, blank=True) # FKEY Lookup Field
-    attribute = models.ForeignKey('Attributes', on_delete=models.SET_NULL, null=True, blank=True)
 
-class ProductValues(BaseContent):
-    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
-    value = models.ForeignKey('Value', on_delete=models.SET_NULL, null=True, blank=True)
+
+# class ProductValues(BaseContent):
+#     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
+#     value = models.ForeignKey('Value', on_delete=models.SET_NULL, null=True, blank=True)
 
 class ProductCategory(BaseContent):
     usage = models.CharField(max_length=255, null=True, blank=True)
@@ -106,15 +104,15 @@ class ProductCategory(BaseContent):
 class Equivalents(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     company = models.ForeignKey('system.Entity', on_delete=models.SET_NULL, null=True, blank=True)
-    company_product = models.ForeignKey('system.EntityProducts', on_delete=models.SET_NULL, null=True, blank=True)
+    # company_product = models.ForeignKey('system.EntityProducts', on_delete=models.SET_NULL, null=True, blank=True)
     company_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #company_uom = data type not defined
-    vendor_id = models.ForeignKey('sales.Vendors', on_delete=models.SET_NULL, null=True, blank=True)
+    vendor = models.ForeignKey('sales.Vendors', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_product = models.ForeignKey('sales.VendorProducts', on_delete=models.SET_NULL, null=True, blank=True)
     vendor_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     #vendor_uom = data type not defined
 
-class Locations(BaseContent):
+class Locations(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     parent_location = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
     locations_name = models.CharField(max_length=100,null=True,blank=True)
@@ -132,10 +130,8 @@ class Locations(BaseContent):
     inspection=models.BooleanField(default = False)
     transit=models.BooleanField(default = False)
     scrap=models.BooleanField(default = False)
-    stage=models.ForeignKey('system.Stage', on_delete = models.SET_NULL, null=True, blank=True)
-    status=models.CharField(max_length = 255, null=True, blank=True)
 
-class ProductCounts(BaseContent):
+class ProductCounts(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     locations = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
@@ -143,10 +139,8 @@ class ProductCounts(BaseContent):
     counted = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     discrepancy = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
-class ProductLocations(BaseContent):
+class ProductLocations(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)
     locations = models.ForeignKey('Locations', on_delete=models.SET_NULL, null=True, blank=True)
@@ -154,8 +148,6 @@ class ProductLocations(BaseContent):
     max_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     mini_quantity = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     comment = models.TextField(null=True,blank=True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    status_choices = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True)
 
 class UOM(BaseContent):
     id = models.CharField(max_length=255, primary_key=True, editable=False)

@@ -1,24 +1,21 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from system.models.common import *
-from ..models.customers import Customers, CustomerAddress
-from ..serializers.addresses_serializers import AddressSerializer, AddressTagSerializer, RelatedAddressSerializer
+from ..models.customers import Customers
+from ..serializers.addresses_serializers import AddressSerializer, RelatedAddressSerializer
 from system.serializers.communication_serializers import CommunicationSerializer
 from ..models.address import Addresses
-from system.models.communication import Communication, CommunicationAddress
-from ..models.vendors import Vendors, VendorAddress
-from system.models.entity import Entity, EntityAddress
-from ..models.address import AddressTag
+from system.models.communication import Communication
+from ..models.vendors import Vendors
+from system.models.entity import Entity
 from rest_framework.response import Response
-from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import action
-from rest_framework import filters
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db.models import Q
 from system.service import get_rid_pkey
-
+from rest_framework.decorators import action
+from django.db.models import Q
+from rest_framework import filters
 from system import utils
 import openpyxl
 import json
@@ -33,7 +30,7 @@ class AddressViewSet(viewsets.ModelViewSet):
     filterset_fields = {
             'address_type__system_name': ['exact', 'icontains'],'address_location_type__system_name': ['exact', 'icontains'],'first_name': ['icontains'],
             'last_name': ['icontains'],'company_name': ['exact', 'icontains'],'city': ['exact', 'icontains'],'state__system_name': ['exact', 'icontains'],
-            'postal_code' : ['exact'],'country__system_name' : ['exact', 'contains'],'email' : ['exact']
+            'postal_code' : ['exact'],'country__system_name' : ['exact', 'icontains'],'email' : ['exact']
             }
     #filterset_fields = ("__all__")
     ordering_fields = ("__all__")
@@ -74,17 +71,20 @@ class AddressViewSet(viewsets.ModelViewSet):
                 if HaveCustomer == True:
                     CustomerInstance = Customers.objects.get(id = customer)
                     if CustomerInstance:
-                        CustomerAddress.objects.create(address = AddressInstance, customer = CustomerInstance)
+                        CustomerInstance.address.add(AddressInstance.id)
+                        #CustomerInstance.objects.create(address = AddressInstance, customer = CustomerInstance)
                 
                 if HaveVendor == True:
                     VendorInstance = Vendors.objects.get(id = vendor)
                     if VendorInstance:
-                        VendorAddress.objects.create(address = AddressInstance, vendor = VendorInstance)
+                        VendorInstance.address.add(AddressInstance.id)
+                        #VendorAddress.objects.create(address = AddressInstance, vendor = VendorInstance)
 
                 if HaveCompany == True:
                     CompanyInstance = Entity.objects.get(id = company)
                     if CompanyInstance:
-                        EntityAddress.objects.create(address = AddressInstance, company = CompanyInstance)
+                        CompanyInstance.address.add(AddressInstance.id)
+                    #     EntityAddress.objects.create(address = AddressInstance, company = CompanyInstance)
                 if HaveCommunication == True:
                     for comm in communication:
                         if "id" in comm:
@@ -98,7 +98,8 @@ class AddressViewSet(viewsets.ModelViewSet):
                                 comm_serializers.save()
                             # Create Relation between Communication and Address
                             CommunicationInstance = Communication.objects.get(id = comm_serializers.data.get("id"))
-                            CreateCommunicationAddress = CommunicationAddress.objects.create(address = AddressInstance, communication = CommunicationInstance)
+                            AddressInstance.communications.add(CommunicationInstance.id)
+                            #CreateCommunicationAddress = CommunicationAddress.objects.create(address = AddressInstance, communication = CommunicationInstance)
             
             returnData = AddressSerializer(AddressInstance, context={'request': request})
             return Response(returnData.data)
@@ -138,44 +139,25 @@ class AddressViewSet(viewsets.ModelViewSet):
                 serializer.save()
             address_id = address_obj.id
             # Create Record in CustomerAddress
-            if HaveCustomer==True:
-                customer_instance = Customers.objects.get(id = customer)
-                address_instance = Addresses.objects.get(id = address_id)
-                if customer_instance != None:
-                    get_customer = CustomerAddress.objects.filter(address = address_instance.id, customer = customer_instance.id)
-                    if get_customer:
-                        del_obj = get_customer.delete( )
-                        CustomerAddress.objects.create(address = address_instance, customer = customer_instance)
-                    else:
-                        CustomerAddress.objects.create(address = address_instance, customer = customer_instance)
+            if HaveCustomer == True:
+                CustomerInstance = Customers.objects.get(id = customer)
+                if CustomerInstance:
+                    CustomerInstance.address.add(address_obj.id)
             
             # Create Record in VendorAddress
             if HaveVendor == True:
-                vendor_instance = Vendors.objects.get(id = vendor)
-                if vendor_instance != None:
-                    address_instance = Addresses.objects.get(id = address_id)
-                    get_vendor = VendorAddress.objects.filter(address = address_instance.id, vendor = vendor_instance.id)
-                    if get_vendor:
-                        del_obj = get_vendor.delete()
-                        VendorAddress.objects.create(address = address_instance, vendor = vendor_instance)
-                    else:
-                        VendorAddress.objects.create(address = address_instance, vendor = vendor_instance)
-                
+                VendorInstance = Vendors.objects.get(id = vendor)
+                if VendorInstance:
+                    VendorInstance.address.add(address_obj.id)
+            
             # Create Record in EntityAddress
             if HaveCompany == True:
-                company_instance = Entity.objects.get(id = company)
-                if company_instance != None:
-                    address_instance = Addresses.objects.get(id = address_id)
-                    get_company = EntityAddress.objects.filter(address = address_instance.id, company = company_instance.id)
-                    if get_company:
-                        del_obj = get_company.delete()
-                        EntityAddress.objects.create(address = address_instance, company = company_instance)
-                    else:
-                        EntityAddress.objects.create(address = address_instance, company = company_instance)
+                CompanyInstance = Entity.objects.get(id = company)
+                if CompanyInstance:
+                    CompanyInstance.address.add(address_obj.id)
   
             # Create Record in CommunicationAddress
             if HaveCommunication == True:
-                address_instance = Addresses.objects.get(id = address_id)
                 for comm in communication:
                     if "id" in comm:
                         CommunicationInstance = Communication.objects.get(id= comm.pop("id"))
@@ -186,9 +168,9 @@ class AddressViewSet(viewsets.ModelViewSet):
                         comm_serializers = CommunicationSerializer(data=comm, context={'request': request})
                         if comm_serializers.is_valid(raise_exception=True):
                                 comm_serializers.save()
-                        # Create Relation between Customer and Address
                         CommunicationInstance = Communication.objects.get(id = comm_serializers.data.get("id"))
-                        CreateCommunicationAddress = CommunicationAddress.objects.create(address = address_instance, communication = CommunicationInstance)
+                        address_obj.communications.add(CommunicationInstance.id)
+                        #CreateCommunicationAddress = CommunicationAddress.objects.create(address = address_instance, communication = CommunicationInstance)
                         
             serializer = AddressSerializer(address_obj, context={'request': request})
             return Response(serializer.data)
@@ -197,7 +179,7 @@ class AddressViewSet(viewsets.ModelViewSet):
     
     
     # To add tags on addresses
-    @action(detail=False, methods=['post'],url_path = "addtags")
+    """@action(detail=False, methods=['post'],url_path = "addtags")
     def addtags(self, request):
         try:
             result = []
@@ -209,13 +191,13 @@ class AddressViewSet(viewsets.ModelViewSet):
                     tag_data = Tag.objects.create(tag=tag[i].get('tag'),color=tag[i].get('color'),created_by_id = request.user.id)
                 response = AddressTag.objects.create(tag_id=tag_data.id,address_id=address_ids[i],created_by_id = request.user.id)
                 result.append(response)
-            serializer = AddressTagSerializer(result, many=True)
+            serializer = AddressSerializer(result, many=True)
             return Response(serializer.data)
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(self,str(e)))"""
 
     # to remove tags from address
-    @action(detail=False, methods=['post'],url_path = "removetags")
+    """@action(detail=False, methods=['post'],url_path = "removetags")
     def removetags(self,request):
         try:
             tag = request.data.get('tags')
@@ -226,7 +208,7 @@ class AddressViewSet(viewsets.ModelViewSet):
                     AddressTag.objects.filter(address_id=address_ids[i],tag_id=tag_data.id).delete()
             return Response({'status': 'success','code': status.HTTP_200_OK})
         except Exception as e:
-            return Response(utils.error(self,str(e)))
+            return Response(utils.error(self,str(e)))"""
 
     # Create Address Records in Bulk.    
     @action(detail=False, methods=['post'], url_path = "import")
@@ -296,85 +278,87 @@ class AddressViewSet(viewsets.ModelViewSet):
 
 # To Update the communication record after the updation of any address record.
 @receiver(post_save, sender=Addresses)
-def update_comm(created, sender,instance,**kwargs):
-    if not created:
-        address_id = instance.id
-        email = instance.email
-        telephone = instance.telephone
-        telephone_type = instance.telephone_type
-        address_instance = Addresses.objects.get(id = address_id)
-        get_comm_addr = CommunicationAddress.objects.filter(address__id = address_id, communication__primary = True)
+def update_comm(created, instance,**kwargs):
+    print("demo")
+    address_id = instance.id
+    email = instance.email
+    telephone = instance.telephone
+    telephone_type = instance.telephone_type
+    addressInstance = Addresses.objects.get(id = address_id)
+    get_comm_addr = Communication.objects.filter(address = address_id, primary = True)
+
+    print(get_comm_addr)
+    
+    if get_comm_addr:
+        if email != None:
+            for comm_addr in get_comm_addr:
+                communication_detail = Communication.objects.filter(id = comm_addr.id).first()
+                if communication_detail:
+                    communication_channel = communication_detail.communication_channel
+                    if communication_channel != None:
+                        get_choice = Choice.objects.filter(id = communication_channel).first()
+                        if get_choice:
+                            choice = get_choice.system_name
+                            if choice == 'email' or choice == 'Email':
+                                update_comm = Communication.objects.filter(id = communication_detail.id).update(value = email)
+                                
+        if telephone != None and telephone_type != None:
+            for comm_addr in get_comm_addr:
+                communication_detail = Communication.objects.filter(id = comm_addr.id).first()
+                if communication_detail:
+                    communication_channel = communication_detail.communication_channel
+                    communication_type = communication_detail.communication_type
+                    if communication_channel != None:
+                        get_choice = Choice.objects.filter(id = communication_channel).first()
+                        type_choice = Choice.objects.filter(id = communication_type).first()
+                        if get_choice:
+                            choice = get_choice.system_name
+                            if choice == 'telephone' or choice == 'Telephone':
+                                Communication.objects.filter(id = communication_detail.id).update(value = telephone,
+                                                                                                communication_type = type_choice.id)                        
         
-        if get_comm_addr:
-            if email != None:
-                for comm_addr in get_comm_addr:
-                    communication_detail = Communication.objects.filter(id = comm_addr.communication.id).first()
-                    if communication_detail:
-                        communication_channel = communication_detail.communication_channel
-                        if communication_channel != None:
-                            get_choice = Choice.objects.filter(id = communication_channel).first()
-                            if get_choice:
-                                choice = get_choice.system_name
-                                if choice == 'email' or choice == 'Email':
-                                    update_comm = Communication.objects.filter(id = communication_detail.id).update(value = email)
-                                    
-            if telephone != None and telephone_type != None:
-                for comm_addr in get_comm_addr:
-                    communication_detail = Communication.objects.filter(id = comm_addr.communication.id).first()
-                    if communication_detail:
-                        communication_channel = communication_detail.communication_channel
-                        communication_type = communication_detail.communication_type
-                        if communication_channel != None:
-                            get_choice = Choice.objects.filter(id = communication_channel).first()
-                            type_choice = Choice.objects.filter(id = communication_type).first()
-                            if get_choice:
-                                choice = get_choice.system_name
-                                if choice == 'telephone' or choice == 'Telephone':
-                                    Communication.objects.filter(id = communication_detail.id).update(value = telephone,
-                                                                                                    communication_type = type_choice.id)                        
-            
-            elif telephone != None:
-                for comm_addr in get_comm_addr:
-                    communication_detail = Communication.objects.filter(id = comm_addr.communication.id).first()
-                    if communication_detail:
-                        communication_channel = communication_detail.communication_channel
-                        communication_type = communication_detail.communication_type
-                        if communication_channel != None:
-                            get_choice = Choice.objects.filter(id = communication_channel).first()
-                            type_choice = Choice.objects.filter(id = communication_type).first()
-                            if get_choice:
-                                choice = get_choice.system_name
-                                if choice == 'telephone' or choice == 'Telephone':
-                                    Communication.objects.filter(id = communication_detail.id).update(value = telephone)
-                    
-        else:
-            if email != None:
-                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
-                                                Q(system_name = "email") | Q(selector__system_name = "Email")).first()
-                if get_choice:
-                    comm_id = get_rid_pkey('communication')
-                    create_comm = Communication.objects.create(id = comm_id, value = email, communication_channel = get_choice.id, primary = True)
-                    CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
-            
-            if telephone != None and telephone_type != None:
-                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
-                                                Q(system_name = "telephone") | Q(selector__system_name = "Telephone")).first()
-                type_choice = Choice.objects.filter(Q(selector__system_name = "communication_type") | Q(selector__system_name = "communication type"), 
-                                                Q(system_name = telephone_type) | Q(selector__system_name = telephone_type)).first()
-                if get_choice and type_choice:
-                    comm_id = get_rid_pkey('communication')
-                    create_comm = Communication.objects.create(id = comm_id, value = telephone,
-                                                            communication_channel = get_choice.id,
-                                                            communication_type = type_choice.id,
-                                                            primary = True)
-                    CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
+        elif telephone != None:
+            for comm_addr in get_comm_addr:
+                communication_detail = Communication.objects.filter(id = comm_addr.id).first()
+                if communication_detail:
+                    communication_channel = communication_detail.communication_channel
+                    communication_type = communication_detail.communication_type
+                    if communication_channel != None:
+                        get_choice = Choice.objects.filter(id = communication_channel).first()
+                        type_choice = Choice.objects.filter(id = communication_type).first()
+                        if get_choice:
+                            choice = get_choice.system_name
+                            if choice == 'telephone' or choice == 'Telephone':
+                                Communication.objects.filter(id = communication_detail.id).update(value = telephone)
                 
-            elif telephone != None:
-                get_choice = Choice.objects.filter(Q(selector__system_name = "communication_channel") | Q(selector__system_name = "communication channel"), 
-                                                Q(system_name = "telephone") | Q(selector__system_name = "Telephone")).first()
-                if get_choice:
-                    comm_id = get_rid_pkey('communication')
-                    create_comm = Communication.objects.create(id = comm_id, value = telephone,
+    else:
+        if email != None:
+            get_choice = Choice.objects.filter(selector__system_name = "communication_channel", system_name='email').first()
+            if get_choice:
+                comm_id = get_rid_pkey('communications')
+                create_comm = Communication.objects.create(id = comm_id, value = email, communication_channel = get_choice.id, 
+                                                           primary = True, address_id=address_id)
+                # addressInstance.communications.add(create_comm.id)
+                # CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
+        
+        if telephone != None and telephone_type != None:
+            get_choice = Choice.objects.filter(selector__system_name = "communication_channel", system_name='telephone').first()
+            type_choice = Choice.objects.filter(id = telephone_type, selector__system_name = "telephone_type").first()
+            if get_choice and type_choice:
+                comm_id = get_rid_pkey('communications')
+                create_comm = Communication.objects.create(id = comm_id, value = telephone,
                                                         communication_channel = get_choice.id,
-                                                        primary = True)
-                    CommunicationAddress.objects.create(address = address_instance, communication = create_comm, primary = True)
+                                                        communication_type = type_choice.id,
+                                                        primary = True, address_id=address_id)
+                # addressInstance.communications.add(create_comm.id)
+                # CommunicationAddress.objects.create(address = address_instance, communication = create_comm)
+            
+        elif telephone != None:
+            get_choice = Choice.objects.filter(selector__system_name = "communication_channel", system_name='telephone').first()
+            if get_choice:
+                comm_id = get_rid_pkey('communications')
+                create_comm = Communication.objects.create(id = comm_id, value = telephone,
+                                                    communication_channel = get_choice.id,
+                                                    primary = True, address_id=address_id)
+                # addressInstance.communications.add(create_comm.id)
+                # CommunicationAddress.objects.create(address = address_instance, communication = create_comm, primary = True)

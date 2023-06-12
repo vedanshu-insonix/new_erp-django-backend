@@ -4,6 +4,9 @@ from ..serializers.user_serializers import RelatedUserSerilaizer
 from system.serializers.common_serializers import RelatedStageSerializer
 from system.service import get_rid_pkey
 from system.models.recordid import RecordIdentifiers
+from sales.models.address import Addresses
+from sales.serializers.addresses_serializers import AddressSerializer
+from system.serializers.team_serializer import TeamSerializer, Team
 
 #**************************Serializer For Entity Model**************************#
 class RelatedEntitySerializer(serializers.ModelSerializer):
@@ -14,40 +17,36 @@ class RelatedEntitySerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     billing_address = serializers.SerializerMethodField()
     shipping_address = serializers.SerializerMethodField()
-    users = serializers.SerializerMethodField()
-    teams = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
+    team = serializers.SerializerMethodField()
 
     def get_billing_address(self, obj):
-        queryset = EntityAddress.objects.filter(entity=obj.id, address__address_type='billing_address')
-        serializer = EntityAddressSerializer(queryset, many=True)
-        result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['address']) if serializer.data else None
-        return result
+        req = self.context['request']
+        companyID = obj.id
+        queryset = Addresses.objects.filter(company=companyID, address_type__system_name='billing_address')
+        serializedData = AddressSerializer(queryset, many=True, context={'request':req})
+        return serializedData.data
 
     def get_shipping_address(self, obj):
-        queryset = EntityAddress.objects.filter(entity=obj.id, address__address_type='shipping_address')
-        serializer = EntityAddressSerializer(queryset, many=True)
-        result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['address']) if serializer.data else None
-        return result
+        req = self.context['request']
+        companyID = obj.id
+        queryset = Addresses.objects.filter(company=companyID, address_type__system_name='shipping_address')
+        serializedData = AddressSerializer(queryset, many=True, context={'request':req})
+        return serializedData.data
         
-    def get_users(self, obj):
-        queryset = EntityUser.objects.filter(entity = obj.id)
-        serializer = EntityUserSerializer(queryset, many=True)
-        result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['user']) if serializer.data else None
-        return result
+    def get_user(self, obj):
+        req = self.context['request']
+        userID = obj.user.all()
+        queryset = User.objects.filter(id__in = userID)
+        serializer = RelatedUserSerilaizer(queryset, many=True, context={'request':req})
+        return serializer.data
 
-    def get_teams(self, obj):
-        queryset = EntityTeam.objects.filter(entity = obj.id)
-        serializer = EntityTeamSerializer(queryset, many=True)
-        result=[]
-        for i in range(len(serializer.data)):
-            result.append(serializer.data[i]['team']) if serializer.data else None
-        return result
+    def get_team(self, obj):
+        req = self.context['request']
+        teamID = obj.team.all()
+        queryset = Team.objects.filter(id__in = teamID)
+        serializer = TeamSerializer(queryset, many=True, context={'request':req})
+        return serializer.data
 
     class Meta:
         model = Entity
@@ -58,17 +57,33 @@ class EntitySerializer(serializers.ModelSerializer):
     # To return forign key values in detail
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        request = self.context['request']
+        req = self.context['request']
+
+        # entity address details
+        companyID =instance.id
+        address_queryset = Addresses.objects.filter(company=companyID, default=True).first()
+        print(address_queryset)
+        if address_queryset:
+            response['address_id'] = address_queryset.id
+        else:
+            response['address_id'] = None
+        serializer = AddressSerializer(address_queryset, context={'request':req})
+        address_values = serializer.data
+        for key, value in address_values.items():
+            if key == 'id' or key == 'company': pass
+            elif key == 'company_name': response[key] = instance.system_name
+            else: response[key] = value
 
         entity_type = instance.entity_type
         if entity_type:
             response['entity_type'] = instance.entity_type.system_name
-        stage = RelatedStageSerializer(instance.stage, context={'request': request}).data
-        if 'id' in stage:
-            response['stage'] = RelatedStageSerializer(instance.stage, context={'request': request}).data
-        created_by = RelatedUserSerilaizer(instance.created_by).data
-        if 'id' in created_by:
-            response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
+
+        stage = instance.stage
+        if stage:
+            response['stage'] = instance.stage.system_name
+        # created_by = RelatedUserSerilaizer(instance.created_by).data
+        # if 'id' in created_by:
+        #     response['created_by'] = RelatedUserSerilaizer(instance.created_by).data
         return response
     
     # pkey of new data will be created on the basis of recordidentifiers.
@@ -79,22 +94,22 @@ class EntitySerializer(serializers.ModelSerializer):
         return super().create(data)
 
 #**************************Serializer For Entity Address Model**************************#        
-class EntityAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityAddress
-        exclude = ("entity","created_time","modified_time","created_by","id")
-        depth = 1
+# class EntityAddressSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = EntityAddress
+#         exclude = ("entity","created_time","modified_time","created_by","id")
+#         depth = 1
 
-#**************************Serializer For Entity User Model**************************#
-class EntityUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityUser
-        exclude = ("entity","created_time","modified_time","created_by","id")
-        depth = 1
+# #**************************Serializer For Entity User Model**************************#
+# class EntityUserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = EntityUser
+#         exclude = ("entity","created_time","modified_time","created_by","id")
+#         depth = 1
 
-#**************************Serializer For Entity Team Model**************************#
-class EntityTeamSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityTeam
-        exclude = ("entity","created_time","modified_time","created_by","id")
-        depth = 1
+# #**************************Serializer For Entity Team Model**************************#
+# class EntityTeamSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = EntityTeam
+#         exclude = ("entity","created_time","modified_time","created_by","id")
+#         depth = 1

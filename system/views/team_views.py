@@ -34,12 +34,12 @@ class TeamViewSet(viewsets.ModelViewSet):
                     for user in users:
                         user = user.get('id')
                         user=User.objects.get(id=user)
-                        create_company_user=TeamUser.objects.create(user=user, team=new_team)
+                        # create_company_user=TeamUser.objects.create(user=user, team=new_team)
                 if haveRole == True:
                     for role in roles:
                         role_id = role.get('id')
                         role_id = Role.objects.get(id=role_id)
-                        create_role=TeamRole.objects.create(role=role_id, team=new_team)
+                        # create_role=TeamRole.objects.create(role=role_id, team=new_team)
                         #permissions = role.get('permissions')
                         #for permission in permissions:
                         #    permission_id = permission.get('id')
@@ -84,45 +84,45 @@ class TeamViewSet(viewsets.ModelViewSet):
                     for role in add_roles:
                         role = role.get('id')
                         role=Role.objects.get(id=role)
-                        find = TeamRole.objects.filter(role=role, team=team_rec)
-                        if not find:
-                            add_role=TeamRole.objects.create(role=role, team=team_rec)
+                        # find = TeamRole.objects.filter(role=role, team=team_rec)
+                        # if not find:
+                        #     add_role=TeamRole.objects.create(role=role, team=team_rec)
                 if RemoveRoles == True:
                     for role in remove_roles:
                         role = role.get('id')
                         role=Role.objects.get(id=role)
-                        find = TeamRole.objects.filter(role=role, team=team_rec)
-                        if find:
-                            remove_role=(TeamRole.objects.filter(role=role, team=team_rec)).delete()
+                        # find = TeamRole.objects.filter(role=role, team=team_rec)
+                        # if find:
+                        #     remove_role=(TeamRole.objects.filter(role=role, team=team_rec)).delete()
                 if AddUser == True:
                     for user in add_users:
                         user = user.get('id')
                         user=User.objects.get(id=user)
-                        find = TeamUser.objects.filter(user=user, team=team_rec)
-                        if not find:
-                            add_user=TeamUser.objects.create(user=user, team=team_rec)
+                        # find = TeamUser.objects.filter(user=user, team=team_rec)
+                        # if not find:
+                        #     add_user=TeamUser.objects.create(user=user, team=team_rec)
                 if RemoveUser == True:
                     for user in remove_users:
                         user = user.get('id')
                         user=User.objects.get(id=user)
-                        find = TeamUser.objects.filter(user=user, team=team_rec)
-                        if find:
-                            remove_user=(TeamUser.objects.filter(user=user, team=team_rec)).delete()
+                        # find = TeamUser.objects.filter(user=user, team=team_rec)
+                        # if find:
+                        #     remove_user=(TeamUser.objects.filter(user=user, team=team_rec)).delete()
                 msg = "Team Updation Successful."
             return Response(utils.success_msg(msg))
         except Exception as e:
             return Response(utils.error(str(e)))
 
-class TeamRoleViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows TeamRole to be modified.
-    """
-    queryset = TeamRole.objects.all()
-    serializer_class = TeamRoleSerializer
+# class TeamRoleViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows TeamRole to be modified.
+#     """
+#     queryset = TeamRole.objects.all()
+#     serializer_class = TeamRoleSerializer
 
-class TeamUserViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows TeamUser to be modified.
-    """
-    queryset = TeamUser.objects.all()
-    serializer_class = TeamUserSerializer
+# class TeamUserViewSet(viewsets.ModelViewSet):
+#     """
+#     API’s endpoint that allows TeamUser to be modified.
+#     """
+#     queryset = TeamUser.objects.all()
+#     serializer_class = TeamUserSerializer

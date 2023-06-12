@@ -12,6 +12,6 @@ from .models.returns import *
 from .models.sales_credit import *
 from .models.sales_orders import *
 # Register your models here. 
-admin.site.register([Customers, Addresses, Vendors, CustomerAddress, AddressTag, SalesQuotations, Cartlines, Carts,
+admin.site.register([Customers, Addresses, Vendors, SalesQuotations, Cartlines, Carts,
                      SalesCredits, SalesInvoices, SalesOrderLines, SalesOrders, SalesPriceLists, Receipts, SalesReturns,
                      SalesReturnLines, VendorProducts, VendorPrices])

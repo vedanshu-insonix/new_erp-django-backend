@@ -1,8 +1,7 @@
 from django.db import models
-from system.models.common import BaseContent
-from system.models.common import *
+from system.models.common import BaseStatus
 
-class SalesCredits(BaseContent):
+class SalesCredits(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     invoice = models.ForeignKey('SalesInvoices', on_delete = models.CASCADE, null = True, blank = True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE, null = True, blank = True)
@@ -48,6 +47,3 @@ class SalesCredits(BaseContent):
     shipping = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     total = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     accepted_currency = models.ForeignKey('system.Currency', on_delete = models.SET_NULL, null= True, blank = True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=255, null=True, blank=True)

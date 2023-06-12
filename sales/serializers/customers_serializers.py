@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models.customers import Customers, CustomerAddress
+from ..models.customers import Customers
 from ..models.address import Addresses
 from system.serializers.common_serializers import *
 from system.serializers.user_serializers import RelatedUserSerilaizer
@@ -48,23 +48,9 @@ class RelatedCustomerSerializer(serializers.ModelSerializer):
         exclude = ("created_time","modified_time","created_by")
 
 class CustomerSerializer(serializers.ModelSerializer):
-    # address = serializers.SerializerMethodField()
     other_address = serializers.SerializerMethodField()
-    
-    # def get_address(self,obj):
-    #     queryset = CustomerAddress.objects.filter(customer = obj.id)
-    #     address_ids = []
-    #     for ele in queryset:
-    #         address_ids.append(ele.address.id)
-    #     address_queryset = Addresses.objects.filter(Q(id__in = address_ids), Q(address_type__system_name = "customer_contact"))
-    #     serializer = RelatedAddressSerializer(address_queryset, many = True)         
-    #     return serializer.data[0] if serializer.data else None
-    
     def get_other_address(self, obj):
-        queryset = CustomerAddress.objects.filter(customer = obj.id)
-        address_ids = []
-        for ele in queryset:
-            address_ids.append(ele.address.id)
+        address_ids = obj.address.all()
         address_queryset = Addresses.objects.filter(id__in = address_ids).exclude(default=True)  
         serializer = RelatedAddressSerializer(address_queryset, many = True)         
         return serializer.data
@@ -80,18 +66,19 @@ class CustomerSerializer(serializers.ModelSerializer):
         response = super().to_representation(instance)
         request = self.context['request']
         
-        queryset = CustomerAddress.objects.filter(customer = instance.id)
-        if queryset:
-            address_ids = []
-            for ele in queryset:
-                address_ids.append(ele.address.id)
-            address_queryset = Addresses.objects.filter(id__in = address_ids, default=True)
-            serializer = RelatedAddressSerializer(address_queryset, many = True)
-            address_values = serializer.data
-            if address_values:
-                for key, value in address_values[0].items():
-                    if key == 'id': pass
-                    else: response[key] = value
+        address_ids = instance.address.all()
+        response.pop('address')
+
+        address_queryset = Addresses.objects.filter(id__in = address_ids, default=True).first()
+        if address_queryset:
+            response['address_id'] = address_queryset.id
+        else:
+            response['address_id'] = None
+        serializer = RelatedAddressSerializer(address_queryset)
+        address_values = serializer.data
+        for key, value in address_values.items():
+            if key == 'id': pass
+            else: response[key] = value
 
         stage_data = instance.stage
         if stage_data:
@@ -109,9 +96,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         if shipping_terms:
             response['shipping_terms'] = instance.shipping_terms.system_name
 
-        entity = instance.entity
-        if entity:
-            response['entity'] = instance.entity.system_name
+        customer_type = instance.customer_type
+        if customer_type:
+            response['customer_type'] = instance.customer_type.system_name
 
         ship_via = instance.ship_via
         if ship_via:
@@ -147,8 +134,8 @@ class CustomerSerializer(serializers.ModelSerializer):
         return super().create(data)
 
 #**************************Serializer to get the record of addresses related to paricular customer**************************#  
-class CustomerAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomerAddress
-        exclude = ("address","id","created_time","modified_time","created_by")
-        depth = 1
+# class CustomerAddressSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomerAddress
+#         exclude = ("address","id","created_time","modified_time","created_by")
+#         depth = 1

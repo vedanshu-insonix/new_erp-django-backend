@@ -1,10 +1,10 @@
 # Custom Command to seed database with basic data for further operations.
 from django.core.management.base import BaseCommand
 from warehouse.models import ContainerTypes,Accounts
-from system.models import Choice,DataRequirements,Button,RecordIdentifiers,Selectors,FormSection,FormData,DataSelector,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList,ListIcon, SchemaRelation
+from system.models import Choice,DataRequirements,Button,RecordIdentifiers,Selectors,FormSection,FormData,FormList,Currency,Country,State,Configuration,Language,Icons,List,DataTable,Data,Entity,Menu,Column,Form,Stage,Entity,FormList
 import pandas as pd
 import os
-from system.models.translations import TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
+from system.models.translations import * #TranslationSelector,TranslationChoice,TranslationColumn,TranslationForm,TranslationStage,TranslationList,TranslationMenu,TranslationData,TranslationIcons,TranslationCurrency,TranslationConfiguration,TranslationContainerType,Translation
 from system.models.common import FormStage  ,FormPanels
 from system.service import get_rid_pkey, updatenextid
 from django.contrib.auth.models import User
@@ -36,46 +36,46 @@ def  extract_data(file):
     data = pd.read_excel(file_path).fillna('').to_dict() 
     global_data = data
 
-def create_schemaRelation():
-    try:
-        primary=global_data.get("Primary")
-        related = global_data.get("Related")
-        relation=global_data.get("Relation")
-        primary_field=global_data.get("Primary Field")
-        related_field=global_data.get("Related Field")
-        primay_rec= global_data.get("Primay Record")
-        primay_rec_field=global_data.get("Primary Record Field")
+# def create_schemaRelation():
+#     try:
+#         primary=global_data.get("Primary")
+#         related = global_data.get("Related")
+#         relation=global_data.get("Relation")
+#         primary_field=global_data.get("Primary Field")
+#         related_field=global_data.get("Related Field")
+#         primay_rec= global_data.get("Primay Record")
+#         primay_rec_field=global_data.get("Primary Record Field")
         
-        scList=list(related.keys())
-        for x in scList:
-            prmry=primary.get(x)
-            rel=related.get(x)
-            relt=relation.get(x)
-            prmField=primary_field.get(x)
-            relField=related_field.get(x)
+#         scList=list(related.keys())
+#         for x in scList:
+#             prmry=primary.get(x)
+#             rel=related.get(x)
+#             relt=relation.get(x)
+#             prmField=primary_field.get(x)
+#             relField=related_field.get(x)
             
-            tempprimRec=primay_rec.get(x)
-            if tempprimRec == '':
-                primRec= None
-            else:
-                primRec = tempprimRec
+#             tempprimRec=primay_rec.get(x)
+#             if tempprimRec == '':
+#                 primRec= None
+#             else:
+#                 primRec = tempprimRec
                 
-            if primRec == 'yes' or 'YES':
-                primRec= True
-            else:
-                primRec= False
+#             if primRec == 'yes' or 'YES':
+#                 primRec= True
+#             else:
+#                 primRec= False
             
-            tempprimRecField=primay_rec_field.get(x)
-            if tempprimRecField == '':
-                primRecField= None
-            else:
-                primRecField = tempprimRecField
-            schemaRec=SchemaRelation.objects.filter(primary=prmry,related=rel,relation=relt)
-            if not schemaRec:
-                SchemaRelation.objects.create(primary=prmry,related=rel,relation=relt,primary_field=prmField,related_field=relField,primay_rec=primRec,primay_rec_field=primRecField)
-    except Exception as e:
-        print("SchemaRelation Error >",e)
-        pass   
+#             tempprimRecField=primay_rec_field.get(x)
+#             if tempprimRecField == '':
+#                 primRecField= None
+#             else:
+#                 primRecField = tempprimRecField
+#             schemaRec=SchemaRelation.objects.filter(primary=prmry,related=rel,relation=relt)
+#             if not schemaRec:
+#                 SchemaRelation.objects.create(primary=prmry,related=rel,relation=relt,primary_field=prmField,related_field=relField,primay_rec=primRec,primay_rec_field=primRecField)
+#     except Exception as e:
+#         print("SchemaRelation Error >",e)
+#         pass   
 
 # Function to seed recordidentifier model     
 def create_recordIdentifiers():
@@ -122,18 +122,22 @@ def create_selectors():
             typ = type.get(x)
             #desc = description.get(x)
             sel_rec = Selectors.objects.filter(id = sel_id,system_name = sel_name)
-            check=Translation.objects.filter(label=sName, language_id=lang.id)
-            if not check:
-                trans_id = get_rid_pkey('translation')
-                Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
-            label_rec = Translation.objects.get(label=sName, language_id=lang.id)
             if not sel_rec:
                 Selectors.objects.create(id = sel_id,system_name = sel_name,type = typ,created_by_id = user)
+                updatenextid('selectors',sel_id)
             sel = Selectors.objects.get(id = sel_id)
-            updatenextid('selectors',sel.id)
-            trans = TranslationSelector.objects.filter(selector=sel, translation_id=label_rec.id)
-            if not trans:
-                TranslationSelector.objects.create(selector=sel, translation = label_rec)
+            
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=sName, language_id=lang.id, selector=sel)
+            # check=Translation.objects.filter(label=sName, language_id=lang.id)
+            # if not check:
+            #     trans_id = get_rid_pkey('translation')
+            #     Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
+            # label_rec = Translation.objects.get(label=sName, language_id=lang.id)
+            
+            # trans = TranslationSelector.objects.filter(selector=sel, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationSelector.objects.create(selector=sel, translation = label_rec)
     except Exception as e:
         #print("Selector Error >", str(e))
         pass
@@ -163,19 +167,20 @@ def create_choice():
                     sequence = int(temp_sequence)
                 gSel = Selectors.objects.filter(system_name=sel_name).first()
                 choice_rec = Choice.objects.filter(selector__system_name=sel_name, system_name=nName)
-                label = utils.decode_api_name(nName)
-                check=Translation.objects.filter(label=label, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=label, language_id=lang.id)
-                label_rec = Translation.objects.get(label=label, language_id=lang.id)
                 if not choice_rec:
                     Choice.objects.create(id = choice_id,selector=gSel,system_name=nName,sequence=sequence,created_by_id = user)
+                    updatenextid('choice',choice_id)
                 ch = Choice.objects.get(id = choice_id)
-                updatenextid('choice',ch.id)
-                trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
-                if not trans:
-                    TranslationChoice.objects.create(choice=ch, translation = label_rec)
+                label = utils.decode_api_name(nName)
+                # check=Translation.objects.filter(label=label, language_id=lang.id)
+                # if not check:
+                trans_id = get_rid_pkey('translation')
+                labelRec = Translation.objects.create(id=trans_id,label=label, language_id=lang.id, choice=ch)
+                #     Translation.objects.create(id=trans_id,label=label, language_id=lang.id)
+                # label_rec = Translation.objects.get(label=label, language_id=lang.id)
+                # trans = TranslationChoice.objects.filter(choice=ch, translation_id=label_rec.id)
+                # if not trans:
+                #     TranslationChoice.objects.create(choice=ch, translation = label_rec)
         except Exception as e:
             #print("Choice Error >", str(e))
             pass
@@ -216,7 +221,8 @@ def create_data():
         #disp_data =global_data.get('Linked Data')
         description = global_data.get('System Description')
         field = global_data.get('Field')
-        field_type = global_data.get('DTYPE')
+        # field_type = global_data.get('DTYPE')
+        field_type = global_data.get('Field Type')
         data_type=global_data.get("Data Type")
         #comment= global_data.get('Comment')
         lang = Language.objects.get(system_name='English (US)')
@@ -253,8 +259,9 @@ def create_data():
             f = field.get(x)
             if dName:
                 try:
-                    ftype = utils.encode_api_name(field_type.get(x))
-                    gftype= Choice.objects.filter(system_name=ftype).first()
+                    gftype = field_type.get(x)
+                    # ftype = utils.encode_api_name(field_type.get(x))
+                    # gftype= Choice.objects.filter(system_name=ftype).first()
                     gldt = None
                     gltble = None
                     if link_tbl and link_dt:
@@ -263,28 +270,31 @@ def create_data():
                         if not gldt: gldt= Data.objects.create(id=link_dt,data_source=gltble,system_name=ldata)
                     gsel_id = Selectors.objects.filter(id =selector_id ).first()
                     sdset = DataTable.objects.filter(system_name=dset).first()
-                    try:
-                        check=Translation.objects.filter(label=dName, language_id=lang.id)
-                        if not check:
-                            trans_id = get_rid_pkey('translation')
-                            Translation.objects.create(id=trans_id,label=dName, language_id=lang.id)
-                        label_rec = Translation.objects.get(label=dName, language_id=lang.id)
-                    except:
-                        pass
+                    # try:
+                    #     check=Translation.objects.filter(label=dName, language_id=lang.id)
+                    #     if not check:
+                    #         trans_id = get_rid_pkey('translation')
+                    #         Translation.objects.create(id=trans_id,label=dName, language_id=lang.id)
+                    #     label_rec = Translation.objects.get(label=dName, language_id=lang.id)
+                    # except:
+                    #     pass
                     data_rec = Data.objects.filter(data_source = sdset, system_name=dName)
                     if data_rec:
                         data_rec.update(field=f,field_type=gftype,description=desc,created_by_id = user,sequence=sequence)
                     else:
                         Data.objects.create(id = data_id,linked_ds=gltble,linked_data=gldt,data_type=dt_type,system_name=dName,field=f,field_type=gftype,description=desc,data_source=sdset,created_by_id = user,sequence=sequence)
                         updatenextid('data',data_id)
-                    dt_id = Data.objects.get(id = data_id)    
-                    trans = TranslationData.objects.filter(name=dt_id, translation_id=label_rec.id)
-                    if not trans:
-                        TranslationData.objects.create(name=dt_id, translation = label_rec)
-                    datasel = DataSelector.objects.filter(selector=gsel_id, data=data_id)
-                    if not datasel:
-                        if gsel_id and dt_id:
-                            DataSelector.objects.create(selector=gsel_id, data=dt_id)
+                    dt_id = Data.objects.get(id = data_id)
+                    dt_id.selector.add(gsel_id)
+                    trans_id = get_rid_pkey('translation')
+                    labelRec = Translation.objects.create(id=trans_id,label=dName, language_id=lang.id, data=dt_id)    
+                    # trans = TranslationData.objects.filter(name=dt_id, translation_id=label_rec.id)
+                    # if not trans:
+                    #     TranslationData.objects.create(name=dt_id, translation = label_rec)
+                    # datasel = DataSelector.objects.filter(selector=gsel_id, data=data_id)
+                    # if not datasel:
+                    #     if gsel_id and dt_id:
+                    #         DataSelector.objects.create(selector=gsel_id, data=dt_id)
                 except :
                    pass
     except Exception as e:
@@ -304,23 +314,25 @@ def create_icons():
             sName = system_name.get(x)
             iImage = icon_image.get(x)
             icon_rec = Icons.objects.filter(id =icon_id,system_name=sName)
-            try:
-                check=Translation.objects.filter(label=sName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=sName, language_id=lang.id)
-            except:
-                pass
+            # try:
+            #     check=Translation.objects.filter(label=sName, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=sName, language_id=lang.id)
+            # except:
+            #     pass
             if not icon_rec:
                 if iImage in imag_file:
                     icon_p= f'{icons}{iImage}'
                     Icons.objects.create(id =icon_id,system_name=sName,icon_image=icon_p,created_by_id = user)
+                    updatenextid('icons',icon_id)
             ic_id = Icons.objects.get(id = icon_id)
-            updatenextid('icons',ic_id.id)
-            trans = TranslationIcons.objects.filter(icon=ic_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationIcons.objects.create(icon=ic_id, translation = label_rec)
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=sName, language_id=lang.id, icon=ic_id)
+            # trans = TranslationIcons.objects.filter(icon=ic_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationIcons.objects.create(icon=ic_id, translation = label_rec)
     except Exception as e:
         #print("Icons Error >", str(e))
         pass
@@ -340,21 +352,23 @@ def create_conf():
             typ = type.get(x)
             vdef = default_value.get(x)
             conf_rec = Configuration.objects.filter(id = conf_id,system_name=conf)
-            try:
-                check=Translation.objects.filter(label=conf, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=conf, language_id=lang.id)
-                label_rec = Translation.objects.get(label=conf, language_id=lang.id)
-            except:
-                pass
+            # try:
+            #     check=Translation.objects.filter(label=conf, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=conf, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=conf, language_id=lang.id)
+            # except:
+            #     pass
             if  not conf_rec:
                 Configuration.objects.create(id = conf_id,system_name=conf,type = typ,default_value =vdef,created_by_id = user)
+                updatenextid('data',conf_id)
             config_id = Configuration.objects.get(id = conf_id)
-            updatenextid('data',config_id.id)
-            trans = TranslationConfiguration.objects.filter(configuration=config_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationConfiguration.objects.create(configuration=config_id, translation = label_rec)
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=conf, language_id=lang.id, icon=config_id)
+            # trans = TranslationConfiguration.objects.filter(configuration=config_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationConfiguration.objects.create(configuration=config_id, translation = label_rec)
     except Exception as e:
         #print("Configurations Error >", str(e))
         pass
@@ -374,21 +388,21 @@ def create_currencies():
             xCode = code.get(x)
             xSym = sym.get(x)
             cur_rec = Currency.objects.filter(id = cur_id,system_name=xName)
-            try:
-                check=Translation.objects.filter(label=xName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=xName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=xName, language_id=lang.id)
-            except:
-                pass
+            # try:
+            #     check=Translation.objects.filter(label=xName, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=xName, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=xName, language_id=lang.id)
+            # except:
+            #     pass
             if not cur_rec:
                 Currency.objects.create(id = cur_id,system_name=xName,code=xCode,symbol=xSym,created_by_id = user)
+                updatenextid('currency',cur_id)
             curr_id = Currency.objects.get(id = cur_id)
-            updatenextid('currency',curr_id.id)
-            trans = TranslationCurrency.objects.filter(currency=curr_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationCurrency.objects.create(currency=curr_id, translation = label_rec)
+            # trans = TranslationCurrency.objects.filter(currency=curr_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationCurrency.objects.create(currency=curr_id, translation = label_rec)
     except Exception as e:
         #print("Currency Error >", str(e))
         pass
@@ -530,30 +544,34 @@ def create_list():
                 #t_id = type_id.get(x)
                 ltype = utils.encode_api_name(list_type.get(x))
                 #gccat= Choice.objects.get_or_create(choice_name= cat)
-                sptble = DataTable.objects.filter(system_name=ptable).first()
-                sltp = Choice.objects.filter(system_name = ltype).first()
-                list_rec = List.objects.filter(id = l_id,system_name=lName)
-                try:
-                    check=Translation.objects.filter(label=lName, language_id=lang.id)
-                    if not check:
-                        trans_id = get_rid_pkey('translation')
-                        Translation.objects.create(id=trans_id,label=lName, language_id=lang.id)
-                    label_rec = Translation.objects.get(label=lName, language_id=lang.id)
-                except:
-                    pass
-                if not list_rec:
-                    if lName:
-                        List.objects.create(id = l_id,system_name=lName, data_source=sptble,list_type =sltp,description = desc,default_view = def_view,created_by_id = user)
-                list_id = List.objects.get(id = l_id)
-                updatenextid('list',list_id.id)
-                trans = TranslationList.objects.filter(list=list_id, translation_id=label_rec.id)
-                if not trans:
-                    TranslationList.objects.create(list=list_id, translation = label_rec)
-                gicon = Icons.objects.filter(system_name=i_name).first()
-                lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
-                if  not lIcon_rec:
-                    if l_id and gicon:
-                        ListIcon.objects.create(list_id = l_id,icon =gicon)
+                if lName:
+                    sptble = DataTable.objects.filter(system_name=ptable).first()
+                    sltp = Choice.objects.filter(system_name = ltype).first()
+                    list_rec = List.objects.filter(id = l_id,system_name=lName)
+                    # try:
+                    #     check=Translation.objects.filter(label=lName, language_id=lang.id)
+                    #     if not check:
+                    #         trans_id = get_rid_pkey('translation')
+                    #         Translation.objects.create(id=trans_id,label=lName, language_id=lang.id)
+                    #     label_rec = Translation.objects.get(label=lName, language_id=lang.id)
+                    # except:
+                    #     pass
+                    gicon = Icons.objects.filter(system_name=i_name).first()
+                    if not list_rec:
+                        List.objects.create(id = l_id,system_name=lName, data_source=sptble, list_type =sltp,description = desc,
+                                            default_view = def_view, created_by_id = user, icon = gicon)
+                        updatenextid('list',l_id)
+                    list_id = List.objects.get(id = l_id)
+                    trans_id = get_rid_pkey('translation')
+                    labelRec = Translation.objects.create(id=trans_id,label=lName, language_id=lang.id, list=list_id)
+                    # trans = TranslationList.objects.filter(list=list_id, translation_id=label_rec.id)
+                    # if not trans:
+                    #     TranslationList.objects.create(list=list_id, translation = label_rec)
+                    # gicon = Icons.objects.filter(system_name=i_name).first()
+                    # lIcon_rec = ListIcon.objects.filter(list_id = l_id,icon =gicon)
+                    # if  not lIcon_rec:
+                    #     if l_id and gicon:
+                    #         ListIcon.objects.create(list_id = l_id,icon =gicon)
             except Exception as e:
                 #print("List Error >", str(e))
                 pass
@@ -579,22 +597,24 @@ def create_menu():
             sclist= List.objects.filter(system_name=list_name).first()
             sCat = Choice.objects.filter(system_name=cCat).first()
             menu_rec = Menu.objects.filter( id = menu_id,system_name=mName)
-            try:
-                check=Translation.objects.filter(label=mName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=mName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=mName, language_id=lang.id)
-            except:
-                pass
+            # try:
+            #     check=Translation.objects.filter(label=mName, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=mName, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=mName, language_id=lang.id)
+            # except:
+            #     pass
             if not menu_rec:
                 if mName:
                     Menu.objects.create(id = menu_id,list= sclist,system_name=mName,menu_category=sCat,sequence = sequence,created_by_id = user)
+                    updatenextid('menu',menu_id)
             m_id = Menu.objects.get(id = menu_id)
-            updatenextid('menu',m_id.id)
-            trans = TranslationMenu.objects.filter(menu=m_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationMenu.objects.create(menu=m_id, translation = label_rec)
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=mName, language_id=lang.id, menu=m_id)
+            # trans = TranslationMenu.objects.filter(menu=m_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationMenu.objects.create(menu=m_id, translation = label_rec)
         except Exception as e:
             #print("Menu Error >", str(e))
             pass
@@ -643,22 +663,25 @@ def create_columns():
             gctble = DataTable .objects.filter(id =tbl_id).first()
             gcdata = Data.objects.filter(id =dt_id).first()
             col_rec= Column.objects.filter(col_list = gclist,system_name = col)
-            try:
-                check=Translation.objects.filter(label=col, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=col, language_id=lang.id)
-                label_rec = Translation.objects.get(label=col, language_id=lang.id)
-            except Exception as e:
-                print(e)
+            # try:
+            #     check=Translation.objects.filter(label=col, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=col, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=col, language_id=lang.id)
+            # except Exception as e:
+            #     print(e)
             if not col_rec:
                 if col and dt:
-                    Column.objects.create(id = col_id,col_list = gclist,system_name = col,visibility = gcvsb,col_table=gctble,col_data=gcdata,created_by_id = user)
+                    Column.objects.create(id = col_id,col_list = gclist,system_name = col,visibility = gcvsb,
+                                          col_table=gctble,col_data=gcdata,created_by_id = user)
+                    updatenextid('column',col_id)
             column_id = Column.objects.get(id = col_id)
-            updatenextid('column',column_id.id)
-            trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=col, language_id=lang.id, column=column_id)
+            # trans = TranslationColumn.objects.filter(column=column_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationColumn.objects.create(column=column_id, translation_id = label_rec.id)
         except Exception as e:
             # print("Column Error >", str(e))
             pass
@@ -693,21 +716,23 @@ def create_forms():
             gftype=Choice.objects.filter(selector__system_name='price_basis',system_name=fltype).first()
             gicon= Icons.objects.filter(system_name=icn).first()
             form_rec = Form.objects.filter(id = formId)
-            try:
-                check=Translation.objects.filter(label=nName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=nName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=nName, language_id=lang.id)
-            except Exception as e:
-                print(e)
+            # try:
+            #     check=Translation.objects.filter(label=nName, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=nName, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=nName, language_id=lang.id)
+            # except Exception as e:
+            #     print(e)
             if len(form_rec) < 1:
                 Form.objects.create(id = formId,system_name=nName,title=gtitle,ftype=gftype,description = desc,created_by_id = user, icon=gicon)
+                updatenextid('form',formId)
             form_id = Form.objects.get(id = formId)
-            updatenextid('form',form_id.id)
-            trans = TranslationForm.objects.filter(form=form_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationForm.objects.create(form=form_id, translation_id = label_rec.id)        
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=nName, language_id=lang.id, form=form_id)
+            # trans = TranslationForm.objects.filter(form=form_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationForm.objects.create(form=form_id, translation_id = label_rec.id)        
     except Exception as e:
         print("Form Error >", str(e))
         pass
@@ -785,21 +810,23 @@ def create_stages():
             s_id = id.get(x)
             sName = system_name.get(x)
             stage_rec = Stage.objects.filter(id = s_id)
-            try:
-                check=Translation.objects.filter(label=sName, language_id=lang.id)
-                if not check:
-                    trans_id = get_rid_pkey('translation')
-                    Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
-                label_rec = Translation.objects.get(label=sName, language_id=lang.id)
-            except Exception as e:
-                print(e)
+            # try:
+            #     check=Translation.objects.filter(label=sName, language_id=lang.id)
+            #     if not check:
+            #         trans_id = get_rid_pkey('translation')
+            #         Translation.objects.create(id=trans_id,label=sName, language_id=lang.id)
+            #     label_rec = Translation.objects.get(label=sName, language_id=lang.id)
+            # except Exception as e:
+            #     print(e)
             if len(stage_rec)<1:
                 Stage.objects.create(id = s_id,system_name = sName,created_by_id = user)
+                updatenextid('stage',s_id)
             stage_id = Stage.objects.get(id = s_id)
-            updatenextid('stage',stage_id.id)
-            trans = TranslationStage.objects.filter(stage=stage_id, translation_id=label_rec.id)
-            if not trans:
-                TranslationStage.objects.create(stage=stage_id, translation_id = label_rec.id)    
+            trans_id = get_rid_pkey('translation')
+            labelRec = Translation.objects.create(id=trans_id,label=sName, language_id=lang.id, stage=stage_id)
+            # trans = TranslationStage.objects.filter(stage=stage_id, translation_id=label_rec.id)
+            # if not trans:
+            #     TranslationStage.objects.create(stage=stage_id, translation_id = label_rec.id)    
     except Exception as e:
         print("Stage Error >", str(e))
         pass

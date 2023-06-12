@@ -2,29 +2,16 @@ from rest_framework import viewsets
 from system import utils
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import action
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from rest_framework import filters
-from system.models.common import FormData, FormList, List, Choice
-from sales.serializers.customers_serializers import *
-from django.core import serializers
-import json
-from system.models.dataset import SchemaRelation
-import threading
-from system.models.teams import Team,TeamUser
-from system.models.roles_permissions import Permission,RolePermissions,RoleCategories,Role,RoleTerritories
-from sales.models.carts import Carts
-from sales.models.returns import  SalesReturnLines
-from sales.models.sales_credit import SalesCredits
-from sales.models.quotations import SalesQuotations
-from sales.models.sales_orders import SalesOrders
-from sales.models.invoices import SalesInvoices
-from sales.models.receipts import Receipts
-from sales.models.returns import SalesReturns
-from sales.models.vendors import VendorPrices
+from system.models import *
+from system.service import get_rid_pkey, get_related_pkey
+from sales.models import *
+from warehouse.models import *
+from purchasing.models import *
 
+childModels = ['Choice', 'State', 'Data']
 
+# check the EOF of a static query.
 def check_parenthesis(self, query):
     stack = list()
     for i in query:
@@ -32,6 +19,7 @@ def check_parenthesis(self, query):
         elif i == ')': stack.pop()
     return stack
 
+# adjusting the key name as per requirement in response dict.
 def response_function(key, sp):
     text = key.split('__')
     if len(text)>1: 
@@ -39,6 +27,7 @@ def response_function(key, sp):
         if new_key != 'id':return new_key
     return key
 
+# getting the name of fields to be send in get response.
 def get_column(schema, lid, fd):
     tableName = ""
     valueList = ['id']
@@ -56,21 +45,38 @@ def get_column(schema, lid, fd):
             valueList.append(field)
     return tableName, valueList
 
+# get all the field name of a model.
 def get_model_fields(modelName):
     fld = f'{modelName}._meta.get_fields()'
     fld = eval(fld)
     fields = [f.name for f in fld]
     return fields
 
-def filter_query(lid, primarySchema, rt):
+# get the field name of m2m and o2o type in model.
+def get_m2m_fields(modelName):
+    rt = {}
+    typeList = ['ManyToManyField', 'OneToOneField']
+    relModel = f'{modelName}._meta.get_fields()'
+    relModel = eval(relModel)
+    for f in relModel:
+        if f.get_internal_type() in typeList: 
+            fieldName = f.name
+            relatedTo = f.related_model.__name__
+            rt[relatedTo] = fieldName
+
+    return rt
+
+# create default filter query for each list as a string.
+def filter_query(lid, primarySchema):
     default_filter = ListFilters.objects.filter(list=lid, default=True).order_by('sequence')
     if default_filter:
         query = ".filter("
         fList = []
+        rt = get_m2m_fields(primarySchema)
 
         primaryFields = get_model_fields(primarySchema)
         relatedFields = {}
-
+        
         for tbl in rt:
             tableName = rt[tbl]
             relatedFields[tbl] = get_model_fields(tableName)
@@ -83,9 +89,7 @@ def filter_query(lid, primarySchema, rt):
             fDict['logic']=fLogic
 
             fData=flt.data.field
-            if fData in primaryFields:
-                print("")
-            else:
+            if fData not in primaryFields:
                 for tbl in relatedFields:
                     if fData in relatedFields[tbl]:
                         prefix = tbl
@@ -160,9 +164,9 @@ def filter_query(lid, primarySchema, rt):
         return query
     return None
 
+# create default sort query for each list as a string.
 def sort_query(lid):
     default_order = ListSorts.objects.filter(list=lid, default=True).order_by('sequence')
-    print("demo >>>>>>>>>",default_order)
     if default_order:
         query = ".order_by("
         oList = []
@@ -185,7 +189,7 @@ def sort_query(lid):
         for i in range(len(oList)):
             col = oList[i]['column']
             dr = oList[i]['direction']
-            grp = oList[i]['grouping']
+            #grp = oList[i]['grouping']
 
             if dr == 'descending':
                 subQuery = query+"-'"+col+"'"
@@ -201,10 +205,12 @@ def sort_query(lid):
 
 class GlobalViewsets(viewsets.ViewSet):
 
-    """def retrieve(self, request, pk=None):
+    # global get api. -------------------------->(under testing)
+    def list(self, request):
         lid = request.GET.get('l')
+        formId = request.GET.get('f')
         primarySchema = List.objects.get(id=lid).data_source.link_source
-        formData = FormData.objects.filter(form=pk)
+        formData = FormData.objects.filter(form=formId)
         uniqueTable = formData.values('table').distinct()
         relatedSchema = []
         relSchemaField = []
@@ -214,101 +220,20 @@ class GlobalViewsets(viewsets.ViewSet):
             schemaField = {}
             tableName, valueList = get_column(x, lid, formData)
             if tableName != "" and tableName == primarySchema:
-                listQuery = tableName + ".objects.all()"
-                listData = eval(listQuery)
-                resData = listData.values(*valueList)
-                for res in resData:
-                    for key in valueList:
-                        new_key = response_function(key, 0)
-                        if new_key!=key:
-                            v1 = res[key]
-                            res.pop(key)
-                            res[new_key]=v1
-                primaryIds = listData.values('id')
-            if tableName != "" and tableName != primarySchema:
-                relatedSchema.append(tableName)
-                schemaField[tableName] = valueList
-                relSchemaField.append(schemaField)
-        for schema in relatedSchema:
-            relData = SchemaRelation.objects.filter(primary = primarySchema , related=schema).first()
-            primaryFieldName = relData.primary_field
-            relFieldName = relData.related_field
-            relSchema = relData.relation
-            prField = relData.primay_rec_field
-            isPr = relData.primay_rec
-            schRelField = [d[schema] for d in relSchemaField if schema in d][0]
-            schRelFieldConcat = [relFieldName + "__" + s for s in schRelField]
-            
-            for id in primaryIds:
-                relPrimaryData = [d for d in resData if d['id'] == id['id']][0]
-                if isPr:
-                    getRelData = relSchema + ".objects.filter("+primaryFieldName+"='"+id['id']+"',"+relFieldName+"__"+prField+"=True)"
-                else:
-                    getRelData = relSchema + ".objects.filter("+primaryFieldName+"='"+id['id']+"')"
-                relatedSchemaData = eval(getRelData)
-                relatedSchemaData = relatedSchemaData.values(*schRelFieldConcat)
-                if relatedSchemaData:
-                    for key, value in relatedSchemaData[0].items():
-                        new_key = response_function(key, 1)
-                        relPrimaryData[new_key]=value
-                else:
-                    for rec in schRelField:
-                        new_key = response_function(rec, 0)
-                        if rec != 'id':
-                            relPrimaryData[new_key]= None
-        lf = ListFilters.objects.filter(list=lid)
-        print(lf)
-        return Response({"message": resData,
-                    "status" : "success",
-                    "code"   : status.HTTP_201_CREATED})"""
-    
-    def retrieve(self, request, pk=None):
-        lid = request.GET.get('l')
-        primarySchema = List.objects.get(id=lid).data_source.link_source
-        formData = FormData.objects.filter(form=pk)
-        uniqueTable = formData.values('table').distinct()
-        relatedSchema = []
-        relatedRecIds = {}
-        relSchemaField = []
-        resData = []
-        primaryIds = []
-        typeList = ['ManyToManyField', 'OneToOneField']
-        rt = {}
-        for x in uniqueTable:
-            schemaField = {}
-            tableName, valueList = get_column(x, lid, formData)
-            
-            if tableName != "" and tableName == primarySchema:
-                relModel = f'{tableName}._meta.get_fields()'
-                relModel = eval(relModel)
-                for f in relModel:
-                    if f.get_internal_type() in typeList: 
-                        fieldName = f.name
-                        relatedTo = f.related_model.__name__
-                        rt[fieldName]=relatedTo
                 listQuery = f'{tableName}.objects.all()'
                 # adding default filter feature
-                filteredResult = filter_query(lid, primarySchema, rt)
+                filteredResult = filter_query(lid, primarySchema)
                 if filteredResult:
                     listQuery = listQuery+filteredResult+".distinct()"
                 # adding default sort feature
                 orderResult = sort_query(lid)
-                print(orderResult)
                 if orderResult:
                     listQuery = listQuery+orderResult
+                # get data.
                 listData = eval(listQuery)
                 resData = listData.values(*valueList)
-                for d in listData:
-                    recId = d.id
-                    for fields in rt:
-                        rid = []
-                        table = rt[fields]
-                        new = f'{tableName}.objects.get(id="{recId}").{fields}.all()'
-                        relIds = eval(new)
-                        for rec in relIds:
-                            rid.append(rec.id)
-                        data = {table:rid}
-                        relatedRecIds[recId] = data
+                
+                # to return valid keys.
                 for res in resData:
                     for key in valueList:
                         new_key = response_function(key, 0)
@@ -317,44 +242,321 @@ class GlobalViewsets(viewsets.ViewSet):
                             res.pop(key)
                             res[new_key]=v1
                 primaryIds = listData.values('id')
-            if tableName != "" and tableName != primarySchema:
+            elif tableName != "" and tableName != primarySchema:
                 relatedSchema.append(tableName)
                 schemaField[tableName] = valueList
                 relSchemaField.append(schemaField)
-        
         for schema in relatedSchema:
+            relatedFields = get_m2m_fields(schema)
             schRelField = [d[schema] for d in relSchemaField if schema in d][0]
-
             for id in primaryIds:
                 relPrimaryData = [d for d in resData if d['id'] == id['id']][0]
-                recnumber = relatedRecIds[id['id']]
-                rid = recnumber[schema]
-                if len(rid) > 1:
-                    r = f'{schema}.objects.filter(id__in={rid}, default=True)'
+                filterField = relatedFields[primarySchema]
+                getRelData = f'{schema}.objects.filter({filterField}="{id["id"]}", default=True)'
+                getRelData = eval(getRelData)
+                if getRelData:
+                    relatedSchemaData = getRelData
                 else:
-                    r = f'{schema}.objects.filter(id__in={rid})'
-                relatedSchemaData = eval(r)
+                    getRelData = f'{schema}.objects.filter({filterField}="{id["id"]}")'
+                    relatedSchemaData = eval(getRelData)
                 relatedSchemaData = relatedSchemaData.values(*schRelField)
                 if relatedSchemaData:
                     for key, value in relatedSchemaData[0].items():
                         new_key = response_function(key, 0)
                         if new_key == 'id':
-                            new_key = schema+"_"+new_key
+                            new_key = schema+"__"+new_key
                         relPrimaryData[new_key]=value
                 else:
                     for rec in schRelField:
                         new_key = response_function(rec, 0)
                         if rec == 'id':
-                            new_key = schema+"_"+rec
+                            new_key = schema.lower()+"__"+rec
                         relPrimaryData[new_key]= "---"
-                print(relPrimaryData)
         return Response({"message": resData,
                     "status" : "success",
                     "code"   : status.HTTP_201_CREATED})
+
+    # global create api. ----------------->(under testing)
+    def create(self, request):
+        listId = request.GET.get('l')
+        formId = request.GET.get('f')
+        getData = request.data
+        primaryTable = List.objects.get(id=listId).data_source.link_source 
+        formData = FormData.objects.filter(form=formId)
+        uniqueTable = formData.values('table').distinct()
+        primaryM2M = get_m2m_fields(primaryTable)
+        m2mFields = [primaryM2M[mod] for mod in primaryM2M]
+        m2mData = []
+
+        # create record in primary model.
+        primaryFields = get_model_fields(primaryTable)
+        primaryQuery = f'{primaryTable}.objects.create('
+        for data in formData:
+            fld = data.data.field
+            if fld in m2mFields:
+                m2mData.append(fld)
+                pass
+            elif (fld in getData) and (fld in primaryFields):
+                fieldData = getData.get(fld)
+                if data.data.linked_ds:
+                    lookupModel = data.data.linked_ds.link_source
+                    val = f'{lookupModel}.objects.filter(id="{fieldData}").first()'
+                    fVal = eval(val)
+                    if fVal:
+                        fieldData = fVal.id
+                    subQuery = f'{primaryQuery} {fld}_id = "{fieldData}",'
+                else:
+                    subQuery = f'{primaryQuery} {fld} = "{fieldData}",'
+                primaryQuery = subQuery
+        primaryID = get_rid_pkey(primaryTable.lower())
+        primaryQuery = primaryQuery+"id = '"+primaryID+"')"
+        primaryResult = eval(primaryQuery)
+        
+        # add m2m field data.
+        for data in m2mData:
+            modelName = ''
+            for models in primaryM2M:
+                if primaryM2M[models] == data:
+                    modelName = models
+                    break
+            toAdd = getData.get(data)
+            getRelated = get_m2m_fields(modelName)
+            relFld = getRelated[primaryTable]
+            try:
+                m2mQuery = f'{modelName}.objects.get(id="{toAdd}").{relFld}.add("{primaryID}")'
+                res = eval(m2mQuery)
+            except:
+                pass
+
+        # create record in related models.
+        for x in uniqueTable:
+            tableName = DataTable.objects.get(id=x['table'])
+            tableName = tableName.link_source
+            
+            if tableName != '' and tableName != primaryTable:
+                rField = get_m2m_fields(tableName)
+                pRelField = rField[primaryTable]
+                relQuery = f'{tableName}.objects.create('
+                modelFields = get_model_fields(tableName)
+                for data in formData:
+                    fld = data.data.field
+                    if fld != pRelField:
+                        if (fld in getData) and (fld in modelFields):
+                            fieldData = getData.get(fld)
+                            if data.data.linked_ds:
+                                lookupModel = data.data.linked_ds.link_source
+                                val = f'{lookupModel}.objects.filter(id="{fieldData}").first()'
+                                fVal = eval(val)
+                                if fVal:
+                                    fieldData = fVal.id
+                                subQuery = f'{relQuery} {fld}_id = {fieldData},'
+                            else:
+                                subQuery = f'{relQuery} {fld} = "{fieldData}",'
+                            relQuery = subQuery
+                    elif fld == pRelField:
+                        subQuery = fld+"_id='"+primaryID+"', "
+                        relQuery = relQuery + subQuery
+                newID = get_rid_pkey(tableName.lower())
+                relQuery = relQuery+"id = '"+newID+"')"
+                relResult = eval(relQuery)
+                
+        # Success response.
+        return Response(utils.success_msg("Record Creation Successful."))
     
+    # global update api. ------------------------>(works fine in forward direction.)(under testing)
+    def update(self, request, pk):
+        listId = request.GET.get('l')
+        formId = request.GET.get('f')
+        getData = request.data
+        primaryTable = List.objects.get(id=listId).data_source.link_source
+        formData = FormData.objects.filter(form=formId)
+        initQuery = f'{primaryTable}.objects.get(id="{pk}")'
+        oldRec = eval(initQuery)
+        uniqueTable = formData.values('table').distinct()
+        primaryM2M = get_m2m_fields(primaryTable)
+
+        # Update the records in primary model.
+        updateQuery = f'{primaryTable}.objects.filter(id="{pk}").update('
+        primaryFields = get_model_fields(primaryTable)
+        for data in formData:
+            fld = data.data.field
+            if (fld in getData) and (fld in primaryFields):
+                fieldData = getData.get(fld)
+                if data.data.linked_ds:
+                    lookupModel = data.data.linked_ds.link_source
+                    val = f'{lookupModel}.objects.filter(id="{fieldData}").first()'
+                    fVal = eval(val)
+                    fieldData = fVal.id
+                    subQuery = f'{updateQuery} {fld}_id = {fieldData},'
+                else:
+                    subQuery = f'{updateQuery} {fld} = "{fieldData}",'
+                updateQuery = subQuery
+        updateQuery = updateQuery[:-1]+')'
+        updateRes = eval(updateQuery)
+
+        # update record in related models.
+        for x in uniqueTable:
+            tableName = DataTable.objects.get(id=x['table'])
+            tableName = tableName.link_source
+            rField = get_m2m_fields(tableName)
+            pRelField = rField[primaryTable]
+            if tableName != '' and tableName != primaryTable:
+                relField = rField[primaryTable]
+                relTableData = f'{tableName}.objects.filter({relField}="{pk}")'
+                relTableData1 = eval(relTableData)
+
+                # if the model have no related data than create new data.
+                if len(relTableData1) == 0:
+                    relQuery = f'{tableName}.objects.create('
+                    modelFields = get_model_fields(tableName)
+                    for data in formData:
+                        fld = data.data.field
+                        if fld != pRelField:
+                            if (fld in getData) and (fld in modelFields):
+                                fieldData = getData.get(fld)
+                                if data.data.linked_ds:
+                                    lookupModel = data.data.linked_ds.link_source
+                                    val = f'{lookupModel}.objects.filter(id="{fieldData}").first()'
+                                    fVal = eval(val)
+                                    fieldData = fVal.id
+                                    subQuery = f'{relQuery} {fld}_id = {fieldData},'
+                                else:
+                                    subQuery = f'{relQuery} {fld} = "{fieldData}",'
+                                relQuery = subQuery
+                        elif fld == pRelField:
+                            subQuery = fld+"_id='"+pk+"', "
+                            relQuery = relQuery + subQuery
+                    newID = get_rid_pkey(tableName.lower())
+                    relQuery = relQuery+"id = '"+newID+"')"
+                    relResult = eval(relQuery)
+                    relFIeld = primaryM2M[tableName]
+                # update the existing related model data record.
+                else:
+                    if len(relTableData1)>1: 
+                        relQuery = f'{tableName}.objects.filter(id__in={relTableData}, default=True).update('
+                    elif len(relTableData1)==1:
+                        relQuery = f'{tableName}.objects.filter(id__in={relTableData}).update('
+
+                    modelFields = get_model_fields(tableName)
+                    for data in formData:
+                        fld = data.data.field
+                        if fld != pRelField:
+                            if (fld in getData) and (fld in modelFields):
+                                fieldData = getData.get(fld)
+                                if data.data.linked_ds:
+                                    lookupModel = data.data.linked_ds.link_source
+                                    val = f'{lookupModel}.objects.filter(id="{fieldData}").first()'
+                                    fVal = eval(val)
+                                    fieldData = fVal.id
+                                    subQuery = f'{relQuery} {fld}_id = {fieldData},'
+                                else:
+                                    subQuery = f'{relQuery} {fld} = "{fieldData}",'
+                                relQuery = subQuery
+                        elif fld == pRelField:
+                            subQuery = fld+"_id='"+pk+"', "
+                            relQuery = relQuery + subQuery
+                    relQuery = relQuery[:-1]+')'
+                    relResult = eval(relQuery)
+
+        # Success response.
+        return Response(utils.success_msg("Record Updation Successful."))
+    
+    # global delete api. ------------------->(needs to implement related record deletion feature.)
+    def destroy(self, request, pk):
+        try:
+            listId = request.GET.get('l')
+            tableName = List.objects.get(id=listId).data_source.link_source
+            deleteQuery = f'{tableName}.objects.get(id="{pk}").delete()'
+            result = eval(deleteQuery)
+            msg = "Record Deleted Successfully."
+            return Response(utils.success_msg(msg))
+        except Exception as e:
+            return Response(utils.error(str(e)))
+
+    # global get by id api.  -------------------->(in progress)  
+    def retrieve(self, request, pk=None):
+        lid = request.GET.get('l')
+        formID = request.GET.get('f')
+        formData = FormData.objects.filter(form=formID)
+        uniqueTable = formData.values('table').distinct()
+        primaryTable = List.objects.get(id=lid).data_source.link_source
+        listQuery = f'{primaryTable}.objects.filter(id="{pk}")'
+        result = eval(listQuery)
+        primaryFields = get_model_fields(primaryTable)
+
+        valueList = []
+        relatedValueList = []
+        
+        for data in formData:
+            if data.data:
+                responseKey = data.data.field
+                keyType = data.data.field_type
+                if responseKey in primaryFields:
+                    if keyType == 'foreign key':
+                        getData = responseKey+"__"+data.data.linked_data.field
+                    elif keyType == 'lookup':
+                        getData = responseKey+"__system_name"
+                    else:
+                        getData = responseKey
+                    valueList.append(getData)
+        # primary model data.
+        result = result.values(*valueList)
+
+        # to return valid keys.
+        for res in result:
+            for key in valueList:
+                new_key = response_function(key, 0)
+                if new_key!=key:
+                    v1 = res[key]
+                    res.pop(key)
+                    res[new_key]=v1
+        relatedResult = []
+        # related model data.
+        for x in uniqueTable:
+            tableName = DataTable.objects.get(id=x['table'])
+            tableName = tableName.link_source
+            print(tableName)
+            
+            rField = get_m2m_fields(tableName)
+            pRelField = rField[primaryTable]
+            if tableName != '' and tableName != primaryTable:
+                # related model fields.
+                relFields = get_model_fields(tableName)
+                print(relFields)
+                for data in formData:
+                    if data.data:
+                        responseKey = data.data.field
+                        keyType = data.data.field_type
+                        print("responseKey --->", responseKey)
+                        if responseKey in relFields:
+                            if keyType == 'foreign key':
+                                getData = responseKey+"__"+data.data.linked_data.field
+                            elif keyType == 'lookup':
+                                getData = responseKey+"__system_name"
+                            else:
+                                getData = responseKey
+                            print("getData --->", getData)
+                            relatedValueList.append(getData)
+                print("relatedValueList ---->", relatedValueList)
+                relField = rField[primaryTable]
+                relTableData = f'{tableName}.objects.filter({relField}="{pk}")'
+                relTableData1 = eval(relTableData)
+
+                if relTableData1:
+                    relatedResult = relTableData1.values(*relatedValueList)
+                    for key, value in relatedResult[0].items():
+                        new_key = response_function(key, 0)
+                        result[0][new_key] = value
+                else:
+                    for i in range(len(relatedValueList)):
+                        key = relatedValueList[i]
+                        new_key = response_function(key, 0)
+                        result[0][new_key] = '____'
+        return Response(utils.success_msg(result))
+        
 class FeatureViewsets(viewsets.ViewSet):
 
-    # Clone an existing record of an model. 
+    # Clone an existing record of a model. 
     def create(self, request):
         recId = request.data.get('rec_id')
         listId = request.GET.get('l')
@@ -367,6 +569,5 @@ class FeatureViewsets(viewsets.ViewSet):
             oldRec._state.adding = True
             oldRec.save()
             # oldRec.address.set(relRec)
-        return Response({"message": "success",
-                    "status" : "success",
-                    "code"   : status.HTTP_201_CREATED})
+        msg = "Cloning Successful."
+        return Response(utils.success_msg(msg))

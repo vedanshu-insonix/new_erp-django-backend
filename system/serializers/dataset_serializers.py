@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from system.models.dataset import DataTable, Data, DataRequirements
-from ..models.translations import TranslationData
 from system.models import Translation
 from ..models.users import get_current_user_language
 from system.serializers.common_serializers import RelatedTranslationSerializer, RelatedFormSerializer, RelatedStageSerializer, RelatedChoiceSerializer
@@ -53,14 +52,20 @@ class DataSerializer(serializers.ModelSerializer):
         data = obj.system_name
         user = self.context['request'].user
         language = get_current_user_language(user)
-        queryset = TranslationData.objects.filter(name = obj.id, translation__language__system_name = language).first()
+        queryset = Translation.objects.filter(data = obj.id, language__system_name = language).first()
         if queryset:
-            translation_id = queryset.translation.id
-            translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
-            serializers = RelatedTranslationSerializer(translation, many=False)
+            serializers = RelatedTranslationSerializer(queryset, many=False)
             return serializers.data['label']
         else:
             return data
+    #     queryset = TranslationData.objects.filter(name = obj.id, translation__language__system_name = language).first()
+    #     if queryset:
+    #         translation_id = queryset.translation.id
+    #         translation= Translation.objects.filter(id = translation_id, language__system_name = language).first()
+    #         serializers = RelatedTranslationSerializer(translation, many=False)
+    #         return serializers.data['label']
+    #     else:
+    #         return data
     class Meta:
         model = Data
         exclude =("created_time", "modified_time", "created_by")

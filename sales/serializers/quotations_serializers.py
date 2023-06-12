@@ -20,7 +20,6 @@ class SalesQuotationsSerializer(serializers.ModelSerializer):
 
     # To return forign key values in detail
     def to_representation(self, instance):
-        print("demo")
         response = super().to_representation(instance)
         request = self.context['request']
         customer = RelatedCustomerSerializer(instance.customer,context={'request': request}).data

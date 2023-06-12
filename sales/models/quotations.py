@@ -1,7 +1,7 @@
 from django.db import models
-from system.models.common import BaseContent
+from system.models.common import BaseStatus
 
-class SalesQuotations(BaseContent):
+class SalesQuotations(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     quotation_id = models.CharField(max_length = 10, unique=True)
     customer = models.ForeignKey('Customers', on_delete = models.CASCADE)
@@ -50,14 +50,11 @@ class SalesQuotations(BaseContent):
     tax = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     shipping = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
     total = models.DecimalField(max_digits=30,decimal_places=2,null=True, blank=True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True, related_name='quotation_stage')
-    stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.ForeignKey('system.Choice', on_delete = models.SET_NULL, null= True, blank = True, related_name='quotation_status')
 
     def __str__(self):
         return self.quotation_id
 
-class SalesQuotationLines(BaseContent):
+class SalesQuotationLines(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
     quotation = models.ForeignKey('SalesQuotations', on_delete = models.CASCADE, null= True, blank = True)
     stock = models.CharField(max_length = 255, null = True, blank = True)
@@ -75,5 +72,3 @@ class SalesQuotationLines(BaseContent):
     order = models.ForeignKey('SalesOrders', on_delete = models.CASCADE, null= True, blank = True)
     sequence = models.IntegerField(null=True , blank=True)
     comment = models.TextField(null = True, blank = True)
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True, related_name='quotationline_stage')
-    status = models.ForeignKey('system.Choice', on_delete = models.SET_NULL, null= True, blank = True, related_name='quotationline_status')

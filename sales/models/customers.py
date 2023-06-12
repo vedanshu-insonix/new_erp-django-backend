@@ -1,11 +1,11 @@
 from django.db import models
-from system.models.common import BaseContent
+from system.models.common import BaseStatus
 # Create your models here.
 
-class Customers(BaseContent):
+class Customers(BaseStatus):
     id = models.CharField(max_length=255, primary_key=True, editable=False)
-    parent_id = models.ForeignKey('Customers', on_delete=models.SET_NULL, null=True, blank=True)
-    entity = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="customer_entity")
+    parent = models.ForeignKey('Customers', on_delete=models.SET_NULL, null=True, blank=True)
+    customer_type = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="customer_entity")
     customer = models.CharField(max_length=100,null=True,blank=True)
     shipping_terms = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="shipping_terms")
     ship_via = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="shipping_method")
@@ -26,15 +26,13 @@ class Customers(BaseContent):
     last_credit_review = models.DateField(blank=True, null=True)
     credit_hold = models.BooleanField(default=False)
     customer_receivable_account = models.CharField(max_length = 255, null = True, blank = True) #later will convert into foreign key
-    stage = models.ForeignKey('system.Stage', on_delete=models.SET_NULL, null=True, blank=True)
-    stage_started = models.DateTimeField(null=True, blank=True)
-    status = models.ForeignKey('system.Choice', on_delete=models.SET_NULL, null=True, blank=True, related_name="status")
     used = models.DateTimeField(null=True, blank=True)
+    # address = models.ManyToManyField('Addresses', blank=True, related_name='customers')
     
     # def __str__(self):
     #     return self.entity
     
-class CustomerAddress(BaseContent):
-    customer = models.ForeignKey('Customers', on_delete=models.CASCADE, null=True)
-    address = models.OneToOneField('Addresses', on_delete=models.CASCADE, null=True, unique=True)
+# class CustomerAddress(BaseContent):
+#     customer = models.ForeignKey('Customers', on_delete=models.CASCADE, null=True)
+#     address = models.OneToOneField('Addresses', on_delete=models.CASCADE, null=True, unique=True)
     

@@ -495,6 +495,8 @@ class ListViewSet(viewsets.ModelViewSet):
     # Related List 
     @action(detail=True, methods=['get'], url_path = "columns")
     def get_columns(self, request, pk=None): 
+        language = get_current_user_language(request.user)
+        print(language)
         queryset = Column.objects.filter(list = pk) 
         serializer = ColumnsSerializer(queryset, many = True, context={'request': request})         
         return Response(serializer.data)
@@ -544,9 +546,9 @@ class ListViewSet(viewsets.ModelViewSet):
                                     trans_id = get_rid_pkey('translation')
                                     new_label = Translation.objects.create(id=trans_id, label=label,language_id=language_id)
                                 label_rec = Translation.objects.get(label=label,language_id=language_id)
-                                trans = TranslationList.objects.filter(list_id=list_id, translation_id=label_rec.id)
-                                if not trans:
-                                    TranslationList.objects.create(list_id=list_id, translation_id=label_rec.id)
+                                # trans = TranslationList.objects.filter(list_id=list_id, translation_id=label_rec.id)
+                                # if not trans:
+                                #     TranslationList.objects.create(list_id=list_id, translation_id=label_rec.id)
                             if category:
                                 menu_rec = Menu.objects.filter(menu_category=category,list_id=list_id)
                                 if not menu_rec:
@@ -701,7 +703,7 @@ class MenuViewSet(viewsets.ModelViewSet):
                             if menu_serializer.is_valid(raise_exception=True):
                                 menu_serializer.save()
                                 count = count + 1
-                                new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.id)
+                                # new_trans = TranslationMenu.objects.create(menu_id=menu_serializer.data.get('id'), translation_id=label_rec.id)
                         except Exception as e:
                             print("menu Error >>> ", str(e))
             if defective_data:
@@ -842,16 +844,6 @@ class FormStageViewSet(viewsets.ModelViewSet):
     """
     queryset = FormStage.objects.all()
     serializer_class = FormStageSerializer
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ("__all__")
-    ordering_fields = ("__all__")
-
-class ButtonStageViewSet(viewsets.ModelViewSet):
-    """
-    API’s endpoint that allows Button Stage to be modified.
-    """
-    queryset = ButtonStage.objects.all()
-    serializer_class = ButtonStageSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ("__all__")
     ordering_fields = ("__all__")
